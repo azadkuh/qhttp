@@ -113,8 +113,8 @@ QHttpServer::newConnection() {
     }
 }
 
-bool QHttpServer::listen(quint16 port) {
-    return QTcpServer::listen(QHostAddress::Any, port);
+bool QHttpServer::listen(const QHostAddress& address, quint16 port) {
+    return QTcpServer::listen(address, port);
 }
 
 const TStatusCodes& QHttpServer::statusCodes() {

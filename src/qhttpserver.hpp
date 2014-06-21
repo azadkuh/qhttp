@@ -36,28 +36,21 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-/// Maps status codes to string reason phrases
+/** Maps status codes to string reason phrases. */
 typedef QHash<int, QString> TStatusCodes;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-/// The QHttpServer class forms the basis of the %QHttpServer
-/// project. It is a fast, non-blocking HTTP server.
-/** These are the steps to create a server, handle and respond to requests:
-    <ol>
-        <li>Create an instance of QHttpServer.</li>
-        <li>Connect a slot to the newRequest() signal.</li>
-        <li>Create a QCoreApplication to drive the server event loop.</li>
-        <li>Respond to clients by writing out to the QHttpResponse object.</li>
-    </ol>
-
-    <b>Here is a simple sample application on how to use this library</b>
-
-    helloworld.cpp
-    @include helloworld/helloworld.cpp
-
-    helloworld.h
-    @include helloworld/helloworld.h */
+/** The QHttpServer class forms the basis of this project.
+ * It is a fast, non-blocking HTTP server.
+ *  These are the steps to create a server, handle and respond to requests:
+ * <ol>
+ *     <li>Create an instance of QHttpServer.</li>
+ *     <li>Connect a slot to the newRequest() signal.</li>
+ *     <li>Create a QCoreApplication to drive the server event loop.</li>
+ *     <li>Respond to clients by writing out to the QHttpResponse object.</li>
+ * </ol>
+ */
 class QHTTPSERVER_API QHttpServer : public QTcpServer
 {
     Q_OBJECT
@@ -66,24 +59,24 @@ public:
     static const TStatusCodes& statusCodes();
 
 public:
-    /// Construct a new HTTP Server.
-    /** @param parent Parent QObject for the server. */
+    /** construct a new HTTP Server. */
     QHttpServer(QObject *parent = 0);
 
     virtual     ~QHttpServer();
 
-    /// Starts the server on @c port listening on all interfaces.
-    /** @param port Port number on which the server should run.
-        @return True if the server was started successfully, false otherwise.
-        @sa listen(const QHostAddress&, quint16) */
-    bool        listen(quint16 port);
+    /** starts the server on @c port listening on all interfaces. */
+    bool        listen(const QHostAddress& address, quint16 port);
+
+    bool        listen(quint16 port) {
+        return listen(QHostAddress::Any, port);
+    }
 
 signals:
-    /// Emitted when a client makes a new request to the server.
-    /** The slot should use the given @c request and @c response
-        objects to communicate with the client.
-        @param request New incoming request.
-        @param response Response object to the request. */
+    /** emitted when a client makes a new request to the server.
+     * The slot should use the given @c request and @c response
+     *  objects to communicate with the client.
+     * @param request New incoming request.
+     * @param response Response object to the request. */
     void        newRequest(QHttpRequest *request, QHttpResponse *response);
 
 private slots:
