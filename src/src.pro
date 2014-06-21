@@ -4,13 +4,14 @@ QT       -= gui
 TARGET    = qhttpserver
 TEMPLATE  = lib
 CONFIG   += staticlib
+CONFIG   += c++11
 
 PRJDIR    = ..
 include($$PRJDIR/commondir.pri)
 
 
 
-SOURCES += \ 
+SOURCES += \
     qhttpconnection.cpp \
     qhttprequest.cpp \
     qhttpresponse.cpp \
