@@ -33,13 +33,6 @@ QHttpRequest::QHttpRequest(QHttpConnection *connection, QObject *parent)
 QHttpRequest::~QHttpRequest() {
 }
 
-void
-QHttpRequest::storeBody() {
-    QObject::connect(this, &QHttpRequest::data, [this](const QByteArray& chunk){
-        m_body.append(chunk);
-    });
-}
-
 QString
 QHttpRequest::MethodToString(HttpMethod method) {
     int index = staticMetaObject.indexOfEnumerator("HttpMethod");

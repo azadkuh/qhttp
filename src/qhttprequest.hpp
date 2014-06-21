@@ -151,12 +151,6 @@ public:
         return m_remotePort;
     }
 
-    /** Request body data, empty for non POST/PUT requests.
-     * @sa storeBody() */
-    const QByteArray&   body() const {
-        return m_body;
-    }
-
     /** If this request was successfully received.
      * Set before end() has been emitted, stating whether
      *  the message was properly received. This is false
@@ -164,15 +158,6 @@ public:
     bool                successful() const {
         return m_success;
     }
-
-    /** Utility function to make this request store all body data internally.
-     * the request will take care of storing the body data for you.
-     *  Once the end() signal is emitted you can access the body data with
-     *  the body() function.
-     *
-     * If you wish to handle incoming data yourself don't call this function
-     *  and see the data() signal. @sa data() body() */
-    void                storeBody();
 
 signals:
     /** Emitted when new body data has been received.
@@ -214,7 +199,6 @@ private:
     QString             m_version;
     QString             m_remoteAddress;
     quint16             m_remotePort;
-    QByteArray          m_body;
     bool                m_success;
 };
 
