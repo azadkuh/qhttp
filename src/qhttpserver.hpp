@@ -79,9 +79,6 @@ signals:
      * @param response Response object to the request. */
     void        newRequest(QHttpRequest *request, QHttpResponse *response);
 
-//private slots:
-//    void        newConnection();
-
 protected:
     virtual void incomingConnection(qintptr handle);
 };

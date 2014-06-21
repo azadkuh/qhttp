@@ -31,8 +31,23 @@
 #include <QHostAddress>
 
 ///////////////////////////////////////////////////////////////////////////////
+class QHttpConnection::Private
+{
+public: // callback functions for http_parser_settings
+    static int messageBegin(http_parser *parser);
+    static int url(http_parser *parser, const char *at, size_t length);
+    static int headerField(http_parser *parser, const char *at, size_t length);
+    static int headerValue(http_parser *parser, const char *at, size_t length);
+    static int headersComplete(http_parser *parser);
+    static int body(http_parser *parser, const char *at, size_t length);
+    static int messageComplete(http_parser *parser);
 
-/// @cond nodoc
+public:
+    static QUrl createUrl(const char *urlData, const http_parser_url &urlInfo);
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 QHttpConnection::QHttpConnection(qintptr handle, QObject *parent)
     : QObject(parent),
       m_socket(0),
@@ -45,13 +60,13 @@ QHttpConnection::QHttpConnection(qintptr handle, QObject *parent)
     http_parser_init(m_parser, HTTP_REQUEST);
 
     m_parserSettings = new http_parser_settings();
-    m_parserSettings->on_message_begin = MessageBegin;
-    m_parserSettings->on_url = Url;
-    m_parserSettings->on_header_field = HeaderField;
-    m_parserSettings->on_header_value = HeaderValue;
-    m_parserSettings->on_headers_complete = HeadersComplete;
-    m_parserSettings->on_body = Body;
-    m_parserSettings->on_message_complete = MessageComplete;
+    m_parserSettings->on_message_begin    = Private::messageBegin;
+    m_parserSettings->on_url              = Private::url;
+    m_parserSettings->on_header_field     = Private::headerField;
+    m_parserSettings->on_header_value     = Private::headerValue;
+    m_parserSettings->on_headers_complete = Private::headersComplete;
+    m_parserSettings->on_body             = Private::body;
+    m_parserSettings->on_message_complete = Private::messageComplete;
 
     m_parser->data = this;
 
@@ -136,49 +151,13 @@ QHttpConnection::responseDone() {
         m_socket->disconnectFromHost();
 }
 
-/* URL Utilities */
-#define HAS_URL_FIELD(info, field) (info.field_set &(1 << (field)))
-
-#define GET_FIELD(data, info, field)                                                               \
-    QString::fromLatin1(data + info.field_data[field].off, info.field_data[field].len)
-
-#define CHECK_AND_GET_FIELD(data, info, field)                                                     \
-    (HAS_URL_FIELD(info, field) ? GET_FIELD(data, info, field) : QString())
-
-QUrl
-createUrl(const char *urlData, const http_parser_url &urlInfo) {
-    QUrl url;
-    url.setScheme(CHECK_AND_GET_FIELD(urlData, urlInfo, UF_SCHEMA));
-    url.setHost(CHECK_AND_GET_FIELD(urlData, urlInfo, UF_HOST));
-    // Port is dealt with separately since it is available as an integer.
-    url.setPath(CHECK_AND_GET_FIELD(urlData, urlInfo, UF_PATH));
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-    url.setQuery(CHECK_AND_GET_FIELD(urlData, urlInfo, UF_QUERY));
-#else
-    if (HAS_URL_FIELD(urlInfo, UF_QUERY)) {
-        url.setEncodedQuery(QByteArray(urlData + urlInfo.field_data[UF_QUERY].off,
-                                       urlInfo.field_data[UF_QUERY].len));
-    }
-#endif
-    url.setFragment(CHECK_AND_GET_FIELD(urlData, urlInfo, UF_FRAGMENT));
-    url.setUserInfo(CHECK_AND_GET_FIELD(urlData, urlInfo, UF_USERINFO));
-
-    if (HAS_URL_FIELD(urlInfo, UF_PORT))
-        url.setPort(urlInfo.port);
-
-    return url;
-}
-
-#undef CHECK_AND_SET_FIELD
-#undef GET_FIELD
-#undef HAS_URL_FIELD
 
 /********************
  * Static Callbacks *
  *******************/
 
 int
-QHttpConnection::MessageBegin(http_parser *parser) {
+QHttpConnection::Private::messageBegin(http_parser *parser) {
     QHttpConnection *theConnection = static_cast<QHttpConnection *>(parser->data);
     theConnection->m_currentHeaders.clear();
     theConnection->m_currentUrl.clear();
@@ -191,7 +170,7 @@ QHttpConnection::MessageBegin(http_parser *parser) {
 }
 
 int
-QHttpConnection::HeadersComplete(http_parser *parser) {
+QHttpConnection::Private::headersComplete(http_parser *parser) {
     QHttpConnection *theConnection = static_cast<QHttpConnection *>(parser->data);
     Q_ASSERT(theConnection->m_request);
 
@@ -234,7 +213,7 @@ QHttpConnection::HeadersComplete(http_parser *parser) {
 }
 
 int
-QHttpConnection::MessageComplete(http_parser *parser) {
+QHttpConnection::Private::messageComplete(http_parser *parser) {
     // TODO: do cleanup and prepare for next request
     QHttpConnection *theConnection = static_cast<QHttpConnection *>(parser->data);
     Q_ASSERT(theConnection->m_request);
@@ -245,7 +224,7 @@ QHttpConnection::MessageComplete(http_parser *parser) {
 }
 
 int
-QHttpConnection::Url(http_parser *parser, const char *at, size_t length) {
+QHttpConnection::Private::url(http_parser *parser, const char *at, size_t length) {
     QHttpConnection *theConnection = static_cast<QHttpConnection *>(parser->data);
     Q_ASSERT(theConnection->m_request);
 
@@ -254,7 +233,7 @@ QHttpConnection::Url(http_parser *parser, const char *at, size_t length) {
 }
 
 int
-QHttpConnection::HeaderField(http_parser *parser, const char *at, size_t length) {
+QHttpConnection::Private::headerField(http_parser *parser, const char *at, size_t length) {
     QHttpConnection *theConnection = static_cast<QHttpConnection *>(parser->data);
     Q_ASSERT(theConnection->m_request);
 
@@ -278,7 +257,7 @@ QHttpConnection::HeaderField(http_parser *parser, const char *at, size_t length)
 }
 
 int
-QHttpConnection::HeaderValue(http_parser *parser, const char *at, size_t length) {
+QHttpConnection::Private::headerValue(http_parser *parser, const char *at, size_t length) {
     QHttpConnection *theConnection = static_cast<QHttpConnection *>(parser->data);
     Q_ASSERT(theConnection->m_request);
 
@@ -288,7 +267,7 @@ QHttpConnection::HeaderValue(http_parser *parser, const char *at, size_t length)
 }
 
 int
-QHttpConnection::Body(http_parser *parser, const char *at, size_t length) {
+QHttpConnection::Private::body(http_parser *parser, const char *at, size_t length) {
     QHttpConnection *theConnection = static_cast<QHttpConnection *>(parser->data);
     Q_ASSERT(theConnection->m_request);
 
@@ -296,7 +275,43 @@ QHttpConnection::Body(http_parser *parser, const char *at, size_t length) {
     return 0;
 }
 
-/// @endcond
+
+/* URL Utilities */
+#define HAS_URL_FIELD(info, field) (info.field_set &(1 << (field)))
+
+#define GET_FIELD(data, info, field)                                                               \
+    QString::fromLatin1(data + info.field_data[field].off, info.field_data[field].len)
+
+#define CHECK_AND_GET_FIELD(data, info, field)                                                     \
+    (HAS_URL_FIELD(info, field) ? GET_FIELD(data, info, field) : QString())
+
+QUrl
+QHttpConnection::Private::createUrl(const char *urlData, const http_parser_url &urlInfo) {
+    QUrl url;
+    url.setScheme(CHECK_AND_GET_FIELD(urlData, urlInfo, UF_SCHEMA));
+    url.setHost(CHECK_AND_GET_FIELD(urlData, urlInfo, UF_HOST));
+    // Port is dealt with separately since it is available as an integer.
+    url.setPath(CHECK_AND_GET_FIELD(urlData, urlInfo, UF_PATH));
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    url.setQuery(CHECK_AND_GET_FIELD(urlData, urlInfo, UF_QUERY));
+#else
+    if (HAS_URL_FIELD(urlInfo, UF_QUERY)) {
+        url.setEncodedQuery(QByteArray(urlData + urlInfo.field_data[UF_QUERY].off,
+                                       urlInfo.field_data[UF_QUERY].len));
+    }
+#endif
+    url.setFragment(CHECK_AND_GET_FIELD(urlData, urlInfo, UF_FRAGMENT));
+    url.setUserInfo(CHECK_AND_GET_FIELD(urlData, urlInfo, UF_USERINFO));
+
+    if (HAS_URL_FIELD(urlInfo, UF_PORT))
+        url.setPort(urlInfo.port);
+
+    return url;
+}
+
+#undef CHECK_AND_SET_FIELD
+#undef GET_FIELD
+#undef HAS_URL_FIELD
 
 ///////////////////////////////////////////////////////////////////////////////
 

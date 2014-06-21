@@ -53,15 +53,6 @@ private slots:
     void    updateWriteCount(qint64);
 
 private:
-    static int MessageBegin(http_parser *parser);
-    static int Url(http_parser *parser, const char *at, size_t length);
-    static int HeaderField(http_parser *parser, const char *at, size_t length);
-    static int HeaderValue(http_parser *parser, const char *at, size_t length);
-    static int HeadersComplete(http_parser *parser);
-    static int Body(http_parser *parser, const char *at, size_t length);
-    static int MessageComplete(http_parser *parser);
-
-private:
     friend class QHttpServer;
     explicit QHttpConnection(qintptr handle, QObject *parent);
 
@@ -81,6 +72,8 @@ private:
     // Keep track of transmit buffer status
     qint64                  m_transmitLen;
     qint64                  m_transmitPos;
+
+    class                   Private;
 };
 
 /// @endcond
