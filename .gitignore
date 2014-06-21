@@ -1,0 +1,32 @@
+# 3rdparty, tmp and build direcotry
+3rdparty
+tmp
+xbin
+docs/html
+res/keys
+
+# ahh! OSX finder!
+.DS_Store
+
+# key files
+*.pem
+
+# temp files
+Makefile*
+*.user
+*.autosave
+*.~
+*.o
+*.qmake.stash
+*.pro.user*
+
+# Visual studio
+*.ncb
+*.idb
+*.suo
+*.pdb
+*.vcxproj.filters
+*.vcproj
+*.vcxproj
+*.sln
+*.rc
