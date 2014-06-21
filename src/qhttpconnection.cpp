@@ -33,9 +33,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /// @cond nodoc
-QHttpConnection::QHttpConnection(QTcpSocket *socket, QObject *parent)
+QHttpConnection::QHttpConnection(qintptr handle, QObject *parent)
     : QObject(parent),
-      m_socket(socket),
+      m_socket(0),
       m_parser(0),
       m_parserSettings(0),
       m_request(0),
@@ -55,14 +55,21 @@ QHttpConnection::QHttpConnection(QTcpSocket *socket, QObject *parent)
 
     m_parser->data = this;
 
-    connect(socket, SIGNAL(readyRead()), this, SLOT(parseRequest()));
-    connect(socket, SIGNAL(disconnected()), this, SLOT(socketDisconnected()));
-    connect(socket, SIGNAL(bytesWritten(qint64)), this, SLOT(updateWriteCount(qint64)));
+    m_socket        = new QTcpSocket(this);
+    m_socket->setSocketDescriptor(handle);
+
+    connect(m_socket,   SIGNAL(readyRead()),
+            this,       SLOT(parseRequest())
+            );
+    connect(m_socket,   SIGNAL(disconnected()),
+            this,       SLOT(socketDisconnected())
+            );
+    connect(m_socket,   SIGNAL(bytesWritten(qint64)),
+            this,       SLOT(updateWriteCount(qint64))
+            );
 }
 
 QHttpConnection::~QHttpConnection() {
-    m_socket = 0;
-
     if ( m_parser != 0 ) {
         free(m_parser);
         m_parser = 0;

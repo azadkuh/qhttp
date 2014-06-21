@@ -37,7 +37,6 @@ class QHTTPSERVER_API QHttpConnection : public QObject
     Q_OBJECT
 
 public:
-    explicit QHttpConnection(QTcpSocket *socket, QObject *parent = 0);
     virtual ~QHttpConnection();
 
     void    write(const QByteArray &data);
@@ -63,6 +62,9 @@ private:
     static int MessageComplete(http_parser *parser);
 
 private:
+    friend class QHttpServer;
+    explicit QHttpConnection(qintptr handle, QObject *parent);
+
     QTcpSocket*             m_socket;
     http_parser*            m_parser;
     http_parser_settings*   m_parserSettings;

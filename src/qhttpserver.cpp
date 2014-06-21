@@ -97,28 +97,28 @@ Q_GLOBAL_STATIC(StatusCodes, gStatusCodes)
 ///////////////////////////////////////////////////////////////////////////////
 
 QHttpServer::QHttpServer(QObject *parent) : QTcpServer(parent) {
-    connect(this, SIGNAL(newConnection()), this, SLOT(newConnection()));
 }
 
 QHttpServer::~QHttpServer() {
 }
 
-void
-QHttpServer::newConnection() {
-    while (hasPendingConnections()) {
-        QHttpConnection *connection =
-            new QHttpConnection(nextPendingConnection(), this);
-        connect(connection, SIGNAL(newRequest(QHttpRequest *, QHttpResponse *)), this,
-                SIGNAL(newRequest(QHttpRequest *, QHttpResponse *)));
-    }
-}
-
-bool QHttpServer::listen(const QHostAddress& address, quint16 port) {
+bool
+QHttpServer::listen(const QHostAddress& address, quint16 port) {
     return QTcpServer::listen(address, port);
 }
 
-const TStatusCodes& QHttpServer::statusCodes() {
+const TStatusCodes&
+QHttpServer::statusCodes() {
     return gStatusCodes->istatusHash;
+}
+
+void
+QHttpServer::incomingConnection(qintptr handle) {
+    QHttpConnection *connection = new QHttpConnection(handle, this);
+
+    QObject::connect(connection,    SIGNAL(newRequest(QHttpRequest*,QHttpResponse*)),
+                     this,          SIGNAL(newRequest(QHttpRequest*,QHttpResponse*))
+                     );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
