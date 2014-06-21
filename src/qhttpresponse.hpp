@@ -31,14 +31,15 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-/// The QHttpResponse class handles sending data back to the client as a response to a request.
-/** The steps to respond correctly are
-    <ol>
-        <li>Call setHeader() to set headers [optional]</li>
-        <li>Call writeHead() with the HTTP status code</li>
-        <li>Call write() zero or more times for body data.</li>
-        <li>Call end() when the resonse can be sent back</li>
-    </ol> */
+/** The QHttpResponse class handles sending data back to the client as a response to a request.
+ * The steps to respond correctly are
+ * <ol>
+ * <li>Call setHeader() to set headers [optional]</li>
+ * <li>Call writeHead() with the HTTP status code</li>
+ * <li>Call write() zero or more times for body data.</li>
+ * <li>Call end() when the resonse can be sent back</li>
+ * </ol>
+ */
 class QHTTPSERVER_API QHttpResponse : public QObject
 {
     Q_OBJECT
@@ -91,53 +92,48 @@ public:
     virtual     ~QHttpResponse();
 
 public slots:
-    /// Sets a response header @c field to @c value.
-    /** @note You must call this with all your custom headers
-        before calling writeHead(), write() or end().
-        @param field Header field to be set.
-        @param value Header value to be set. */
+    /** Set the value of a HTTP header.
+     * @note You must call this with all your custom headers
+     *  before calling writeHead(), write() or end(). */
     void        setHeader(const QString &field, const QString &value);
 
-    /// Writes the header section of the response
-    /// using @c status as the response status code.
-    /** @param statusCode Status code for the response.
-        @note Any headers should be set before
-        invoking this function with setHeader(). */
+    /** Writes the header section of the response.
+     * @param statusCode Status code for the response.
+     *  @note Any headers should be set before invoking this function with setHeader(). */
     void        writeHead(int statusCode);
 
     /** @overload */
     void        writeHead(StatusCode statusCode);
 
-    /// Writes a block of @c data to the client.
-    /** @note writeHead() must be called before this function. */
+    /** Writes a block of @c data to the client.
+     * @note writeHead() must be called before this function. */
     void        write(const QByteArray &data);
 
-    /// End/finish the response.
-    /** Data will be flushed to the underlying socket
-        and the connection itself will be closed if
-        this is the last response.
-
-        This will emit done() and queue this object
-        for deletion. For details see \ref memorymanagement.
-        @param data Optional data to be written before finishing. */
-    void        end(const QByteArray &data = "");
+    /** Ends (finishes) the response.
+     * Data will be flushed to the underlying socket and the connection itself will be closed if
+     * this is the last response.
+     *
+     * This will emit done() and queue this object for deletion.
+     * For details see \ref memorymanagement.
+     * @param data Optional data to be written before finishing. */
+    void        end(const QByteArray &data = QByteArray());
 
 signals:
-    /// Emitted when all the data has been sent
-    /** This signal indicates that the underlaying socket has transmitted all
-        of it's buffered data. It is possible to implement memory-efficient
-        file transfers by calling \ref write() for a block of data only after
-        receiving this signal. */
+    /** Emitted when all the data has been sent.
+     * This signal indicates that the underlaying socket has transmitted all
+     *  of it's buffered data. It is possible to implement memory-efficient
+     *  file transfers by calling \ref write() for a block of data only after
+     *  receiving this signal. */
     void        allBytesWritten();
 
-    /// Emitted when the response is finished.
-    /** You should <b>not</b> interact with this object
-        after done() has been emitted as the object
-        has already been scheduled for deletion. */
+    /** Emitted when the response is finished.
+     * You should <b>not</b> interact with this object
+     *  after done() has been emitted as the object
+     *  has already been scheduled for deletion. */
     void        done();
 
 private slots:
-    void                connectionClosed();
+    void        connectionClosed();
 
 private:
     /// @cond nodoc

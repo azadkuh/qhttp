@@ -172,7 +172,7 @@ signals:
 private:
     friend class        QHttpConnection;
 
-    explicit            QHttpRequest(QHttpConnection *connection, QObject *parent = 0);
+    explicit            QHttpRequest(QHttpConnection *connection);
 
     static QString      MethodToString(HttpMethod method);
 

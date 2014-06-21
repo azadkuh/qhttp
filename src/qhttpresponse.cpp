@@ -30,7 +30,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 QHttpResponse::QHttpResponse(QHttpConnection *connection)
     // TODO: parent child relation
-    : QObject(0),
+    : QObject(connection),
       m_connection(connection),
       m_headerWritten(false),
       m_sentConnectionHeader(false),
