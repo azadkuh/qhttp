@@ -45,7 +45,7 @@ class QHTTPSERVER_API QHttpRequest : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(HeaderHash   headers         READ headers)
+    Q_PROPERTY(THeaderHash  headers         READ headers)
     Q_PROPERTY(QString      remoteAddress   READ remoteAddress)
     Q_PROPERTY(quint16      remotePort      READ remotePort)
     Q_PROPERTY(QString      method          READ method)
@@ -129,7 +129,7 @@ public:
      *  somewhere else, where the request may be deleted,
      *  make sure you store them as a copy.
      * @note All header names are <b>lowercase</b> . */
-    const HeaderHash&   headers() const {
+    const THeaderHash&  headers() const {
         return m_headers;
     }
 
@@ -137,7 +137,7 @@ public:
      * Headers are stored as lowercase so the input @c field will be lowercased.
      * @param field Name of the header field
      * @return Value of the header or empty string if not found. */
-    QString             header(const QString &field) {
+    QString             header(const QByteArray &field) {
         return m_headers.value(field.toLower(), "");
     }
 
@@ -185,7 +185,7 @@ private:
     void                setUrl(const QUrl &url) {
         m_url = url;
     }
-    void                setHeaders(const HeaderHash headers) {
+    void                setHeaders(const THeaderHash headers) {
         m_headers = headers;
     }
     void                setSuccessful(bool success) {
@@ -193,7 +193,7 @@ private:
     }
 
     QHttpConnection*    m_connection;
-    HeaderHash          m_headers;
+    THeaderHash         m_headers;
     HttpMethod          m_method;
     QUrl                m_url;
     QString             m_version;

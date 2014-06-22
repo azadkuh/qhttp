@@ -39,7 +39,7 @@ HttpServer::onRequest(QHttpRequest *req, QHttpResponse *resp) {
                    .arg(++icounter)
                    .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss:zzz"));
 
-    resp->setHeader("Content-Length", QString::number(body.size()));
+    resp->setHeader("Content-Length", QString::number(body.size()).toLatin1());
     resp->writeHead(200);
     resp->write(body.toUtf8());
 
@@ -85,9 +85,10 @@ ClientConnection::onComplete() {
     if ( ireq->method() == QHttpRequest::HTTP_POST ) {
         qDebug("path of POST request: %s", qPrintable(ireq->path()));
 
-        const HeaderHash &headers = ireq->headers();
+        const THeaderHash &headers = ireq->headers();
         if ( headers.contains(KContentType) ) {
-            if ( headers.value(KContentType) == QLatin1String(KAppJSon) ) {
+            const QByteArray& value = headers.value(KContentType);
+            if ( qstrnicmp(KAppJSon, value.constData(), value.length()) == 0 ) {
 
                 qDebug("body:\n%s", ibody.constData());
             }

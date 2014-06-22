@@ -65,9 +65,9 @@ private:
 
     QByteArray              m_currentUrl;
     // The ones we are reading in from the parser
-    HeaderHash              m_currentHeaders;
-    QString                 m_currentHeaderField;
-    QString                 m_currentHeaderValue;
+    THeaderHash             m_currentHeaders;
+    QByteArray              m_currentHeaderField;
+    QByteArray              m_currentHeaderValue;
 
     // Keep track of transmit buffer status
     qint64                  m_transmitLen;

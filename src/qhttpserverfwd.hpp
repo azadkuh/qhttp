@@ -31,7 +31,7 @@
 /*!
  * A map of request or response headers
  */
-typedef QHash<QString, QString> HeaderHash;
+typedef QHash<QByteArray, QByteArray>   THeaderHash;
 ///////////////////////////////////////////////////////////////////////////////
 
 // QHttpServer

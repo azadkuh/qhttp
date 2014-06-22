@@ -95,7 +95,7 @@ public slots:
     /** Set the value of a HTTP header.
      * @note You must call this with all your custom headers
      *  before calling writeHead(), write() or end(). */
-    void        setHeader(const QString &field, const QString &value);
+    void        setHeader(const QByteArray& field, const QByteArray& value);
 
     /** Writes the header section of the response.
      * @param statusCode Status code for the response.
@@ -143,11 +143,11 @@ private:
     explicit    QHttpResponse(QHttpConnection *connection);
 
     void        writeHeaders();
-    void        writeHeader(const char *field, const QString &value);
+    void        writeHeader(const char *field, const QByteArray& value);
 
 
     QHttpConnection*    m_connection;
-    HeaderHash          m_headers;
+    THeaderHash         m_headers;
 
     bool                m_headerWritten;
     bool                m_sentConnectionHeader;

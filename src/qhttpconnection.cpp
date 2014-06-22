@@ -163,8 +163,6 @@ QHttpConnection::Private::messageBegin(http_parser *parser) {
     theConnection->m_currentUrl.clear();
     theConnection->m_currentUrl.reserve(128);
 
-    // The QHttpRequest should not be parented to this, since it's memory
-    // management is the responsibility of the user of the library.
     theConnection->m_request = new QHttpRequest(theConnection);
     return 0;
 }
@@ -174,38 +172,44 @@ QHttpConnection::Private::headersComplete(http_parser *parser) {
     QHttpConnection *theConnection = static_cast<QHttpConnection *>(parser->data);
     Q_ASSERT(theConnection->m_request);
 
-    /** set method **/
+    // set method
     theConnection->m_request->setMethod(static_cast<QHttpRequest::HttpMethod>(parser->method));
 
-    /** set version **/
+    // set version
     theConnection->m_request->setVersion(
         QString("%1.%2").arg(parser->http_major).arg(parser->http_minor));
 
-    /** get parsed url **/
+    // get parsed url
     struct http_parser_url urlInfo;
     int r = http_parser_parse_url(theConnection->m_currentUrl.constData(),
                                   theConnection->m_currentUrl.size(),
-                                  parser->method == HTTP_CONNECT, &urlInfo);
+                                  parser->method == HTTP_CONNECT,
+                                  &urlInfo);
     Q_ASSERT(r == 0);
     Q_UNUSED(r);
 
     theConnection->m_request->setUrl(createUrl(theConnection->m_currentUrl.constData(), urlInfo));
 
     // Insert last remaining header
-    theConnection->m_currentHeaders[theConnection->m_currentHeaderField.toLower()] =
-        theConnection->m_currentHeaderValue;
+    theConnection->m_currentHeaders.insert(
+                theConnection->m_currentHeaderField.toLower(),
+                theConnection->m_currentHeaderValue.toLower()
+                );
     theConnection->m_request->setHeaders(theConnection->m_currentHeaders);
 
-    /** set client information **/
+    // set client information
     theConnection->m_request->m_remoteAddress = theConnection->m_socket->peerAddress().toString();
-    theConnection->m_request->m_remotePort = theConnection->m_socket->peerPort();
+    theConnection->m_request->m_remotePort    = theConnection->m_socket->peerPort();
 
     QHttpResponse *response = new QHttpResponse(theConnection);
     if (parser->http_major < 1 || parser->http_minor < 1)
         response->m_keepAlive = false;
 
-    connect(theConnection, SIGNAL(destroyed()), response, SLOT(connectionClosed()));
-    connect(response, SIGNAL(done()), theConnection, SLOT(responseDone()));
+    QObject::connect(theConnection,  &QHttpConnection::destroyed,
+                     response,       &QHttpResponse::connectionClosed
+                     );
+    QObject::connect(response,       &QHttpResponse::done,
+                     theConnection,  &QHttpConnection::responseDone);
 
     // we are good to go!
     emit theConnection->newRequest(theConnection->m_request, response);
@@ -242,17 +246,18 @@ QHttpConnection::Private::headerField(http_parser *parser, const char *at, size_
     if (!theConnection->m_currentHeaderField.isEmpty() &&
         !theConnection->m_currentHeaderValue.isEmpty()) {
         // header names are always lower-cased
-        theConnection->m_currentHeaders[theConnection->m_currentHeaderField.toLower()] =
-            theConnection->m_currentHeaderValue;
+        theConnection->m_currentHeaders.insert(
+                    theConnection->m_currentHeaderField.toLower(),
+                    theConnection->m_currentHeaderValue.toLower()
+                    );
         // clear header value. this sets up a nice
         // feedback loop where the next time
         // HeaderValue is called, it can simply append
-        theConnection->m_currentHeaderField = QString();
-        theConnection->m_currentHeaderValue = QString();
+        theConnection->m_currentHeaderField.clear();
+        theConnection->m_currentHeaderValue.clear();
     }
 
-    QString fieldSuffix = QString::fromLatin1(at, length);
-    theConnection->m_currentHeaderField += fieldSuffix;
+    theConnection->m_currentHeaderField.append(at, length);
     return 0;
 }
 
@@ -261,8 +266,7 @@ QHttpConnection::Private::headerValue(http_parser *parser, const char *at, size_
     QHttpConnection *theConnection = static_cast<QHttpConnection *>(parser->data);
     Q_ASSERT(theConnection->m_request);
 
-    QString valueSuffix = QString::fromLatin1(at, length);
-    theConnection->m_currentHeaderValue += valueSuffix;
+    theConnection->m_currentHeaderValue.append(at, length);
     return 0;
 }
 

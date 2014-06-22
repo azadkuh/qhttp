@@ -48,7 +48,7 @@ QHttpResponse::~QHttpResponse() {
 }
 
 void
-QHttpResponse::setHeader(const QString &field, const QString &value) {
+QHttpResponse::setHeader(const QByteArray &field, const QByteArray &value) {
     if (!m_finished)
         m_headers[field] = value;
     else
@@ -56,11 +56,11 @@ QHttpResponse::setHeader(const QString &field, const QString &value) {
 }
 
 void
-QHttpResponse::writeHeader(const char *field, const QString &value) {
-    if (!m_finished) {
+QHttpResponse::writeHeader(const char *field, const QByteArray &value) {
+    if ( !m_finished ) {
         m_connection->write(field);
         m_connection->write(": ");
-        m_connection->write(value.toUtf8());
+        m_connection->write(value);
         m_connection->write("\r\n");
     } else
         qWarning()
@@ -72,29 +72,33 @@ QHttpResponse::writeHeaders() {
     if (m_finished)
         return;
 
-    foreach(const QString & name, m_headers.keys()) {
-        QString value = m_headers[name];
-        if (name.compare("connection", Qt::CaseInsensitive) == 0) {
+    for ( THeaderHash::const_iterator cit = m_headers.begin(); cit != m_headers.end(); cit++ ) {
+        const QByteArray& name  = cit.key();
+        const QByteArray& value = cit.value();
+
+        if ( qstrnicmp("connection", name.constData(), name.length()) == 0 ) {
             m_sentConnectionHeader = true;
-            if (value.compare("close", Qt::CaseInsensitive) == 0)
+            if ( qstrnicmp("close", value.constData(), value.length()) == 0 )
                 m_last = true;
             else
                 m_keepAlive = true;
-        } else if (name.compare("transfer-encoding", Qt::CaseInsensitive) == 0) {
+
+        } else if ( qstrnicmp("transfer-encoding", name.constData(), name.length()) == 0 ) {
             m_sentTransferEncodingHeader = true;
-            if (value.compare("chunked", Qt::CaseInsensitive) == 0)
+            if ( qstrnicmp("chunked", value.constData(), value.length()) == 0 )
                 m_useChunkedEncoding = true;
-        } else if (name.compare("content-length", Qt::CaseInsensitive) == 0)
+
+        } else if ( qstrnicmp("content-length", name.constData(), name.length()) == 0 ) {
             m_sentContentLengthHeader = true;
-        else if (name.compare("date", Qt::CaseInsensitive) == 0)
+
+        } else if ( qstrnicmp("date", name.constData(), name.length()) == 0 ) {
             m_sentDate = true;
+        }
 
-        /// @todo Expect case (??)
-
-        writeHeader(name.toLatin1(), value.toLatin1());
+        writeHeader(name.constData(), value);
     }
 
-    if (!m_sentConnectionHeader) {
+    if ( !m_sentConnectionHeader ) {
         if (m_keepAlive && (m_sentContentLengthHeader || m_useChunkedEncoding)) {
             writeHeader("Connection", "keep-alive");
         } else {
@@ -112,10 +116,13 @@ QHttpResponse::writeHeaders() {
 
     // Sun, 06 Nov 1994 08:49:37 GMT - RFC 822. Use QLocale::c() so english is used for month and
     // day.
-    if (!m_sentDate)
-        writeHeader("Date",
-                    QLocale::c().toString(QDateTime::currentDateTimeUtc(),
-                                          "ddd, dd MMM yyyy hh:mm:ss") + " GMT");
+    if (!m_sentDate) {
+        QString dateString = QLocale::c().toString(
+                                 QDateTime::currentDateTimeUtc(),
+                                 "ddd, dd MMM yyyy hh:mm:ss"
+                                 ).append(" GMT");
+        writeHeader("Date", dateString.toLatin1());
+    }
 }
 
 void
