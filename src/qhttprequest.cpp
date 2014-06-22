@@ -21,16 +21,19 @@
  */
 
 ///////////////////////////////////////////////////////////////////////////////
-
-#include "qhttprequest.hpp"
-#include "qhttpconnection.hpp"
+#include "private/qhttprequest_private.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////
 QHttpRequest::QHttpRequest(QHttpConnection *connection)
-    : QObject(connection), m_connection(connection), m_url("http://localhost/"), m_success(false) {
+    : QObject(connection), pimp(nullptr) {
+    pimp    = new Private(connection);
 }
 
 QHttpRequest::~QHttpRequest() {
+    if ( pimp != nullptr ) {
+        delete pimp;
+        pimp = nullptr;
+    }
 }
 
 QString
@@ -39,3 +42,52 @@ QHttpRequest::MethodToString(HttpMethod method) {
     return staticMetaObject.enumerator(index).valueToKey(method);
 }
 
+QHttpRequest::HttpMethod
+QHttpRequest::method() const {
+    return pimp->m_method;
+}
+
+const QString
+QHttpRequest::methodString() const {
+    return MethodToString(method());
+}
+
+const QUrl&
+QHttpRequest::url() const {
+    return pimp->m_url;
+}
+
+const QString
+QHttpRequest::path() const {
+    return pimp->m_url.path();
+}
+
+const QString&
+QHttpRequest::httpVersion() const {
+    return pimp->m_version;
+}
+
+const THeaderHash&
+QHttpRequest::headers() const {
+    return pimp->m_headers;
+}
+
+QString
+QHttpRequest::header(const QByteArray &field) {
+    return pimp->m_headers.value(field.toLower(), "");
+}
+
+const QString&
+QHttpRequest::remoteAddress() const {
+    return pimp->m_remoteAddress;
+}
+
+quint16
+QHttpRequest::remotePort() const {
+    return pimp->m_remotePort;
+}
+
+bool
+QHttpRequest::successful() const {
+    return pimp->m_success;
+}

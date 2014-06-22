@@ -27,6 +27,7 @@
 #include "qhttprequest.hpp"
 #include "qhttpresponse.hpp"
 
+#include "private/qhttprequest_private.hpp"
 #include "private/qhttpresponse_private.hpp"
 
 #include <QTcpSocket>
@@ -103,7 +104,7 @@ QHttpConnection::socketDisconnected() {
     if (m_request) {
         if ( !m_request->successful() ) {
             // is the very next line redundant?
-            m_request->setSuccessful(false);
+            m_request->pimp->m_success = false;
             emit m_request->end();
         }
     }
@@ -175,11 +176,13 @@ QHttpConnection::Private::headersComplete(http_parser *parser) {
     Q_ASSERT(theConnection->m_request);
 
     // set method
-    theConnection->m_request->setMethod(static_cast<QHttpRequest::HttpMethod>(parser->method));
+    theConnection->m_request->pimp->m_method =
+            static_cast<QHttpRequest::HttpMethod>(parser->method);
 
     // set version
-    theConnection->m_request->setVersion(
-        QString("%1.%2").arg(parser->http_major).arg(parser->http_minor));
+    theConnection->m_request->pimp->m_version = QString("%1.%2")
+                                                .arg(parser->http_major)
+                                                .arg(parser->http_minor);
 
     // get parsed url
     struct http_parser_url urlInfo;
@@ -190,18 +193,21 @@ QHttpConnection::Private::headersComplete(http_parser *parser) {
     Q_ASSERT(r == 0);
     Q_UNUSED(r);
 
-    theConnection->m_request->setUrl(createUrl(theConnection->m_currentUrl.constData(), urlInfo));
+    theConnection->m_request->pimp->m_url = createUrl(
+                                                theConnection->m_currentUrl.constData(),
+                                                urlInfo
+                                                );
 
     // Insert last remaining header
     theConnection->m_currentHeaders.insert(
                 theConnection->m_currentHeaderField.toLower(),
                 theConnection->m_currentHeaderValue.toLower()
                 );
-    theConnection->m_request->setHeaders(theConnection->m_currentHeaders);
+    theConnection->m_request->pimp->m_headers = theConnection->m_currentHeaders;
 
     // set client information
-    theConnection->m_request->m_remoteAddress = theConnection->m_socket->peerAddress().toString();
-    theConnection->m_request->m_remotePort    = theConnection->m_socket->peerPort();
+    theConnection->m_request->pimp->m_remoteAddress = theConnection->m_socket->peerAddress().toString();
+    theConnection->m_request->pimp->m_remotePort    = theConnection->m_socket->peerPort();
 
     QHttpResponse *response = new QHttpResponse(theConnection);
     if (parser->http_major < 1 || parser->http_minor < 1)
@@ -224,7 +230,7 @@ QHttpConnection::Private::messageComplete(http_parser *parser) {
     QHttpConnection *theConnection = static_cast<QHttpConnection *>(parser->data);
     Q_ASSERT(theConnection->m_request);
 
-    theConnection->m_request->setSuccessful(true);
+    theConnection->m_request->pimp->m_success = true;
     emit theConnection->m_request->end();
     return 0;
 }

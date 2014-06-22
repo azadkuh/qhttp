@@ -56,8 +56,6 @@ class QHTTPSERVER_API QHttpRequest : public QObject
     Q_ENUMS(HttpMethod)
 
 public:
-    virtual ~QHttpRequest();
-
     /** Request method enumeration.
      * @note Taken from http_parser.h
      * -- make sure to keep synced */
@@ -95,69 +93,52 @@ public:
         HTTP_PURGE
     };
 
+public:
+    virtual ~QHttpRequest();
+
     /** The method used for the request. */
-    HttpMethod          method() const {
-        return m_method;
-    }
+    HttpMethod          method() const ;
 
     /** Returns the method string for the request.
      * @note This will plainly transform the enum into a string HTTP_GET -> "HTTP_GET". */
-    const QString       methodString() const {
-        return MethodToString(method());
-    }
+    const QString       methodString() const;
 
     /** The complete URL for the request.
      * This includes the path and query string. @sa path(). */
-    const QUrl&         url() const {
-        return m_url;
-    }
+    const QUrl&         url() const;
 
     /** The path portion of the query URL.
      * @sa url(). */
-    const QString       path() const {
-        return m_url.path();
-    }
+    const QString       path() const;
 
     /** The HTTP version of the request.
      * @return A string in the form of "x.x" */
-    const QString&      httpVersion() const {
-        return m_version;
-    }
+    const QString&      httpVersion() const;
 
     /** Return all the headers sent by the client.
      * This returns a reference. If you want to store headers
      *  somewhere else, where the request may be deleted,
      *  make sure you store them as a copy.
      * @note All header names are <b>lowercase</b> . */
-    const THeaderHash&  headers() const {
-        return m_headers;
-    }
+    const THeaderHash&  headers() const;
 
     /** Get the value of a header.
      * Headers are stored as lowercase so the input @c field will be lowercased.
      * @param field Name of the header field
      * @return Value of the header or empty string if not found. */
-    QString             header(const QByteArray &field) {
-        return m_headers.value(field.toLower(), "");
-    }
+    QString             header(const QByteArray &field);
 
     /** IP Address of the client in dotted decimal format. */
-    const QString&      remoteAddress() const {
-        return m_remoteAddress;
-    }
+    const QString&      remoteAddress() const;
 
     /** Outbound connection port for the client. */
-    quint16             remotePort() const {
-        return m_remotePort;
-    }
+    quint16             remotePort() const;
 
     /** If this request was successfully received.
      * Set before end() has been emitted, stating whether
      *  the message was properly received. This is false
      *  until the receiving the full request has completed. */
-    bool                successful() const {
-        return m_success;
-    }
+    bool                successful() const;
 
 signals:
     /** Emitted when new body data has been received.
@@ -170,36 +151,13 @@ signals:
     void                end();
 
 private:
-    friend class        QHttpConnection;
+    class           Private;
+    Private*        pimp;
 
-    explicit            QHttpRequest(QHttpConnection *connection);
 
-    static QString      MethodToString(HttpMethod method);
-
-    void                setMethod(HttpMethod method) {
-        m_method = method;
-    }
-    void                setVersion(const QString &version) {
-        m_version = version;
-    }
-    void                setUrl(const QUrl &url) {
-        m_url = url;
-    }
-    void                setHeaders(const THeaderHash headers) {
-        m_headers = headers;
-    }
-    void                setSuccessful(bool success) {
-        m_success = success;
-    }
-
-    QHttpConnection*    m_connection;
-    THeaderHash         m_headers;
-    HttpMethod          m_method;
-    QUrl                m_url;
-    QString             m_version;
-    QString             m_remoteAddress;
-    quint16             m_remotePort;
-    bool                m_success;
+    explicit        QHttpRequest(QHttpConnection *connection);
+    static QString  MethodToString(QHttpRequest::HttpMethod method);
+    friend class    QHttpConnection;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

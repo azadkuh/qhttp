@@ -29,6 +29,10 @@ QHttpResponse::QHttpResponse(QHttpConnection *connection)
 }
 
 QHttpResponse::~QHttpResponse() {
+    if ( pimp != nullptr ) {
+        delete pimp;
+        pimp  = nullptr;
+    }
 }
 
 void
