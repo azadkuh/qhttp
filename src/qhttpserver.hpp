@@ -72,14 +72,23 @@ public:
     }
 
 signals:
-    /** emitted when a client makes a new request to the server.
-     * The slot should use the given @c request and @c response
-     *  objects to communicate with the client.
-     * @param request New incoming request.
-     * @param response Response object to the request. */
+    /** emitted when a client makes a new request to the server if you do not override
+     *  incommingRequest().
+     * @sa incommingRequest(). */
     void        newRequest(QHttpRequest *request, QHttpResponse *response);
 
 protected:
+    /** is called when a client makes a new request to the server.
+     * you can override this function to receive the request/response pair objects.
+     *  the default implementation just fires newRequest signal.
+     * @note if you override this method, the signal won't be emitted by QHttpServer. (you
+     *  do not need it anymore).
+     *
+     * @param request New incoming request.
+     * @param response Response object to the request. */
+    virtual void incomingRequest(QHttpRequest *request, QHttpResponse *response);
+
+private:
     virtual void incomingConnection(qintptr handle);
 };
 

@@ -14,15 +14,13 @@ class HttpServer : public QHttpServer
 public:
     explicit    HttpServer(QObject *parent);
     virtual     ~HttpServer();
-    bool        initialize();
 
 signals:
     void        quit();
 
 protected:
-    void        onRequest(QHttpRequest*, QHttpResponse*);
+    virtual void incomingRequest(QHttpRequest*, QHttpResponse*);
 
-protected:
     uint32_t    icounter;
 
 };

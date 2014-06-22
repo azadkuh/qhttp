@@ -22,6 +22,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "qhttpserver.hpp"
 #include "qhttpconnection.hpp"
+#include "qhttprequest.hpp"
+#include "qhttpresponse.hpp"
 
 #include <QTcpSocket>
 #include <QVariant>
@@ -116,9 +118,15 @@ void
 QHttpServer::incomingConnection(qintptr handle) {
     QHttpConnection *connection = new QHttpConnection(handle, this);
 
-    QObject::connect(connection,    SIGNAL(newRequest(QHttpRequest*,QHttpResponse*)),
-                     this,          SIGNAL(newRequest(QHttpRequest*,QHttpResponse*))
-                     );
+    QObject::connect(connection, &QHttpConnection::newRequest,
+                     [this](QHttpRequest *req, QHttpResponse* res){
+        incomingRequest(req, res);
+    });
+}
+
+void
+QHttpServer::incomingRequest(QHttpRequest *request, QHttpResponse *response) {
+    emit newRequest(request, response);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

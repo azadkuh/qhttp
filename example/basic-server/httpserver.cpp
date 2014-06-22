@@ -9,27 +9,14 @@ namespace am {
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
-HttpServer::HttpServer(QObject *parent) : QHttpServer(parent) {
+HttpServer::HttpServer(QObject *parent) : QHttpServer(parent), icounter(0) {
 }
 
 HttpServer::~HttpServer() {
 }
 
-bool
-HttpServer::initialize() {
-    icounter = 0;
-
-    QObject::connect(
-                this,     &HttpServer::newRequest,
-                this,     &HttpServer::onRequest
-                );
-
-
-    return true;
-}
-
 void
-HttpServer::onRequest(QHttpRequest *req, QHttpResponse *resp) {
+HttpServer::incomingRequest(QHttpRequest *req, QHttpResponse *resp) {
 
     qDebug("a new request (#%d) is comming from %s:%d",
            icounter,
