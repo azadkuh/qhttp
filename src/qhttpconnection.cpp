@@ -109,14 +109,6 @@ QHttpConnection::~QHttpConnection() {
 
 void
 QHttpConnection::socketDisconnected() {
-    if (m_request) {
-        if ( !m_request->successful() ) {
-            // is the very next line redundant?
-            m_request->pimp->m_success = false;
-            emit m_request->end();
-        }
-    }
-
     m_socket->deleteLater(); // safely delete m_socket
     deleteLater();
 }
@@ -218,8 +210,19 @@ QHttpConnection::Private::headersComplete(http_parser *parser) {
     theConnection->m_request->pimp->m_remotePort    = theConnection->m_socket->peerPort();
 
     QHttpResponse *response = new QHttpResponse(theConnection);
-    if (parser->http_major < 1 || parser->http_minor < 1)
+
+    for ( THeaderHash::const_iterator cit = theConnection->m_currentHeaders.begin();
+          cit != theConnection->m_currentHeaders.end(); cit++ ) {
+        printf("    -->  Headers: %s = %s\n", cit.key().constData(), cit.value().constData());
+    }
+
+    if (  parser->http_major < 1 ||
+          parser->http_minor < 1 ||
+          theConnection->m_currentHeaders.value("connection", "") == "close" ) {
+
         response->pimp->m_keepAlive = false;
+        response->pimp->m_last      = true;
+    }
 
     QObject::connect(theConnection,  &QHttpConnection::destroyed,
                      response,       &QHttpResponse::connectionClosed

@@ -1,1 +1,15 @@
-a new request (#0) is comming from 192.168.0.50:50686end of client connectiona new request (#1) is comming from 192.168.0.50:50686end of client connectiona new request (#2) is comming from 192.168.0.50:50686path of POST request: /users/otherPatha quit has been requested!close the server because of a HTTP quit request.end of client connection
+    -->  Headers: user-agent = curl/7.35.0
+    -->  Headers: connection = close
+    -->  Headers: accept = */*
+    -->  Headers: host = localhost:8080
+a new request (#0) is comming from 127.0.0.1:50418end of client connection    -->  Headers: user-agent = curl/7.35.0
+    -->  Headers: accept = */*
+    -->  Headers: host = localhost:8080
+    -->  Headers: command = quit
+a new request (#1) is comming from 127.0.0.1:50419end of client connection    -->  Headers: user-agent = curl/7.35.0
+    -->  Headers: content-type = application/x-www-form-urlencoded
+    -->  Headers: accept = */*
+    -->  Headers: host = localhost:8080
+    -->  Headers: command = quit
+    -->  Headers: content-length = 4
+a new request (#2) is comming from 127.0.0.1:50424path of POST request: /a quit has been requested!close the server because of a HTTP quit request.end of client connection

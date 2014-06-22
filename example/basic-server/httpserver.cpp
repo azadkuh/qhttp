@@ -18,14 +18,14 @@ HttpServer::~HttpServer() {
 void
 HttpServer::incomingRequest(QHttpRequest *req, QHttpResponse *resp) {
 
-    printf("a new request (#%d) is comming from %s:%d",
+    printf("a new request (#%d) is comming from %s:%d\n",
            icounter,
            req->remoteAddress().toUtf8().constData(),
            req->remotePort());
 
-    QString body = QString("Hello World\n    packet count = %1\n    %2")
+    QString body = QString("Hello World\n    packet count = %1\n    time = %2\n\n")
                    .arg(++icounter)
-                   .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss:zzz"));
+                   .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
 
     resp->setHeader("content-length", QString::number(body.size()).toLatin1());
     resp->writeHead(200);
@@ -34,7 +34,7 @@ HttpServer::incomingRequest(QHttpRequest *req, QHttpResponse *resp) {
     ClientConnection* cc = new ClientConnection(req, resp, this);
     QObject::connect(cc,       &ClientConnection::requestQuit,
                      [this](){
-        printf("close the server because of a HTTP quit request.");
+        printf("close the server because of a HTTP quit request.\n");
         emit quit();
     });
 }
@@ -55,33 +55,20 @@ ClientConnection::ClientConnection(QHttpRequest *req, QHttpResponse *resp, QObje
 
 void
 ClientConnection::onComplete() {
-    static const char KContentType[]        = "content-type";
-    static const char KCommand[]            = "command";
+    const THeaderHash &headers = ireq->headers();
 
-    if ( ireq->method() == QHttpRequest::HTTP_POST ) {
-        printf("path of POST request: %s", qPrintable(ireq->path()));
-
-        const THeaderHash &headers = ireq->headers();
-
-        if ( headers.contains(KCommand) ) {
-            const QByteArray& value = headers.value(KCommand);
-            if ( value == "quit" ) {
-                printf("a quit has been requested!");
-                emit requestQuit();
-            }
-
-        } else if ( headers.contains(KContentType) ) {
-            const QByteArray& value = headers.value(KContentType);
-            if ( value == "application/json" ) {
-
-                printf("body:\n%s", ibody.constData());
-            }
-        }
+    if ( headers.value("command") == "quit" ) {
+        printf("a quit has been requested!\n");
+        emit requestQuit();
     }
 
+    if ( ireq->method() == QHttpRequest::HTTP_POST )
+        printf("body: \"%s\"\n", ibody.constData());
 
-    printf("end of client connection");
-    iresp->end();
+
+
+    printf("end of client connection\n");
+    iresp->deleteLater();
     ireq->deleteLater();
     deleteLater();
 }

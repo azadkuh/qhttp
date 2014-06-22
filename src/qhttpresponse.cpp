@@ -34,6 +34,9 @@ QHttpResponse::QHttpResponse(QHttpConnection *connection)
 
 QHttpResponse::~QHttpResponse() {
     if ( pimp != nullptr ) {
+        // finish if required
+        end();
+
         delete pimp;
         pimp  = nullptr;
     }
@@ -96,10 +99,9 @@ QHttpResponse::write(const QByteArray &data) {
 
 void
 QHttpResponse::end(const QByteArray &data) {
-    if ( pimp->m_finished ) {
-        qWarning() << "QHttpResponse::end() Cannot write end after response has finished.";
+    if ( pimp->m_finished )
         return;
-    }
+
 
     if ( data.size() > 0 )
         write(data);
@@ -107,9 +109,6 @@ QHttpResponse::end(const QByteArray &data) {
     pimp->m_finished = true;
 
     emit done();
-
-    /// @todo End connection and delete ourselves. Is this a still valid note?
-    deleteLater();
 }
 
 void
