@@ -85,6 +85,10 @@ QHttpConnection::QHttpConnection(qintptr handle, QObject *parent)
     connect(m_socket,   SIGNAL(bytesWritten(qint64)),
             this,       SLOT(updateWriteCount(qint64))
             );
+
+#if QHTTPSERVER_MEMORY_LOG > 0
+    fprintf(stderr, "%s:%s(%d): obj = %p\n", __FILE__, __FUNCTION__, __LINE__, this);
+#endif
 }
 
 QHttpConnection::~QHttpConnection() {
@@ -97,6 +101,10 @@ QHttpConnection::~QHttpConnection() {
         delete m_parserSettings;
         m_parserSettings = 0;
     }
+
+#if QHTTPSERVER_MEMORY_LOG > 0
+    fprintf(stderr, "%s:%s(%d): obj = %p\n", __FILE__, __FUNCTION__, __LINE__, this);
+#endif
 }
 
 void

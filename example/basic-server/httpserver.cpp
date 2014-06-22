@@ -18,7 +18,7 @@ HttpServer::~HttpServer() {
 void
 HttpServer::incomingRequest(QHttpRequest *req, QHttpResponse *resp) {
 
-    qDebug("a new request (#%d) is comming from %s:%d",
+    printf("a new request (#%d) is comming from %s:%d",
            icounter,
            req->remoteAddress().toUtf8().constData(),
            req->remotePort());
@@ -34,7 +34,7 @@ HttpServer::incomingRequest(QHttpRequest *req, QHttpResponse *resp) {
     ClientConnection* cc = new ClientConnection(req, resp, this);
     QObject::connect(cc,       &ClientConnection::requestQuit,
                      [this](){
-        qDebug("close the server because of a HTTP quit request.");
+        printf("close the server because of a HTTP quit request.");
         emit quit();
     });
 }
@@ -59,14 +59,14 @@ ClientConnection::onComplete() {
     static const char KCommand[]            = "command";
 
     if ( ireq->method() == QHttpRequest::HTTP_POST ) {
-        qDebug("path of POST request: %s", qPrintable(ireq->path()));
+        printf("path of POST request: %s", qPrintable(ireq->path()));
 
         const THeaderHash &headers = ireq->headers();
 
         if ( headers.contains(KCommand) ) {
             const QByteArray& value = headers.value(KCommand);
             if ( value == "quit" ) {
-                qDebug("a quit has been requested!");
+                printf("a quit has been requested!");
                 emit requestQuit();
             }
 
@@ -74,13 +74,13 @@ ClientConnection::onComplete() {
             const QByteArray& value = headers.value(KContentType);
             if ( value == "application/json" ) {
 
-                qDebug("body:\n%s", ibody.constData());
+                printf("body:\n%s", ibody.constData());
             }
         }
     }
 
 
-    qDebug("end of client connection");
+    printf("end of client connection");
     iresp->end();
     ireq->deleteLater();
     deleteLater();

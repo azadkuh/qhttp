@@ -26,6 +26,10 @@
 QHttpResponse::QHttpResponse(QHttpConnection *connection)
     : QObject(connection) , pimp(0) {
     pimp    = new Private(connection);
+
+#if QHTTPSERVER_MEMORY_LOG > 0
+    fprintf(stderr, "    %s:%s(%d): obj = %p\n", __FILE__, __FUNCTION__, __LINE__, this);
+#endif
 }
 
 QHttpResponse::~QHttpResponse() {
@@ -33,6 +37,10 @@ QHttpResponse::~QHttpResponse() {
         delete pimp;
         pimp  = nullptr;
     }
+
+#if QHTTPSERVER_MEMORY_LOG > 0
+    fprintf(stderr, "    %s:%s(%d): obj = %p\n", __FILE__, __FUNCTION__, __LINE__, this);
+#endif
 }
 
 void

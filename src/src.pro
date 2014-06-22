@@ -9,6 +9,7 @@ CONFIG   += c++11
 PRJDIR    = ..
 include($$PRJDIR/commondir.pri)
 
+DEFINES += QHTTPSERVER_MEMORY_LOG=1
 
 
 SOURCES += \
