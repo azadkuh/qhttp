@@ -19,11 +19,7 @@ public:
 signals:
     void        quit();
 
-public slots:
-    void        onQuit();
-
-
-protected slots:
+protected:
     void        onRequest(QHttpRequest*, QHttpResponse*);
 
 protected:
@@ -42,8 +38,7 @@ public:
 signals:
     void        requestQuit();
 
-protected slots:
-    void        appendData(const QByteArray&);
+protected:
     void        onComplete();
 
 protected:

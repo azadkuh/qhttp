@@ -18,13 +18,14 @@ HttpServer::~HttpServer() {
 bool
 HttpServer::initialize() {
     icounter = 0;
+
     QObject::connect(
-                this,     SIGNAL(newRequest(QHttpRequest*,QHttpResponse*)),
-                this,     SLOT(onRequest(QHttpRequest*,QHttpResponse*))
+                this,     &HttpServer::newRequest,
+                this,     &HttpServer::onRequest
                 );
 
 
-    return false;
+    return true;
 }
 
 void
@@ -44,49 +45,48 @@ HttpServer::onRequest(QHttpRequest *req, QHttpResponse *resp) {
     resp->write(body.toUtf8());
 
     ClientConnection* cc = new ClientConnection(req, resp, this);
-    QObject::connect(
-                cc,       SIGNAL(requestQuit()),
-                this,     SLOT(onQuit()),
-                Qt::QueuedConnection
-                );
-}
-
-void
-HttpServer::onQuit() {
-    qDebug("close the server because of a HTTP quit request.");
-    close();
-    emit quit();
+    QObject::connect(cc,       &ClientConnection::requestQuit,
+                     [this](){
+        qDebug("close the server because of a HTTP quit request.");
+        close();
+        emit quit();
+    });
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 ClientConnection::ClientConnection(QHttpRequest *req, QHttpResponse *resp, QObject* p) :
     QObject(p), ireq(req), iresp(resp) {
 
-    QObject::connect(
-                ireq,     SIGNAL(data(QByteArray)),
-                this,     SLOT(appendData(QByteArray))
-                );
-    QObject::connect(
-                ireq,     SIGNAL(end()),
-                this,     SLOT(onComplete())
-                );
-}
+    QObject::connect(req,        &QHttpRequest::data,
+                     [this](const QByteArray& chunk){
+        ibody.append(chunk);
+    });
 
-void
-ClientConnection::appendData(const QByteArray &arr) {
-    ibody.append(arr);
+    QObject::connect(req,       &QHttpRequest::end,
+                     this,     &ClientConnection::onComplete
+                     );
 }
 
 void
 ClientConnection::onComplete() {
     static const char KContentType[]        = "content-type";
     static const char KAppJSon[]            = "application/json";
+    static const char KCommand[]            = "command";
+    static const char KQuit[]               = "quit";
 
     if ( ireq->method() == QHttpRequest::HTTP_POST ) {
         qDebug("path of POST request: %s", qPrintable(ireq->path()));
 
         const THeaderHash &headers = ireq->headers();
-        if ( headers.contains(KContentType) ) {
+
+        if ( headers.contains(KCommand) ) {
+            const QByteArray& value = headers.value(KCommand);
+            if ( qstrnicmp(KQuit, value.constData(), value.length()) == 0 ) {
+                qDebug("a quit has been requested!");
+                emit requestQuit();
+            }
+
+        } else if ( headers.contains(KContentType) ) {
             const QByteArray& value = headers.value(KContentType);
             if ( qstrnicmp(KAppJSon, value.constData(), value.length()) == 0 ) {
 
