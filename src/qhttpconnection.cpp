@@ -27,6 +27,8 @@
 #include "qhttprequest.hpp"
 #include "qhttpresponse.hpp"
 
+#include "private/qhttpresponse_private.hpp"
+
 #include <QTcpSocket>
 #include <QHostAddress>
 
@@ -147,7 +149,7 @@ QHttpConnection::flush() {
 void
 QHttpConnection::responseDone() {
     QHttpResponse *response = qobject_cast<QHttpResponse *>(QObject::sender());
-    if (response->m_last)
+    if (response->pimp->m_last)
         m_socket->disconnectFromHost();
 }
 
@@ -203,7 +205,7 @@ QHttpConnection::Private::headersComplete(http_parser *parser) {
 
     QHttpResponse *response = new QHttpResponse(theConnection);
     if (parser->http_major < 1 || parser->http_minor < 1)
-        response->m_keepAlive = false;
+        response->pimp->m_keepAlive = false;
 
     QObject::connect(theConnection,  &QHttpConnection::destroyed,
                      response,       &QHttpResponse::connectionClosed

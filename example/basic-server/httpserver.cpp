@@ -27,7 +27,7 @@ HttpServer::incomingRequest(QHttpRequest *req, QHttpResponse *resp) {
                    .arg(++icounter)
                    .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss:zzz"));
 
-    resp->setHeader("Content-Length", QString::number(body.size()).toLatin1());
+    resp->setHeader("content-length", QString::number(body.size()).toLatin1());
     resp->writeHead(200);
     resp->write(body.toUtf8());
 
@@ -35,7 +35,6 @@ HttpServer::incomingRequest(QHttpRequest *req, QHttpResponse *resp) {
     QObject::connect(cc,       &ClientConnection::requestQuit,
                      [this](){
         qDebug("close the server because of a HTTP quit request.");
-        close();
         emit quit();
     });
 }
@@ -57,9 +56,7 @@ ClientConnection::ClientConnection(QHttpRequest *req, QHttpResponse *resp, QObje
 void
 ClientConnection::onComplete() {
     static const char KContentType[]        = "content-type";
-    static const char KAppJSon[]            = "application/json";
     static const char KCommand[]            = "command";
-    static const char KQuit[]               = "quit";
 
     if ( ireq->method() == QHttpRequest::HTTP_POST ) {
         qDebug("path of POST request: %s", qPrintable(ireq->path()));
@@ -68,14 +65,14 @@ ClientConnection::onComplete() {
 
         if ( headers.contains(KCommand) ) {
             const QByteArray& value = headers.value(KCommand);
-            if ( qstrnicmp(KQuit, value.constData(), value.length()) == 0 ) {
+            if ( value == "quit" ) {
                 qDebug("a quit has been requested!");
                 emit requestQuit();
             }
 
         } else if ( headers.contains(KContentType) ) {
             const QByteArray& value = headers.value(KContentType);
-            if ( qstrnicmp(KAppJSon, value.constData(), value.length()) == 0 ) {
+            if ( value == "application/json" ) {
 
                 qDebug("body:\n%s", ibody.constData());
             }

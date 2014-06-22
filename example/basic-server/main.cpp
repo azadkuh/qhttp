@@ -12,7 +12,8 @@ int main(int argc, char ** argv) {
 
     QObject::connect(
                 &server,  SIGNAL(quit()),
-                &app,     SLOT(quit())
+                &app,     SLOT(quit()),
+                Qt::QueuedConnection
                 );
 
     app.exec();
