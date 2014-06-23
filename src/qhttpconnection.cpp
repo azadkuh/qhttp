@@ -211,11 +211,6 @@ QHttpConnection::Private::headersComplete(http_parser *parser) {
 
     QHttpResponse *response = new QHttpResponse(theConnection);
 
-    for ( THeaderHash::const_iterator cit = theConnection->m_currentHeaders.begin();
-          cit != theConnection->m_currentHeaders.end(); cit++ ) {
-        printf("    -->  Headers: %s = %s\n", cit.key().constData(), cit.value().constData());
-    }
-
     if (  parser->http_major < 1 ||
           parser->http_minor < 1 ||
           theConnection->m_currentHeaders.value("connection", "") == "close" ) {

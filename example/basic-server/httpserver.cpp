@@ -23,7 +23,7 @@ HttpServer::incomingRequest(QHttpRequest *req, QHttpResponse *resp) {
            req->remoteAddress().toUtf8().constData(),
            req->remotePort());
 
-    QString body = QString("Hello World\n    packet count = %1\n    time = %2\n\n")
+    QString body = QString("Hello World\n    packet count = %1\n    time = %2\n")
                    .arg(++icounter)
                    .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
 
