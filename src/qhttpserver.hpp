@@ -60,7 +60,7 @@ public:
 
 public:
     /** construct a new HTTP Server. */
-    QHttpServer(QObject *parent = 0);
+    QHttpServer(QObject *parent = nullptr);
 
     virtual     ~QHttpServer();
 

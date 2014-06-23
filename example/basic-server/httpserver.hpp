@@ -16,7 +16,7 @@ public:
     virtual     ~HttpServer();
 
 signals:
-    void        quit();
+    void        closed();
 
 protected:
     virtual void incomingRequest(QHttpRequest*, QHttpResponse*);

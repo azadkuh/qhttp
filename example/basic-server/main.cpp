@@ -11,7 +11,7 @@ int main(int argc, char ** argv) {
     server.listen(8080);
 
     QObject::connect(
-                &server,  SIGNAL(quit()),
+                &server,  SIGNAL(closed()),
                 &app,     SLOT(quit()),
                 Qt::QueuedConnection
                 );

@@ -13,6 +13,7 @@
 
 #include <QTcpSocket>
 #include <QHostAddress>
+#include <QBasicTimer>
 
 ///////////////////////////////////////////////////////////////////////////////
 class QHttpConnection::Private
@@ -25,7 +26,8 @@ public:
     http_parser_settings*   m_parserSettings;
 
     // Since there can only be one request at any time even with pipelining.
-    QHttpRequest*           m_request;
+    QHttpRequest*           m_request;      ///< latest request
+    QHttpResponse*          m_response;     ///< latest response
 
     QByteArray              m_currentUrl;
     // The ones we are reading in from the parser
@@ -37,12 +39,15 @@ public:
     qint64                  m_transmitLen;
     qint64                  m_transmitPos;
 
+    QBasicTimer             m_timer;
+
 public:
-    explicit     Private(qintptr handle, QHttpConnection* p) : iparent(p),
+    explicit     Private(qintptr handle, QHttpConnection* p, quint32 timeOut) : iparent(p),
         m_socket(nullptr),
         m_parser(nullptr),
         m_parserSettings(nullptr),
         m_request(nullptr),
+        m_response(nullptr),
         m_transmitLen(0),
         m_transmitPos(0) {
 
@@ -60,6 +65,9 @@ public:
             m_parserSettings->on_message_complete = Private::onMessageComplete;
         }
         m_parser->data  = iparent;
+
+        if ( timeOut != 0 )
+            m_timer.start(timeOut, iparent);
 
         m_socket        = new QTcpSocket(iparent);
         m_socket->setSocketDescriptor(handle);

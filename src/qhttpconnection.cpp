@@ -24,8 +24,9 @@
 #include "private/qhttpconnection_private.hpp"
 ///////////////////////////////////////////////////////////////////////////////
 
-QHttpConnection::QHttpConnection(qintptr handle, QObject *parent) : QObject(parent), pimp(nullptr) {
-    pimp    = new Private(handle, this);
+QHttpConnection::QHttpConnection(qintptr handle, QObject *parent, quint32 timeOut)
+    : QObject(parent), pimp(nullptr) {
+    pimp    = new Private(handle, this, timeOut);
 
 #if QHTTPSERVER_MEMORY_LOG > 0
     fprintf(stderr, "%s:%s(%d): obj = %p\n", __FILE__, __FUNCTION__, __LINE__, this);
@@ -43,6 +44,16 @@ QHttpConnection::~QHttpConnection() {
 #endif
 }
 
+QHttpRequest*
+QHttpConnection::latestRequest() const {
+    return pimp->m_request;
+}
+
+QHttpResponse*
+QHttpConnection::latestResponse() const {
+    return pimp->m_response;
+}
+
 void
 QHttpConnection::write(const QByteArray &data) {
     pimp->m_socket->write(data);
@@ -54,6 +65,12 @@ QHttpConnection::flush() {
     pimp->m_socket->flush();
 }
 
+void
+QHttpConnection::timerEvent(QTimerEvent *) {
+    pimp->m_socket->disconnectFromHost();
+}
+
+///////////////////////////////////////////////////////////////////////////////
 void
 QHttpConnection::Private::updateWriteCount(qint64 count) {
     Q_ASSERT(m_transmitPos + count <= m_transmitLen);
@@ -170,26 +187,26 @@ QHttpConnection::Private::headersComplete(http_parser* parser) {
 
 
 
-    QHttpResponse *response = new QHttpResponse(iparent);
+    m_response = new QHttpResponse(iparent);
 
     if ( parser->http_major < 1 || parser->http_minor < 1 ||
           m_currentHeaders.value("connection", "") == "close" ) {
 
-        response->pimp->m_keepAlive = false;
-        response->pimp->m_last      = true;
+        m_response->pimp->m_keepAlive = false;
+        m_response->pimp->m_last      = true;
     }
 
-    QObject::connect(iparent,        &QHttpConnection::destroyed,
-                     response,       &QHttpResponse::connectionClosed
-                     );
-    QObject::connect(response,       &QHttpResponse::done,
+    QObject::connect(m_response,     &QHttpResponse::done,
                      [this](bool wasTheLastResponse){
         if ( wasTheLastResponse )
             m_socket->disconnectFromHost();
     });
+    QObject::connect(iparent,        SIGNAL(allBytesWritten()),
+                     m_response,     SIGNAL(allBytesWritten())
+                     );
 
     // we are good to go!
-    emit iparent->newRequest(m_request, response);
+    emit iparent->newRequest(m_request, m_response);
     return 0;
 }
 

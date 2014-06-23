@@ -28,27 +28,25 @@ HttpServer::incomingRequest(QHttpRequest *req, QHttpResponse *resp) {
                    .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
 
     resp->setHeader("content-length", QString::number(body.size()).toLatin1());
+    //resp->setHeader("connection", "close");
     resp->writeHead(200);
     resp->write(body.toUtf8());
 
     ClientConnection* cc = new ClientConnection(req, resp, this);
     QObject::connect(cc,       &ClientConnection::requestQuit,
-                     [this](){
-        printf("close the server because of a HTTP quit request.\n");
-        emit quit();
-    });
+                     this,     &HttpServer::closed,
+                     Qt::QueuedConnection);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 ClientConnection::ClientConnection(QHttpRequest *req, QHttpResponse *resp, QObject* p) :
     QObject(p), ireq(req), iresp(resp) {
 
-    QObject::connect(req,        &QHttpRequest::data,
-                     [this](const QByteArray& chunk){
+    QObject::connect(req, &QHttpRequest::data, [this](const QByteArray& chunk){
         ibody.append(chunk);
     });
 
-    QObject::connect(req,       &QHttpRequest::end,
+    QObject::connect(req,      &QHttpRequest::end,
                      this,     &ClientConnection::onComplete
                      );
 }
@@ -64,7 +62,6 @@ ClientConnection::onComplete() {
 
     if ( ireq->method() == QHttpRequest::HTTP_POST )
         printf("body: \"%s\"\n", ibody.constData());
-
 
 
     printf("end of client connection\n");

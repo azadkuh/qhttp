@@ -37,20 +37,24 @@ class QHTTPSERVER_API QHttpConnection : public QObject
 public:
     virtual ~QHttpConnection();
 
-    void         write(const QByteArray &data);
-    void         flush();
+    void            write(const QByteArray &data);
+    void            flush();
+
+    QHttpRequest*   latestRequest() const;
+    QHttpResponse*  latestResponse() const;
 
 signals:
-    void         newRequest(QHttpRequest *, QHttpResponse *);
-    void         allBytesWritten();
+    void            newRequest(QHttpRequest *, QHttpResponse *);
+    void            allBytesWritten();
 
-private:
-    explicit     QHttpConnection(qintptr handle, QObject *parent);
+protected:
+    explicit        QHttpConnection(qintptr handle, QObject *parent, quint32 timeOut = 0);
+    void            timerEvent(QTimerEvent*);
 
-    class        Private;
-    Private*     pimp;
+    class           Private;
+    Private*        pimp;
 
-    friend class QHttpServer;
+    friend class    QHttpServer;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
