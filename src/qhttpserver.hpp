@@ -55,6 +55,8 @@ class QHTTPSERVER_API QHttpServer : public QTcpServer
 {
     Q_OBJECT
 
+    Q_PROPERTY(quint32 timeOut READ timeOut WRITE setTimeOut)
+
 public:
     static const TStatusCodes& statusCodes();
 
@@ -70,6 +72,15 @@ public:
     bool        listen(quint16 port) {
         return listen(QHostAddress::Any, port);
     }
+
+    /** returns time-out value [mSec] for open connections (sockets).
+     *  @sa setTimeOut(). */
+    quint32     timeOut()const;
+
+    /** set time-out for new open connections in miliseconds [mSec].
+     * new incoming connections will be forcefully closed after this time out if this value is non-zero.
+     *  a zero (0) value disables timer for new connections. */
+    void        setTimeOut(quint32);
 
 signals:
     /** emitted when a client makes a new request to the server if you do not override
@@ -90,6 +101,8 @@ protected:
 
 private:
     virtual void incomingConnection(qintptr handle);
+    class        Private;
+    Private*     pimp;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

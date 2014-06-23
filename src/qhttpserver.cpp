@@ -97,11 +97,26 @@ struct StatusCodes
 Q_GLOBAL_STATIC(StatusCodes, gStatusCodes)
 
 ///////////////////////////////////////////////////////////////////////////////
+class QHttpServer::Private
+{
+public:
+    quint32         itimeOut;
 
-QHttpServer::QHttpServer(QObject *parent) : QTcpServer(parent) {
+public:
+    explicit    Private() : itimeOut(0) {
+    }
+};
+///////////////////////////////////////////////////////////////////////////////
+
+QHttpServer::QHttpServer(QObject *parent) : QTcpServer(parent), pimp(nullptr) {
+    pimp    = new Private();
 }
 
 QHttpServer::~QHttpServer() {
+    if ( pimp != nullptr ) {
+        delete pimp;
+        pimp = nullptr;
+    }
 }
 
 bool
@@ -114,9 +129,21 @@ QHttpServer::statusCodes() {
     return gStatusCodes->istatusHash;
 }
 
+quint32
+QHttpServer::timeOut() const {
+    return pimp->itimeOut;
+}
+
+void
+QHttpServer::setTimeOut(quint32 newValue) {
+    pimp->itimeOut = newValue;
+}
+
 void
 QHttpServer::incomingConnection(qintptr handle) {
-    QHttpConnection *connection = new QHttpConnection(handle, this);
+    QHttpConnection *connection = new QHttpConnection(handle,
+                                                      this,
+                                                      pimp->itimeOut);
 
     QObject::connect(connection, &QHttpConnection::newRequest,
                      [this](QHttpRequest *req, QHttpResponse* res){
