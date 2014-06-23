@@ -127,11 +127,10 @@ signals:
      *  receiving this signal. */
     void        allBytesWritten();
 
-    /** Emitted when the response is finished.
-     * You should <b>not</b> interact with this object
-     *  after done() has been emitted as the object
-     *  has already been scheduled for deletion. */
-    void        done();
+    /** Emitted when the response is finished and reports if it was the last response.
+     * if it was the last response (google for "Connection: keep-alive / close")
+     *  the http connection (socket) will be closed automatically. */
+    void        done(bool wasTheLastResponse);
 
 private slots:
     void        connectionClosed();

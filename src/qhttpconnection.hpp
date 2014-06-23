@@ -30,8 +30,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-/// @cond nodoc
-
 class QHTTPSERVER_API QHttpConnection : public QObject
 {
     Q_OBJECT
@@ -39,44 +37,21 @@ class QHTTPSERVER_API QHttpConnection : public QObject
 public:
     virtual ~QHttpConnection();
 
-    void    write(const QByteArray &data);
-    void    flush();
+    void         write(const QByteArray &data);
+    void         flush();
 
 signals:
-    void    newRequest(QHttpRequest *, QHttpResponse *);
-    void    allBytesWritten();
-
-private slots:
-    void    parseRequest();
-    void    responseDone();
-    void    socketDisconnected();
-    void    updateWriteCount(qint64);
+    void         newRequest(QHttpRequest *, QHttpResponse *);
+    void         allBytesWritten();
 
 private:
+    explicit     QHttpConnection(qintptr handle, QObject *parent);
+
+    class        Private;
+    Private*     pimp;
+
     friend class QHttpServer;
-    explicit QHttpConnection(qintptr handle, QObject *parent);
-
-    QTcpSocket*             m_socket;
-    http_parser*            m_parser;
-    http_parser_settings*   m_parserSettings;
-
-    // Since there can only be one request at any time even with pipelining.
-    QHttpRequest*           m_request;
-
-    QByteArray              m_currentUrl;
-    // The ones we are reading in from the parser
-    THeaderHash             m_currentHeaders;
-    QByteArray              m_currentHeaderField;
-    QByteArray              m_currentHeaderValue;
-
-    // Keep track of transmit buffer status
-    qint64                  m_transmitLen;
-    qint64                  m_transmitPos;
-
-    class                   Private;
 };
-
-/// @endcond
 
 ///////////////////////////////////////////////////////////////////////////////
 #endif // #define Q_HTTP_CONNECTION_HPP

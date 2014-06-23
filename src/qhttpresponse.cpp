@@ -108,7 +108,7 @@ QHttpResponse::end(const QByteArray &data) {
 
     pimp->m_finished = true;
 
-    emit done();
+    emit done(pimp->m_last);
 }
 
 void

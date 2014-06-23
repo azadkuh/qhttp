@@ -21,70 +21,11 @@
  */
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "qhttpconnection.hpp"
-#include "http-parser/http_parser.h"
-
-#include "qhttprequest.hpp"
-#include "qhttpresponse.hpp"
-
-#include "private/qhttprequest_private.hpp"
-#include "private/qhttpresponse_private.hpp"
-
-#include <QTcpSocket>
-#include <QHostAddress>
-
-///////////////////////////////////////////////////////////////////////////////
-class QHttpConnection::Private
-{
-public: // callback functions for http_parser_settings
-    static int messageBegin(http_parser *parser);
-    static int url(http_parser *parser, const char *at, size_t length);
-    static int headerField(http_parser *parser, const char *at, size_t length);
-    static int headerValue(http_parser *parser, const char *at, size_t length);
-    static int headersComplete(http_parser *parser);
-    static int body(http_parser *parser, const char *at, size_t length);
-    static int messageComplete(http_parser *parser);
-
-public:
-    static QUrl createUrl(const char *urlData, const http_parser_url &urlInfo);
-};
-
+#include "private/qhttpconnection_private.hpp"
 ///////////////////////////////////////////////////////////////////////////////
 
-QHttpConnection::QHttpConnection(qintptr handle, QObject *parent)
-    : QObject(parent),
-      m_socket(0),
-      m_parser(0),
-      m_parserSettings(0),
-      m_request(0),
-      m_transmitLen(0),
-      m_transmitPos(0) {
-    m_parser = (http_parser *)malloc(sizeof(http_parser));
-    http_parser_init(m_parser, HTTP_REQUEST);
-
-    m_parserSettings = new http_parser_settings();
-    m_parserSettings->on_message_begin    = Private::messageBegin;
-    m_parserSettings->on_url              = Private::url;
-    m_parserSettings->on_header_field     = Private::headerField;
-    m_parserSettings->on_header_value     = Private::headerValue;
-    m_parserSettings->on_headers_complete = Private::headersComplete;
-    m_parserSettings->on_body             = Private::body;
-    m_parserSettings->on_message_complete = Private::messageComplete;
-
-    m_parser->data = this;
-
-    m_socket        = new QTcpSocket(this);
-    m_socket->setSocketDescriptor(handle);
-
-    connect(m_socket,   SIGNAL(readyRead()),
-            this,       SLOT(parseRequest())
-            );
-    connect(m_socket,   SIGNAL(disconnected()),
-            this,       SLOT(socketDisconnected())
-            );
-    connect(m_socket,   SIGNAL(bytesWritten(qint64)),
-            this,       SLOT(updateWriteCount(qint64))
-            );
+QHttpConnection::QHttpConnection(qintptr handle, QObject *parent) : QObject(parent), pimp(nullptr) {
+    pimp    = new Private(handle, this);
 
 #if QHTTPSERVER_MEMORY_LOG > 0
     fprintf(stderr, "%s:%s(%d): obj = %p\n", __FILE__, __FUNCTION__, __LINE__, this);
@@ -92,14 +33,9 @@ QHttpConnection::QHttpConnection(qintptr handle, QObject *parent)
 }
 
 QHttpConnection::~QHttpConnection() {
-    if ( m_parser != 0 ) {
-        free(m_parser);
-        m_parser = 0;
-    }
-
-    if ( m_parserSettings != 0 ) {
-        delete m_parserSettings;
-        m_parserSettings = 0;
+    if ( pimp != nullptr ) {
+        delete pimp;
+        pimp = nullptr;
     }
 
 #if QHTTPSERVER_MEMORY_LOG > 0
@@ -108,188 +44,170 @@ QHttpConnection::~QHttpConnection() {
 }
 
 void
-QHttpConnection::socketDisconnected() {
-    m_socket->deleteLater(); // safely delete m_socket
-    deleteLater();
-}
-
-void
-QHttpConnection::updateWriteCount(qint64 count) {
-    Q_ASSERT(m_transmitPos + count <= m_transmitLen);
-
-    m_transmitPos += count;
-
-    if (m_transmitPos == m_transmitLen) {
-        m_transmitLen = 0;
-        m_transmitPos = 0;
-        emit allBytesWritten();
-    }
-}
-
-void
-QHttpConnection::parseRequest() {
-    Q_ASSERT(m_parser);
-
-    while (m_socket->bytesAvailable()) {
-        QByteArray arr = m_socket->readAll();
-        http_parser_execute(m_parser, m_parserSettings, arr.constData(), arr.size());
-    }
-}
-
-void
 QHttpConnection::write(const QByteArray &data) {
-    m_socket->write(data);
-    m_transmitLen += data.size();
+    pimp->m_socket->write(data);
+    pimp->m_transmitLen += data.size();
 }
 
 void
 QHttpConnection::flush() {
-    m_socket->flush();
+    pimp->m_socket->flush();
 }
 
 void
-QHttpConnection::responseDone() {
-    QHttpResponse *response = qobject_cast<QHttpResponse *>(QObject::sender());
-    if (response->pimp->m_last)
-        m_socket->disconnectFromHost();
+QHttpConnection::Private::updateWriteCount(qint64 count) {
+    Q_ASSERT(m_transmitPos + count <= m_transmitLen);
+
+    m_transmitPos += count;
+
+    if ( m_transmitPos == m_transmitLen ) {
+        m_transmitLen = 0;
+        m_transmitPos = 0;
+        emit iparent->allBytesWritten();
+    }
 }
 
+void
+QHttpConnection::Private::parseRequest() {
+    Q_ASSERT(m_parser);
 
-/********************
- * Static Callbacks *
- *******************/
+    while (m_socket->bytesAvailable()) {
+        char buffer[4096] = {0};
+        size_t readLength = m_socket->read(buffer, 4095);
+        http_parser_execute(m_parser, m_parserSettings,
+                            buffer, readLength);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 int
-QHttpConnection::Private::messageBegin(http_parser *parser) {
-    QHttpConnection *theConnection = static_cast<QHttpConnection *>(parser->data);
-    theConnection->m_currentHeaders.clear();
-    theConnection->m_currentUrl.clear();
-    theConnection->m_currentUrl.reserve(128);
+QHttpConnection::Private::messageBegin(http_parser*) {
+    m_currentHeaders.clear();
+    m_currentUrl.clear();
+    m_currentUrl.reserve(128);
 
-    theConnection->m_request = new QHttpRequest(theConnection);
+    m_request = new QHttpRequest(iparent);
     return 0;
 }
 
 int
-QHttpConnection::Private::headersComplete(http_parser *parser) {
-    QHttpConnection *theConnection = static_cast<QHttpConnection *>(parser->data);
-    Q_ASSERT(theConnection->m_request);
+QHttpConnection::Private::url(http_parser*, const char* at, size_t length) {
+    Q_ASSERT(m_request);
 
-    // set method
-    theConnection->m_request->pimp->m_method =
-            static_cast<QHttpRequest::HttpMethod>(parser->method);
+    m_currentUrl.append(at, length);
+    return 0;
+}
 
-    // set version
-    theConnection->m_request->pimp->m_version = QString("%1.%2")
-                                                .arg(parser->http_major)
-                                                .arg(parser->http_minor);
+int
+QHttpConnection::Private::headerField(http_parser*, const char* at, size_t length) {
+    Q_ASSERT(m_request);
+
+    // insert the header we parsed previously
+    // into the header map
+    if ( !m_currentHeaderField.isEmpty() && !m_currentHeaderValue.isEmpty() ) {
+        // header names are always lower-cased
+        m_currentHeaders.insert(
+                    m_currentHeaderField.toLower(),
+                    m_currentHeaderValue.toLower()
+                    );
+        // clear header value. this sets up a nice
+        // feedback loop where the next time
+        // HeaderValue is called, it can simply append
+        m_currentHeaderField.clear();
+        m_currentHeaderValue.clear();
+    }
+
+    m_currentHeaderField.append(at, length);
+    return 0;
+}
+
+int
+QHttpConnection::Private::headerValue(http_parser*, const char* at, size_t length) {
+    Q_ASSERT(m_request);
+
+    m_currentHeaderValue.append(at, length);
+    return 0;
+}
+
+int
+QHttpConnection::Private::headersComplete(http_parser* parser) {
+    Q_ASSERT(m_request);
 
     // get parsed url
     struct http_parser_url urlInfo;
-    int r = http_parser_parse_url(theConnection->m_currentUrl.constData(),
-                                  theConnection->m_currentUrl.size(),
+    int r = http_parser_parse_url(m_currentUrl.constData(),
+                                  m_currentUrl.size(),
                                   parser->method == HTTP_CONNECT,
                                   &urlInfo);
     Q_ASSERT(r == 0);
     Q_UNUSED(r);
 
-    theConnection->m_request->pimp->m_url = createUrl(
-                                                theConnection->m_currentUrl.constData(),
-                                                urlInfo
-                                                );
+    m_request->pimp->m_url = createUrl(
+                                 m_currentUrl.constData(),
+                                 urlInfo
+                                 );
+
+    // set method
+    m_request->pimp->m_method =
+            static_cast<QHttpRequest::HttpMethod>(parser->method);
+
+    // set version
+    m_request->pimp->m_version = QString("%1.%2")
+                                 .arg(parser->http_major)
+                                 .arg(parser->http_minor);
 
     // Insert last remaining header
-    theConnection->m_currentHeaders.insert(
-                theConnection->m_currentHeaderField.toLower(),
-                theConnection->m_currentHeaderValue.toLower()
+    m_currentHeaders.insert(
+                m_currentHeaderField.toLower(),
+                m_currentHeaderValue.toLower()
                 );
-    theConnection->m_request->pimp->m_headers = theConnection->m_currentHeaders;
+    m_request->pimp->m_headers       = m_currentHeaders;
 
     // set client information
-    theConnection->m_request->pimp->m_remoteAddress = theConnection->m_socket->peerAddress().toString();
-    theConnection->m_request->pimp->m_remotePort    = theConnection->m_socket->peerPort();
+    m_request->pimp->m_remoteAddress = m_socket->peerAddress().toString();
+    m_request->pimp->m_remotePort    = m_socket->peerPort();
 
-    QHttpResponse *response = new QHttpResponse(theConnection);
 
-    if (  parser->http_major < 1 ||
-          parser->http_minor < 1 ||
-          theConnection->m_currentHeaders.value("connection", "") == "close" ) {
+
+    QHttpResponse *response = new QHttpResponse(iparent);
+
+    if ( parser->http_major < 1 || parser->http_minor < 1 ||
+          m_currentHeaders.value("connection", "") == "close" ) {
 
         response->pimp->m_keepAlive = false;
         response->pimp->m_last      = true;
     }
 
-    QObject::connect(theConnection,  &QHttpConnection::destroyed,
+    QObject::connect(iparent,        &QHttpConnection::destroyed,
                      response,       &QHttpResponse::connectionClosed
                      );
     QObject::connect(response,       &QHttpResponse::done,
-                     theConnection,  &QHttpConnection::responseDone);
+                     [this](bool wasTheLastResponse){
+        if ( wasTheLastResponse )
+            m_socket->disconnectFromHost();
+    });
 
     // we are good to go!
-    emit theConnection->newRequest(theConnection->m_request, response);
+    emit iparent->newRequest(m_request, response);
     return 0;
 }
 
 int
-QHttpConnection::Private::messageComplete(http_parser *parser) {
+QHttpConnection::Private::body(http_parser*, const char* at, size_t length) {
+    Q_ASSERT(m_request);
+
+    emit m_request->data(QByteArray(at, length));
+    return 0;
+}
+
+int
+QHttpConnection::Private::messageComplete(http_parser*) {
     // TODO: do cleanup and prepare for next request
-    QHttpConnection *theConnection = static_cast<QHttpConnection *>(parser->data);
-    Q_ASSERT(theConnection->m_request);
+    Q_ASSERT(m_request);
 
-    theConnection->m_request->pimp->m_success = true;
-    emit theConnection->m_request->end();
-    return 0;
-}
-
-int
-QHttpConnection::Private::url(http_parser *parser, const char *at, size_t length) {
-    QHttpConnection *theConnection = static_cast<QHttpConnection *>(parser->data);
-    Q_ASSERT(theConnection->m_request);
-
-    theConnection->m_currentUrl.append(at, length);
-    return 0;
-}
-
-int
-QHttpConnection::Private::headerField(http_parser *parser, const char *at, size_t length) {
-    QHttpConnection *theConnection = static_cast<QHttpConnection *>(parser->data);
-    Q_ASSERT(theConnection->m_request);
-
-    // insert the header we parsed previously
-    // into the header map
-    if (!theConnection->m_currentHeaderField.isEmpty() &&
-        !theConnection->m_currentHeaderValue.isEmpty()) {
-        // header names are always lower-cased
-        theConnection->m_currentHeaders.insert(
-                    theConnection->m_currentHeaderField.toLower(),
-                    theConnection->m_currentHeaderValue.toLower()
-                    );
-        // clear header value. this sets up a nice
-        // feedback loop where the next time
-        // HeaderValue is called, it can simply append
-        theConnection->m_currentHeaderField.clear();
-        theConnection->m_currentHeaderValue.clear();
-    }
-
-    theConnection->m_currentHeaderField.append(at, length);
-    return 0;
-}
-
-int
-QHttpConnection::Private::headerValue(http_parser *parser, const char *at, size_t length) {
-    QHttpConnection *theConnection = static_cast<QHttpConnection *>(parser->data);
-    Q_ASSERT(theConnection->m_request);
-
-    theConnection->m_currentHeaderValue.append(at, length);
-    return 0;
-}
-
-int
-QHttpConnection::Private::body(http_parser *parser, const char *at, size_t length) {
-    QHttpConnection *theConnection = static_cast<QHttpConnection *>(parser->data);
-    Q_ASSERT(theConnection->m_request);
-
-    emit theConnection->m_request->data(QByteArray(at, length));
+    m_request->pimp->m_success = true;
+    emit m_request->end();
     return 0;
 }
 
