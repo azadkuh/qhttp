@@ -24,7 +24,7 @@
 ///////////////////////////////////////////////////////////////////////////////
     // TODO: parent child relation
 QHttpResponse::QHttpResponse(QHttpConnection *connection)
-    : QObject(connection) , pimp(0) {
+    : QObject(connection) , pimp(nullptr) {
     pimp    = new Private(connection);
 
 #if QHTTPSERVER_MEMORY_LOG > 0
@@ -49,7 +49,7 @@ QHttpResponse::~QHttpResponse() {
 void
 QHttpResponse::setHeader(const QByteArray &field, const QByteArray &value) {
     if ( !pimp->m_finished )
-        pimp->m_headers[field] = value;
+        pimp->m_headers[field.toLower()] = value.toLower();
     else
         qWarning() << "QHttpResponse::setHeader() Cannot set headers after response has finished.";
 }
@@ -120,11 +120,11 @@ QHttpResponse::connectionClosed() {
 
 ///////////////////////////////////////////////////////////////////////////////
 void
-QHttpResponse::Private::writeHeader(const char *field, const QByteArray &value) {
+QHttpResponse::Private::writeHeader(const QByteArray& field, const QByteArray& value) {
     if ( !m_finished ) {
         m_connection->write(field);
         m_connection->write(": ");
-        m_connection->write(value.toLower());
+        m_connection->write(value);
         m_connection->write("\r\n");
     } else
         qWarning()
@@ -136,31 +136,30 @@ QHttpResponse::Private::writeHeaders() {
     if ( m_finished )
         return;
 
-    for ( THeaderHash::const_iterator cit = m_headers.begin();
-          cit != m_headers.end(); cit++ ) {
-        const QByteArray& name  = cit.key();
+    for ( THeaderHash::const_iterator cit = m_headers.begin(); cit != m_headers.end(); cit++ ) {
+        const QByteArray& field = cit.key();
         const QByteArray& value = cit.value();
 
-        if ( qstrnicmp("connection", name.constData(), name.length()) == 0 ) {
+        if ( field == "connection" ) {
             m_sentConnectionHeader = true;
-            if ( qstrnicmp("close", value.constData(), value.length()) == 0 )
+            if ( value == "close" )
                 m_last = true;
             else
                 m_keepAlive = true;
 
-        } else if ( qstrnicmp("transfer-encoding", name.constData(), name.length()) == 0 ) {
+        } else if ( field == "transfer-encoding" ) {
             m_sentTransferEncodingHeader = true;
-            if ( qstrnicmp("chunked", value.constData(), value.length()) == 0 )
+            if ( value == "chunked" )
                 m_useChunkedEncoding = true;
 
-        } else if ( qstrnicmp("content-length", name.constData(), name.length()) == 0 ) {
+        } else if ( field == "content-length" ) {
             m_sentContentLengthHeader = true;
 
-        } else if ( qstrnicmp("date", name.constData(), name.length()) == 0 ) {
+        } else if ( field == "date" ) {
             m_sentDate = true;
         }
 
-        writeHeader(name.constData(), value);
+        writeHeader(field, value);
     }
 
     if ( !m_sentConnectionHeader ) {

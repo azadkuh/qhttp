@@ -25,7 +25,7 @@ public:
     }
 
     void        writeHeaders();
-    void        writeHeader(const char *field, const QByteArray& value);
+    void        writeHeader(const QByteArray& field, const QByteArray& value);
 
 
 public:
