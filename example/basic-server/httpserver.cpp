@@ -1,5 +1,6 @@
 #include "httpserver.hpp"
 
+#include "qhttpconnection.hpp"
 #include "qhttprequest.hpp"
 #include "qhttpresponse.hpp"
 
@@ -7,24 +8,24 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace am {
 ///////////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////////
 HttpServer::HttpServer(QObject *parent) : QHttpServer(parent), icounter(0) {
+    QObject::connect(this, &HttpServer::newRequest, [this](QHttpRequest* req, QHttpResponse* resp){
+        this->incomingRequest(req, resp);
+    });
 }
 
 HttpServer::~HttpServer() {
 }
 
 void
-HttpServer::incomingRequest(QHttpRequest *req, QHttpResponse *resp) {
-
+HttpServer::incomingRequest(QHttpRequest* req, QHttpResponse* resp) {
     printf("a new request (#%d) is comming from %s:%d\n",
-           icounter,
+           ++icounter,
            req->remoteAddress().toUtf8().constData(),
            req->remotePort());
 
     QString body = QString("Hello World\n    packet count = %1\n    time = %2\n")
-                   .arg(++icounter)
+                   .arg(icounter)
                    .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
 
     resp->setHeader("content-length", QString::number(body.size()).toLatin1());
@@ -37,6 +38,7 @@ HttpServer::incomingRequest(QHttpRequest *req, QHttpResponse *resp) {
                      this,     &HttpServer::closed,
                      Qt::QueuedConnection);
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 ClientConnection::ClientConnection(QHttpRequest *req, QHttpResponse *resp, QObject* p) :

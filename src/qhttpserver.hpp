@@ -84,20 +84,20 @@ public:
 
 signals:
     /** emitted when a client makes a new request to the server if you do not override
-     *  incommingRequest().
-     * @sa incommingRequest(). */
+     *  incomingConnection(QHttpConnection *connection);
+     * @sa incommingConnection(). */
     void        newRequest(QHttpRequest *request, QHttpResponse *response);
 
 protected:
-    /** is called when a client makes a new request to the server.
-     * you can override this function to receive the request/response pair objects.
-     *  the default implementation just fires newRequest signal.
-     * @note if you override this method, the signal won't be emitted by QHttpServer. (you
-     *  do not need it anymore).
+    /** is called when server accepts a new connection.
+     * you can override this function for using a thread-pool or ... some other reasons.
      *
-     * @param request New incoming request.
-     * @param response Response object to the request. */
-    virtual void incomingRequest(QHttpRequest *request, QHttpResponse *response);
+     *  the default implementation just connects QHttpConnection::newRequest signal.
+     * @note if you override this method, the signal won't be emitted by QHttpServer.
+     * (perhaps, you do not need it anymore).
+     *
+     * @param connection New incoming connection. */
+    virtual void incomingConnection(QHttpConnection* connection);
 
 private:
     virtual void incomingConnection(qintptr handle);

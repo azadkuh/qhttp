@@ -141,19 +141,16 @@ QHttpServer::setTimeOut(quint32 newValue) {
 
 void
 QHttpServer::incomingConnection(qintptr handle) {
-    QHttpConnection *connection = new QHttpConnection(handle,
-                                                      this,
-                                                      pimp->itimeOut);
-
-    QObject::connect(connection, &QHttpConnection::newRequest,
-                     [this](QHttpRequest *req, QHttpResponse* res){
-        incomingRequest(req, res);
-    });
+    incomingConnection(new QHttpConnection(handle,
+                                           this,
+                                           pimp->itimeOut)
+                       );
 }
 
 void
-QHttpServer::incomingRequest(QHttpRequest *request, QHttpResponse *response) {
-    emit newRequest(request, response);
+QHttpServer::incomingConnection(QHttpConnection *connection) {
+    QObject::connect(connection,  &QHttpConnection::newRequest,
+                     this,        &QHttpServer::newRequest);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
