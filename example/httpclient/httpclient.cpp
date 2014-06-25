@@ -79,7 +79,7 @@ public:
         if ( isleep > 0 )
             itimer.start(isleep, iparent);
         else
-            sendRequest();
+            QMetaObject::invokeMethod(iparent, "start");
     }
 
 protected:
@@ -94,6 +94,12 @@ protected:
         gason::JsonValue command    = root("command");
 
         bool bok = false;
+
+        if ( strncmp("response", command.toString(&bok), 8) != 0 ) {
+            puts("    invalid command!\n");
+            return false;
+        }
+
         if ( !clientId.isNumber()    ||    clientId.toInt(&bok) != iclientId ) {
             puts("    invalid clientId!\n");
             return false;
@@ -103,12 +109,6 @@ protected:
             puts("    invalid requestId!\n");
             return false;
         }
-
-        if ( strncmp("command", command.toString(&bok), 7) != 0 ) {
-            puts("    invalid command!\n");
-            return false;
-        }
-
 
         return true;
     }
