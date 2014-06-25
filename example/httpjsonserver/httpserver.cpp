@@ -91,7 +91,7 @@ ClientConnection::onComplete() {
 
     if ( clientStatus ) {
         iresp->writeHead(QHttpResponse::STATUS_OK);
-        iresp->write(QByteArray(buffer));
+        iresp->end(QByteArray(buffer));
 
     } else {
         iresp->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
