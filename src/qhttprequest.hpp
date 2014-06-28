@@ -150,14 +150,23 @@ signals:
      * @note The no more data() signals will be emitted after this. */
     void                end();
 
+public:
+    /** Set the value of a HTTP header.
+     * @note You must call this with all your custom headers
+     *  before calling writeHead(), write() or end(). */
+    void                setHeader(const QByteArray& field, const QByteArray& value);
+
 private:
-    class           Private;
-    Private*        pimp;
+    class               Private;
+    Private*            pimp;
 
 
-    explicit        QHttpRequest(QHttpConnection *connection);
-    static QString  MethodToString(QHttpRequest::HttpMethod method);
-    friend class    QHttpConnection;
+    static QString      MethodToString(QHttpRequest::HttpMethod method);
+
+    explicit            QHttpRequest(QObject *connection);
+
+    friend class        QHttpConnection;
+    friend class        QHttpClient;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

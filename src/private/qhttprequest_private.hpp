@@ -8,12 +8,10 @@
 class QHttpRequest::Private
 {
 public:
-    explicit Private(QHttpConnection* connection) :
-        m_connection(connection), m_url("http://localhost/"), m_success(false) {
+    explicit Private() : m_success(false) {
     }
 
 public:
-    QHttpConnection*         m_connection;
     THeaderHash              m_headers;
     QHttpRequest::HttpMethod m_method;
     QUrl                     m_url;

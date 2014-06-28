@@ -24,9 +24,9 @@
 #include "private/qhttprequest_private.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////
-QHttpRequest::QHttpRequest(QHttpConnection *connection)
-    : QObject(connection), pimp(nullptr) {
-    pimp    = new Private(connection);
+QHttpRequest::QHttpRequest(QObject *parent)
+    : QObject(parent), pimp(nullptr) {
+    pimp    = new Private();
 
 #if QHTTPSERVER_MEMORY_LOG > 0
     fprintf(stderr, "    %s:%s(%d): obj = %p\n", __FILE__, __FUNCTION__, __LINE__, this);
@@ -98,4 +98,9 @@ QHttpRequest::remotePort() const {
 bool
 QHttpRequest::successful() const {
     return pimp->m_success;
+}
+
+void
+QHttpRequest::setHeader(const QByteArray &field, const QByteArray &value) {
+    pimp->m_headers.insert(field.toLower(), value.toLower());
 }
