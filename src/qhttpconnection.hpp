@@ -37,15 +37,11 @@ class QHTTPSERVER_API QHttpConnection : public QObject
 public:
     virtual ~QHttpConnection();
 
-    void            write(const QByteArray &data);
-    void            flush();
-
     QHttpRequest*   latestRequest() const;
     QHttpResponse*  latestResponse() const;
 
 signals:
     void            newRequest(QHttpRequest *, QHttpResponse *);
-    void            allBytesWritten();
 
 protected:
     explicit        QHttpConnection(qintptr handle, QObject *parent, quint32 timeOut = 0);

@@ -138,7 +138,7 @@ private:
     class       Private;
     Private     *pimp;
 
-    explicit    QHttpResponse(QHttpConnection *connection);
+    explicit    QHttpResponse(QTcpSocket*);
 
     friend class QHttpConnection;
 };

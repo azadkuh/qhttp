@@ -22,9 +22,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "private/qhttpresponse_private.hpp"
 ///////////////////////////////////////////////////////////////////////////////
-QHttpResponse::QHttpResponse(QHttpConnection *connection)
-    : QObject(connection) , pimp(nullptr) {
-    pimp    = new Private(connection);
+QHttpResponse::QHttpResponse(QTcpSocket* socket)
+    : QObject(socket) , pimp(nullptr) {
+    pimp    = new Private(this, socket);
 
 #if QHTTPSERVER_MEMORY_LOG > 0
     fprintf(stderr, "    %s:%s(%d): obj = %p\n", __FILE__, __FUNCTION__, __LINE__, this);
@@ -66,12 +66,12 @@ QHttpResponse::writeHead(int status) {
         return;
     }
 
-    pimp->m_connection->write(QString("HTTP/1.1 %1 %2\r\n")
-                              .arg(status)
-                              .arg(QHttpServer::statusCodes()[status]).toLatin1()
-                              );
+    pimp->write(QString("HTTP/1.1 %1 %2\r\n")
+                .arg(status)
+                .arg(QHttpServer::statusCodes()[status]).toLatin1()
+                );
     pimp->writeHeaders();
-    pimp->m_connection->write("\r\n");
+    pimp->write("\r\n");
 
     pimp->m_headerWritten = true;
 }
@@ -93,7 +93,7 @@ QHttpResponse::write(const QByteArray &data) {
         return;
     }
 
-    pimp->m_connection->write(data);
+    pimp->write(data);
 }
 
 void
@@ -121,10 +121,11 @@ QHttpResponse::connectionClosed() {
 void
 QHttpResponse::Private::writeHeader(const QByteArray& field, const QByteArray& value) {
     if ( !m_finished ) {
-        m_connection->write(field);
-        m_connection->write(": ");
-        m_connection->write(value);
-        m_connection->write("\r\n");
+        QByteArray buffer = QByteArray(field)
+                            .append(": ")
+                            .append(value)
+                            .append("\r\n");
+        write(buffer);
     } else
         qWarning()
             << "QHttpResponse::writeHeader() Cannot write headers after response has finished.";

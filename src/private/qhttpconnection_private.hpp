@@ -35,10 +35,6 @@ public:
     QByteArray              m_currentHeaderField;
     QByteArray              m_currentHeaderValue;
 
-    // Keep track of transmit buffer status
-    qint64                  m_transmitLen;
-    qint64                  m_transmitPos;
-
     QBasicTimer             m_timer;
 
 #   if QHTTPSERVER_MESSAGES_LOG > 0
@@ -51,9 +47,7 @@ public:
         m_parser(nullptr),
         m_parserSettings(nullptr),
         m_request(nullptr),
-        m_response(nullptr),
-        m_transmitLen(0),
-        m_transmitPos(0) {
+        m_response(nullptr) {
 
         // create http_parser object
         m_parser = (http_parser *)malloc(sizeof(http_parser)); {
@@ -84,10 +78,6 @@ public:
             m_socket->deleteLater();
             iparent->deleteLater();
         });
-
-        QObject::connect(m_socket, &QTcpSocket::bytesWritten, [this](qint64 byteCount){
-            updateWriteCount(byteCount);
-        });
     }
 
     ~Private() {
@@ -104,7 +94,6 @@ public:
 
 public:
     void         parseRequest();
-    void         updateWriteCount(qint64);
 
 public:
     int          messageBegin(http_parser *parser);
