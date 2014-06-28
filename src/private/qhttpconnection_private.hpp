@@ -21,74 +21,74 @@ class QHttpConnection::Private
 public:
     QHttpConnection*        iparent;
 
-    QTcpSocket*             m_socket;
-    http_parser*            m_parser;
-    http_parser_settings*   m_parserSettings;
+    QTcpSocket*             isocket;
+    http_parser*            iparser;
+    http_parser_settings*   iparserSettings;
 
     // Since there can only be one request at any time even with pipelining.
-    QHttpRequest*           m_request;      ///< latest request
-    QHttpResponse*          m_response;     ///< latest response
+    QHttpRequest*           irequest;      ///< latest request
+    QHttpResponse*          iresponse;     ///< latest response
 
-    QByteArray              m_currentUrl;
+    QByteArray              icurrentUrl;
     // The ones we are reading in from the parser
-    THeaderHash             m_currentHeaders;
-    QByteArray              m_currentHeaderField;
-    QByteArray              m_currentHeaderValue;
+    THeaderHash             icurrentHeaders;
+    QByteArray              icurrentHeaderField;
+    QByteArray              icurrentHeaderValue;
 
-    QBasicTimer             m_timer;
+    QBasicTimer             itimer;
 
 #   if QHTTPSERVER_MESSAGES_LOG > 0
-    QByteArray              m_inputBuffer;
+    QByteArray              iinputBuffer;
 #   endif
 
 public:
     explicit     Private(qintptr handle, QHttpConnection* p, quint32 timeOut) : iparent(p),
-        m_socket(nullptr),
-        m_parser(nullptr),
-        m_parserSettings(nullptr),
-        m_request(nullptr),
-        m_response(nullptr) {
+        isocket(nullptr),
+        iparser(nullptr),
+        iparserSettings(nullptr),
+        irequest(nullptr),
+        iresponse(nullptr) {
 
         // create http_parser object
-        m_parser = (http_parser *)malloc(sizeof(http_parser)); {
-            http_parser_init(m_parser, HTTP_REQUEST);
+        iparser = (http_parser *)malloc(sizeof(http_parser)); {
+            http_parser_init(iparser, HTTP_REQUEST);
 
-            m_parserSettings = new http_parser_settings();
-            m_parserSettings->on_message_begin    = Private::onMessageBegin;
-            m_parserSettings->on_url              = Private::onUrl;
-            m_parserSettings->on_header_field     = Private::onHeaderField;
-            m_parserSettings->on_header_value     = Private::onHeaderValue;
-            m_parserSettings->on_headers_complete = Private::onHeadersComplete;
-            m_parserSettings->on_body             = Private::onBody;
-            m_parserSettings->on_message_complete = Private::onMessageComplete;
+            iparserSettings = new http_parser_settings();
+            iparserSettings->on_message_begin    = Private::onMessageBegin;
+            iparserSettings->on_url              = Private::onUrl;
+            iparserSettings->on_header_field     = Private::onHeaderField;
+            iparserSettings->on_header_value     = Private::onHeaderValue;
+            iparserSettings->on_headers_complete = Private::onHeadersComplete;
+            iparserSettings->on_body             = Private::onBody;
+            iparserSettings->on_message_complete = Private::onMessageComplete;
         }
-        m_parser->data  = iparent;
+        iparser->data  = iparent;
 
         if ( timeOut != 0 )
-            m_timer.start(timeOut, iparent);
+            itimer.start(timeOut, iparent);
 
-        m_socket        = new QTcpSocket(iparent);
-        m_socket->setSocketDescriptor(handle);
+        isocket        = new QTcpSocket(iparent);
+        isocket->setSocketDescriptor(handle);
 
-        QObject::connect(m_socket, &QTcpSocket::readyRead, [this](){
+        QObject::connect(isocket, &QTcpSocket::readyRead, [this](){
             parseRequest();
         });
 
-        QObject::connect(m_socket, &QTcpSocket::disconnected, [this](){
-            m_socket->deleteLater();
+        QObject::connect(isocket, &QTcpSocket::disconnected, [this](){
+            isocket->deleteLater();
             iparent->deleteLater();
         });
     }
 
     ~Private() {
-        if ( m_parser != nullptr ) {
-            free(m_parser);
-            m_parser = nullptr;
+        if ( iparser != nullptr ) {
+            free(iparser);
+            iparser = nullptr;
         }
 
-        if ( m_parserSettings != nullptr ) {
-            delete m_parserSettings;
-            m_parserSettings = nullptr;
+        if ( iparserSettings != nullptr ) {
+            delete iparserSettings;
+            iparserSettings = nullptr;
         }
     }
 

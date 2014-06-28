@@ -52,7 +52,7 @@ QHttpRequest::MethodToString(HttpMethod method) {
 
 QHttpRequest::HttpMethod
 QHttpRequest::method() const {
-    return pimp->m_method;
+    return pimp->imethod;
 }
 
 const QString
@@ -62,45 +62,45 @@ QHttpRequest::methodString() const {
 
 const QUrl&
 QHttpRequest::url() const {
-    return pimp->m_url;
+    return pimp->iurl;
 }
 
 const QString
 QHttpRequest::path() const {
-    return pimp->m_url.path();
+    return pimp->iurl.path();
 }
 
 const QString&
 QHttpRequest::httpVersion() const {
-    return pimp->m_version;
+    return pimp->iversion;
 }
 
 const THeaderHash&
 QHttpRequest::headers() const {
-    return pimp->m_headers;
+    return pimp->iheaders;
 }
 
 QString
 QHttpRequest::header(const QByteArray &field) {
-    return pimp->m_headers.value(field.toLower(), "");
+    return pimp->iheaders.value(field.toLower(), "");
 }
 
 const QString&
 QHttpRequest::remoteAddress() const {
-    return pimp->m_remoteAddress;
+    return pimp->iremoteAddress;
 }
 
 quint16
 QHttpRequest::remotePort() const {
-    return pimp->m_remotePort;
+    return pimp->iremotePort;
 }
 
 bool
 QHttpRequest::successful() const {
-    return pimp->m_success;
+    return pimp->isuccess;
 }
 
 void
 QHttpRequest::setHeader(const QByteArray &field, const QByteArray &value) {
-    pimp->m_headers.insert(field.toLower(), value.toLower());
+    pimp->iheaders.insert(field.toLower(), value.toLower());
 }

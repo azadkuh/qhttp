@@ -47,21 +47,21 @@ QHttpResponse::~QHttpResponse() {
 
 void
 QHttpResponse::setHeader(const QByteArray &field, const QByteArray &value) {
-    if ( !pimp->m_finished )
-        pimp->m_headers[field.toLower()] = value.toLower();
+    if ( !pimp->ifinished )
+        pimp->iheaders[field.toLower()] = value.toLower();
     else
         qWarning() << "QHttpResponse::setHeader() Cannot set headers after response has finished.";
 }
 
 void
 QHttpResponse::writeHead(int status) {
-    if ( pimp->m_finished ) {
+    if ( pimp->ifinished ) {
         qWarning()
             << "QHttpResponse::writeHead() Cannot write headers after response has finished.";
         return;
     }
 
-    if ( pimp->m_headerWritten ) {
+    if ( pimp->iheaderWritten ) {
         qWarning() << "QHttpResponse::writeHead() Already called once for this response.";
         return;
     }
@@ -73,7 +73,7 @@ QHttpResponse::writeHead(int status) {
     pimp->writeHeaders();
     pimp->write("\r\n");
 
-    pimp->m_headerWritten = true;
+    pimp->iheaderWritten = true;
 }
 
 void
@@ -83,12 +83,12 @@ QHttpResponse::writeHead(StatusCode statusCode) {
 
 void
 QHttpResponse::write(const QByteArray &data) {
-    if ( pimp->m_finished ) {
+    if ( pimp->ifinished ) {
         qWarning() << "QHttpResponse::write() Cannot write body after response has finished.";
         return;
     }
 
-    if ( !pimp->m_headerWritten ) {
+    if ( !pimp->iheaderWritten ) {
         qWarning() << "QHttpResponse::write() You must call writeHead() before writing body data.";
         return;
     }
@@ -98,21 +98,21 @@ QHttpResponse::write(const QByteArray &data) {
 
 void
 QHttpResponse::end(const QByteArray &data) {
-    if ( pimp->m_finished )
+    if ( pimp->ifinished )
         return;
 
 
     if ( data.size() > 0 )
         write(data);
 
-    pimp->m_finished = true;
+    pimp->ifinished = true;
 
-    emit done(pimp->m_last);
+    emit done(pimp->ilast);
 }
 
 void
 QHttpResponse::connectionClosed() {
-    pimp->m_finished = true;
+    pimp->ifinished = true;
     deleteLater();
 }
 
@@ -120,7 +120,7 @@ QHttpResponse::connectionClosed() {
 ///////////////////////////////////////////////////////////////////////////////
 void
 QHttpResponse::Private::writeHeader(const QByteArray& field, const QByteArray& value) {
-    if ( !m_finished ) {
+    if ( !ifinished ) {
         QByteArray buffer = QByteArray(field)
                             .append(": ")
                             .append(value)
@@ -133,54 +133,54 @@ QHttpResponse::Private::writeHeader(const QByteArray& field, const QByteArray& v
 
 void
 QHttpResponse::Private::writeHeaders() {
-    if ( m_finished )
+    if ( ifinished )
         return;
 
-    for ( THeaderHash::const_iterator cit = m_headers.begin(); cit != m_headers.end(); cit++ ) {
+    for ( THeaderHash::const_iterator cit = iheaders.begin(); cit != iheaders.end(); cit++ ) {
         const QByteArray& field = cit.key();
         const QByteArray& value = cit.value();
 
         if ( field == "connection" ) {
-            m_sentConnectionHeader = true;
+            isentConnectionHeader = true;
             if ( value == "close" )
-                m_last = true;
+                ilast = true;
             else
-                m_keepAlive = true;
+                ikeepAlive = true;
 
         } else if ( field == "transfer-encoding" ) {
-            m_sentTransferEncodingHeader = true;
+            isentTransferEncodingHeader = true;
             if ( value == "chunked" )
-                m_useChunkedEncoding = true;
+                iuseChunkedEncoding = true;
 
         } else if ( field == "content-length" ) {
-            m_sentContentLengthHeader = true;
+            isentContentLengthHeader = true;
 
         } else if ( field == "date" ) {
-            m_sentDate = true;
+            isentDate = true;
         }
 
         writeHeader(field, value);
     }
 
-    if ( !m_sentConnectionHeader ) {
-        if ( m_keepAlive && ( m_sentContentLengthHeader || m_useChunkedEncoding ) ) {
+    if ( !isentConnectionHeader ) {
+        if ( ikeepAlive && ( isentContentLengthHeader || iuseChunkedEncoding ) ) {
             writeHeader("Connection", "keep-alive");
         } else {
-            m_last = true;
+            ilast = true;
             writeHeader("Connection", "close");
         }
     }
 
-    if ( !m_sentContentLengthHeader && !m_sentTransferEncodingHeader ) {
-        if ( m_useChunkedEncoding )
+    if ( !isentContentLengthHeader && !isentTransferEncodingHeader ) {
+        if ( iuseChunkedEncoding )
             writeHeader("Transfer-Encoding", "chunked");
         else
-            m_last = true;
+            ilast = true;
     }
 
     // Sun, 06 Nov 1994 08:49:37 GMT - RFC 822. Use QLocale::c() so english is used for month and
     // day.
-    if ( !m_sentDate ) {
+    if ( !isentDate ) {
         QString dateString = QLocale::c().toString(
                                  QDateTime::currentDateTimeUtc(),
                                  "ddd, dd MMM yyyy hh:mm:ss"

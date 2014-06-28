@@ -8,17 +8,17 @@
 class QHttpRequest::Private
 {
 public:
-    explicit Private() : m_success(false) {
+    explicit Private() : isuccess(false) {
     }
 
 public:
-    THeaderHash              m_headers;
-    QHttpRequest::HttpMethod m_method;
-    QUrl                     m_url;
-    QString                  m_version;
-    QString                  m_remoteAddress;
-    quint16                  m_remotePort;
-    bool                     m_success;
+    THeaderHash              iheaders;
+    QHttpRequest::HttpMethod imethod;
+    QUrl                     iurl;
+    QString                  iversion;
+    QString                  iremoteAddress;
+    quint16                  iremotePort;
+    bool                     isuccess;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

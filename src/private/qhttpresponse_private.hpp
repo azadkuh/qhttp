@@ -18,73 +18,73 @@ public:
     explicit    Private(QHttpResponse* parent, QTcpSocket* sok) : iparent(parent) {
         reset();
 
-        m_socket    = sok;
+        isocket    = sok;
 
-        QObject::connect(m_socket, &QTcpSocket::bytesWritten, [this](qint64 byteCount){
+        QObject::connect(isocket, &QTcpSocket::bytesWritten, [this](qint64 byteCount){
             updateWriteCount(byteCount);
         });
 
         QObject::connect(iparent,     &QHttpResponse::done,
                          [this](bool wasTheLastResponse){
             if ( wasTheLastResponse )
-                m_socket->disconnectFromHost();
+                isocket->disconnectFromHost();
         });
     }
 
     void        reset() {
-        m_socket                    = nullptr;
+        isocket                    = nullptr;
 
-        m_headerWritten             = false;
-        m_sentConnectionHeader      = false;
-        m_sentContentLengthHeader   = false;
-        m_sentTransferEncodingHeader= false;
-        m_sentDate                  = false;
-        m_keepAlive                 = false;
-        m_last                      = false;
-        m_useChunkedEncoding        = false;
-        m_finished                  = false;
+        iheaderWritten             = false;
+        isentConnectionHeader      = false;
+        isentContentLengthHeader   = false;
+        isentTransferEncodingHeader= false;
+        isentDate                  = false;
+        ikeepAlive                 = false;
+        ilast                      = false;
+        iuseChunkedEncoding        = false;
+        ifinished                  = false;
 
-        m_transmitLen = m_transmitPos = 0;
+        itransmitLen = itransmitPos = 0;
     }
 
     void        writeHeaders();
     void        writeHeader(const QByteArray& field, const QByteArray& value);
 
     void        write(const QByteArray &data) {
-        m_socket->write(data);
-        m_transmitLen += data.size();
+        isocket->write(data);
+        itransmitLen += data.size();
     }
 
     void        updateWriteCount(qint64 count) {
-        Q_ASSERT(m_transmitPos + count <= m_transmitLen);
+        Q_ASSERT(itransmitPos + count <= itransmitLen);
 
-        m_transmitPos += count;
+        itransmitPos += count;
 
-        if ( m_transmitPos == m_transmitLen ) {
-            m_transmitLen = 0;
-            m_transmitPos = 0;
+        if ( itransmitPos == itransmitLen ) {
+            itransmitLen = 0;
+            itransmitPos = 0;
             emit iparent->allBytesWritten();
         }
     }
 
 
 public:
-    THeaderHash          m_headers;
-    QTcpSocket*          m_socket;
+    THeaderHash          iheaders;
+    QTcpSocket*          isocket;
 
-    bool                 m_headerWritten;
-    bool                 m_sentConnectionHeader;
-    bool                 m_sentContentLengthHeader;
-    bool                 m_sentTransferEncodingHeader;
-    bool                 m_sentDate;
-    bool                 m_keepAlive;
-    bool                 m_last;
-    bool                 m_useChunkedEncoding;
-    bool                 m_finished;
+    bool                 iheaderWritten;
+    bool                 isentConnectionHeader;
+    bool                 isentContentLengthHeader;
+    bool                 isentTransferEncodingHeader;
+    bool                 isentDate;
+    bool                 ikeepAlive;
+    bool                 ilast;
+    bool                 iuseChunkedEncoding;
+    bool                 ifinished;
 
     // Keep track of transmit buffer status
-    qint64               m_transmitLen;
-    qint64               m_transmitPos;
+    qint64               itransmitLen;
+    qint64               itransmitPos;
 
 
 };
