@@ -91,8 +91,7 @@ public:
 
     virtual     ~QHttpResponse();
 
-public slots:
-    //TODO: return false if it is finished, check for finished
+public:
     /** Set the value of a HTTP header.
      * @note You must call this with all your custom headers
      *  before calling writeHead(), write() or end(). */

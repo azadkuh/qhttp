@@ -41,6 +41,10 @@ public:
 
     QBasicTimer             m_timer;
 
+#   if QHTTPSERVER_MESSAGES_LOG > 0
+    QByteArray              m_inputBuffer;
+#   endif
+
 public:
     explicit     Private(qintptr handle, QHttpConnection* p, quint32 timeOut) : iparent(p),
         m_socket(nullptr),

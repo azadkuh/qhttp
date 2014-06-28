@@ -22,7 +22,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "private/qhttpresponse_private.hpp"
 ///////////////////////////////////////////////////////////////////////////////
-    // TODO: parent child relation
 QHttpResponse::QHttpResponse(QHttpConnection *connection)
     : QObject(connection) , pimp(nullptr) {
     pimp    = new Private(connection);

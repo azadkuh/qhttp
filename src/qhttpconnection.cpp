@@ -22,6 +22,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "private/qhttpconnection_private.hpp"
+#include <QFile>
 ///////////////////////////////////////////////////////////////////////////////
 
 QHttpConnection::QHttpConnection(qintptr handle, QObject *parent, quint32 timeOut)
@@ -91,6 +92,11 @@ QHttpConnection::Private::parseRequest() {
     while (m_socket->bytesAvailable()) {
         char buffer[4096] = {0};
         size_t readLength = m_socket->read(buffer, 4095);
+
+#       if QHTTPSERVER_MESSAGES_LOG > 0
+        m_inputBuffer.append(buffer);
+#       endif
+
         http_parser_execute(m_parser, m_parserSettings,
                             buffer, readLength);
     }
@@ -220,8 +226,16 @@ QHttpConnection::Private::body(http_parser*, const char* at, size_t length) {
 
 int
 QHttpConnection::Private::messageComplete(http_parser*) {
-    // TODO: do cleanup and prepare for next request
     Q_ASSERT(m_request);
+
+#   if QHTTPSERVER_MESSAGES_LOG > 0
+    QFile f("/tmp/incomingMessages.log");
+    if ( f.open(QIODevice::Append | QIODevice::WriteOnly) ) {
+        f.write(m_inputBuffer);
+        f.write("\n---------------------\n");
+        f.flush();
+    }
+#   endif
 
     m_request->pimp->m_success = true;
     emit m_request->end();

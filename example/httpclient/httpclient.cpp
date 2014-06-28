@@ -65,7 +65,7 @@ public:
                 .addValue("command", "request")
            .endObject();
 
-        inetworkManager.get(req);
+        inetworkManager.post(req, QByteArray(buffer));
     }
 
     void        onFinished(QNetworkReply* reply) {

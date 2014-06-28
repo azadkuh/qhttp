@@ -92,6 +92,7 @@ public:
             client->setPort(iport);
             client->setRequestCount(irequestCount);
             client->setSleepTime(itimeOut);
+            client->setKeepAlive(ikeepAlive);
 
             QObject::connect(client, &HttpClient::finished,
                              [this](int clientId, size_t packets) {
