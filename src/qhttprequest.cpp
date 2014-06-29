@@ -65,11 +65,6 @@ QHttpRequest::url() const {
     return pimp->iurl;
 }
 
-const QString
-QHttpRequest::path() const {
-    return pimp->iurl.path();
-}
-
 const QString&
 QHttpRequest::httpVersion() const {
     return pimp->iversion;
@@ -78,11 +73,6 @@ QHttpRequest::httpVersion() const {
 const THeaderHash&
 QHttpRequest::headers() const {
     return pimp->iheaders;
-}
-
-QString
-QHttpRequest::header(const QByteArray &field) {
-    return pimp->iheaders.value(field.toLower(), "");
 }
 
 const QString&
@@ -96,8 +86,8 @@ QHttpRequest::remotePort() const {
 }
 
 bool
-QHttpRequest::successful() const {
-    return pimp->isuccess;
+QHttpRequest::isSuccessful() const {
+    return pimp->isuccessful;
 }
 
 void

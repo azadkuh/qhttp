@@ -204,7 +204,7 @@ QHttpConnection::Private::messageComplete(http_parser*) {
     }
 #   endif
 
-    irequest->pimp->isuccess = true;
+    irequest->pimp->isuccessful = true;
     emit irequest->end();
     return 0;
 }

@@ -8,7 +8,7 @@
 class QHttpRequest::Private
 {
 public:
-    explicit Private() : isuccess(false) {
+    explicit Private() : isuccessful(false) {
     }
 
 public:
@@ -18,7 +18,7 @@ public:
     QString                  iversion;
     QString                  iremoteAddress;
     quint16                  iremotePort;
-    bool                     isuccess;
+    bool                     isuccessful;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

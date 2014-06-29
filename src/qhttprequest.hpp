@@ -46,12 +46,7 @@ class QHTTPSERVER_API QHttpRequest : public QObject
     Q_OBJECT
 
     Q_PROPERTY(THeaderHash  headers         READ headers)
-    Q_PROPERTY(QString      remoteAddress   READ remoteAddress)
-    Q_PROPERTY(quint16      remotePort      READ remotePort)
-    Q_PROPERTY(QString      method          READ method)
     Q_PROPERTY(QUrl         url             READ url)
-    Q_PROPERTY(QString      path            READ path)
-    Q_PROPERTY(QString      httpVersion     READ httpVersion)
 
     Q_ENUMS(HttpMethod)
 
@@ -107,10 +102,6 @@ public:
      * This includes the path and query string. @sa path(). */
     const QUrl&         url() const;
 
-    /** The path portion of the query URL.
-     * @sa url(). */
-    const QString       path() const;
-
     /** The HTTP version of the request.
      * @return A string in the form of "x.x" */
     const QString&      httpVersion() const;
@@ -122,12 +113,6 @@ public:
      * @note All header names are <b>lowercase</b> . */
     const THeaderHash&  headers() const;
 
-    /** Get the value of a header.
-     * Headers are stored as lowercase so the input @c field will be lowercased.
-     * @param field Name of the header field
-     * @return Value of the header or empty string if not found. */
-    QString             header(const QByteArray &field);
-
     /** IP Address of the client in dotted decimal format. */
     const QString&      remoteAddress() const;
 
@@ -138,7 +123,7 @@ public:
      * Set before end() has been emitted, stating whether
      *  the message was properly received. This is false
      *  until the receiving the full request has completed. */
-    bool                successful() const;
+    bool                isSuccessful() const;
 
 signals:
     /** Emitted when new body data has been received.
