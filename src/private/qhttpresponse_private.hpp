@@ -41,7 +41,6 @@ public:
 
         iheaderWritten             = false;
         ikeepAlive                 = false;
-        ilast                      = false;
         ifinished                  = false;
 
         itransmitLen = itransmitPos = 0;
@@ -74,7 +73,6 @@ public:
 
     bool                 iheaderWritten;
     bool                 ikeepAlive;
-    bool                 ilast;
     bool                 ifinished;
 
     // Keep track of transmit buffer status

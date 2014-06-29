@@ -176,7 +176,6 @@ QHttpConnection::Private::headersComplete(http_parser* parser) {
           icurrentHeaders.value("connection", "") == "close" ) {
 
         iresponse->pimp->ikeepAlive = false;
-        iresponse->pimp->ilast      = true;
     }
 
     // we are good to go!

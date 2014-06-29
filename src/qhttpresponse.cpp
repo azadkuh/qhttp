@@ -107,7 +107,7 @@ QHttpResponse::end(const QByteArray &data) {
 
     pimp->ifinished = true;
 
-    emit done(pimp->ilast);
+    emit done(!pimp->ikeepAlive);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -140,10 +140,7 @@ QHttpResponse::Private::writeHeaders() {
 
         if ( field == "connection" ) {
             bsentConnectionHeader = true;
-            if ( value == "close" )
-                ilast = true;
-            else
-                ikeepAlive = true;
+            ikeepAlive = (value == "keep-alive");
 
         } else if ( field == "transfer-encoding" ) {
             bsentTransferEncodingHeader = true;
@@ -159,18 +156,17 @@ QHttpResponse::Private::writeHeaders() {
 
     if ( !bsentConnectionHeader ) {
         if ( ikeepAlive && ( bsentContentLengthHeader || buseChunkedEncoding ) ) {
-            writeHeader("Connection", "keep-alive");
+            writeHeader("connection", "keep-alive");
         } else {
-            ilast = true;
-            writeHeader("Connection", "close");
+            writeHeader("connection", "close");
         }
     }
 
     if ( !bsentContentLengthHeader && !bsentTransferEncodingHeader ) {
         if ( buseChunkedEncoding )
-            writeHeader("Transfer-Encoding", "chunked");
+            writeHeader("transfer-encoding", "chunked");
         else
-            ilast = true;
+            ikeepAlive = false;
     }
 
     if ( !iheaders.contains("date") ) {
