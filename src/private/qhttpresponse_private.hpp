@@ -40,13 +40,8 @@ public:
         isocket                    = nullptr;
 
         iheaderWritten             = false;
-        isentConnectionHeader      = false;
-        isentContentLengthHeader   = false;
-        isentTransferEncodingHeader= false;
-        isentDate                  = false;
         ikeepAlive                 = false;
         ilast                      = false;
-        iuseChunkedEncoding        = false;
         ifinished                  = false;
 
         itransmitLen = itransmitPos = 0;
@@ -78,13 +73,8 @@ public:
     QTcpSocket*          isocket;
 
     bool                 iheaderWritten;
-    bool                 isentConnectionHeader;
-    bool                 isentContentLengthHeader;
-    bool                 isentTransferEncodingHeader;
-    bool                 isentDate;
     bool                 ikeepAlive;
     bool                 ilast;
-    bool                 iuseChunkedEncoding;
     bool                 ifinished;
 
     // Keep track of transmit buffer status

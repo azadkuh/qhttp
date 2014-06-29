@@ -129,34 +129,36 @@ QHttpResponse::Private::writeHeaders() {
     if ( ifinished )
         return;
 
+    bool bsentConnectionHeader       = false;
+    bool bsentTransferEncodingHeader = false;
+    bool buseChunkedEncoding         = false;
+    bool bsentContentLengthHeader    = false;
+
     for ( THeaderHash::const_iterator cit = iheaders.begin(); cit != iheaders.end(); cit++ ) {
         const QByteArray& field = cit.key();
         const QByteArray& value = cit.value();
 
         if ( field == "connection" ) {
-            isentConnectionHeader = true;
+            bsentConnectionHeader = true;
             if ( value == "close" )
                 ilast = true;
             else
                 ikeepAlive = true;
 
         } else if ( field == "transfer-encoding" ) {
-            isentTransferEncodingHeader = true;
+            bsentTransferEncodingHeader = true;
             if ( value == "chunked" )
-                iuseChunkedEncoding = true;
+                buseChunkedEncoding = true;
 
         } else if ( field == "content-length" ) {
-            isentContentLengthHeader = true;
-
-        } else if ( field == "date" ) {
-            isentDate = true;
+            bsentContentLengthHeader = true;
         }
 
         writeHeader(field, value);
     }
 
-    if ( !isentConnectionHeader ) {
-        if ( ikeepAlive && ( isentContentLengthHeader || iuseChunkedEncoding ) ) {
+    if ( !bsentConnectionHeader ) {
+        if ( ikeepAlive && ( bsentContentLengthHeader || buseChunkedEncoding ) ) {
             writeHeader("Connection", "keep-alive");
         } else {
             ilast = true;
@@ -164,21 +166,21 @@ QHttpResponse::Private::writeHeaders() {
         }
     }
 
-    if ( !isentContentLengthHeader && !isentTransferEncodingHeader ) {
-        if ( iuseChunkedEncoding )
+    if ( !bsentContentLengthHeader && !bsentTransferEncodingHeader ) {
+        if ( buseChunkedEncoding )
             writeHeader("Transfer-Encoding", "chunked");
         else
             ilast = true;
     }
 
-    // Sun, 06 Nov 1994 08:49:37 GMT - RFC 822. Use QLocale::c() so english is used for month and
-    // day.
-    if ( !isentDate ) {
+    if ( !iheaders.contains("date") ) {
+        // Sun, 06 Nov 1994 08:49:37 GMT - RFC 822. Use QLocale::c() so english is used for month and
+        // day.
         QString dateString = QLocale::c().toString(
                                  QDateTime::currentDateTimeUtc(),
-                                 "ddd, dd MMM yyyy hh:mm:ss"
-                                 ).append(" GMT");
-        writeHeader("Date", dateString.toLatin1());
+                                 "ddd, dd MMM yyyy hh:mm:ss GMT"
+                                 );
+        writeHeader("date", dateString.toLatin1());
     }
 }
 

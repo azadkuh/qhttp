@@ -131,9 +131,6 @@ signals:
      *  the http connection (socket) will be closed automatically. */
     void        done(bool wasTheLastResponse);
 
-private slots:
-    void        connectionClosed();
-
 private:
     class       Private;
     Private     *pimp;
