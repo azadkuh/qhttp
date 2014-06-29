@@ -110,13 +110,6 @@ QHttpResponse::end(const QByteArray &data) {
     emit done(pimp->ilast);
 }
 
-void
-QHttpResponse::connectionClosed() {
-    pimp->ifinished = true;
-    deleteLater();
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////
 void
 QHttpResponse::Private::writeHeader(const QByteArray& field, const QByteArray& value) {

@@ -24,6 +24,11 @@ public:
             updateWriteCount(byteCount);
         });
 
+        QObject::connect(isocket, &QTcpSocket::disconnected, [this](){
+            ifinished   = true;
+            iparent->deleteLater();
+        });
+
         QObject::connect(iparent,     &QHttpResponse::done,
                          [this](bool wasTheLastResponse){
             if ( wasTheLastResponse )
