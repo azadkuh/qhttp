@@ -29,11 +29,10 @@ public:
     QHttpRequest*           irequest;      ///< latest request
     QHttpResponse*          iresponse;     ///< latest response
 
-    QByteArray              icurrentUrl;
+    QByteArray              itempUrl;
     // The ones we are reading in from the parser
-    THeaderHash             icurrentHeaders;
-    QByteArray              icurrentHeaderField;
-    QByteArray              icurrentHeaderValue;
+    QByteArray              itempHeaderField;
+    QByteArray              itempHeaderValue;
 
     QBasicTimer             itimer;
 

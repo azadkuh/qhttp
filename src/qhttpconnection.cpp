@@ -83,9 +83,8 @@ QHttpConnection::Private::parseRequest() {
 
 int
 QHttpConnection::Private::messageBegin(http_parser*) {
-    icurrentHeaders.clear();
-    icurrentUrl.clear();
-    icurrentUrl.reserve(128);
+    itempUrl.clear();
+    itempUrl.reserve(128);
 
     irequest = new QHttpRequest(iparent);
     return 0;
@@ -95,7 +94,7 @@ int
 QHttpConnection::Private::url(http_parser*, const char* at, size_t length) {
     Q_ASSERT(irequest);
 
-    icurrentUrl.append(at, length);
+    itempUrl.append(at, length);
     return 0;
 }
 
@@ -105,20 +104,20 @@ QHttpConnection::Private::headerField(http_parser*, const char* at, size_t lengt
 
     // insert the header we parsed previously
     // into the header map
-    if ( !icurrentHeaderField.isEmpty() && !icurrentHeaderValue.isEmpty() ) {
+    if ( !itempHeaderField.isEmpty() && !itempHeaderValue.isEmpty() ) {
         // header names are always lower-cased
-        icurrentHeaders.insert(
-                    icurrentHeaderField.toLower(),
-                    icurrentHeaderValue.toLower()
+        irequest->pimp->iheaders.insert(
+                    itempHeaderField.toLower(),
+                    itempHeaderValue.toLower()
                     );
         // clear header value. this sets up a nice
         // feedback loop where the next time
         // HeaderValue is called, it can simply append
-        icurrentHeaderField.clear();
-        icurrentHeaderValue.clear();
+        itempHeaderField.clear();
+        itempHeaderValue.clear();
     }
 
-    icurrentHeaderField.append(at, length);
+    itempHeaderField.append(at, length);
     return 0;
 }
 
@@ -126,7 +125,7 @@ int
 QHttpConnection::Private::headerValue(http_parser*, const char* at, size_t length) {
     Q_ASSERT(irequest);
 
-    icurrentHeaderValue.append(at, length);
+    itempHeaderValue.append(at, length);
     return 0;
 }
 
@@ -136,15 +135,15 @@ QHttpConnection::Private::headersComplete(http_parser* parser) {
 
     // get parsed url
     struct http_parser_url urlInfo;
-    int r = http_parser_parse_url(icurrentUrl.constData(),
-                                  icurrentUrl.size(),
+    int r = http_parser_parse_url(itempUrl.constData(),
+                                  itempUrl.size(),
                                   parser->method == HTTP_CONNECT,
                                   &urlInfo);
     Q_ASSERT(r == 0);
     Q_UNUSED(r);
 
     irequest->pimp->iurl = createUrl(
-                                 icurrentUrl.constData(),
+                                 itempUrl.constData(),
                                  urlInfo
                                  );
 
@@ -158,11 +157,10 @@ QHttpConnection::Private::headersComplete(http_parser* parser) {
                                  .arg(parser->http_minor);
 
     // Insert last remaining header
-    icurrentHeaders.insert(
-                icurrentHeaderField.toLower(),
-                icurrentHeaderValue.toLower()
+    irequest->pimp->iheaders.insert(
+                itempHeaderField.toLower(),
+                itempHeaderValue.toLower()
                 );
-    irequest->pimp->iheaders       = icurrentHeaders;
 
     // set client information
     irequest->pimp->iremoteAddress = isocket->peerAddress().toString();
@@ -173,7 +171,7 @@ QHttpConnection::Private::headersComplete(http_parser* parser) {
     iresponse = new QHttpResponse(isocket);
 
     if ( parser->http_major < 1 || parser->http_minor < 1 ||
-          icurrentHeaders.value("connection", "") == "close" ) {
+          irequest->pimp->iheaders.value("connection", "") == "close" ) {
 
         iresponse->pimp->ikeepAlive = false;
     }
