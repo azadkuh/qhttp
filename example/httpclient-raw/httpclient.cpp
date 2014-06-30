@@ -38,11 +38,11 @@ public:
         irequests       = 0;
 
         QObject::connect(&isocket, &QTcpSocket::connected, [this](){
-            requestStart();
+            QMetaObject::invokeMethod(iparent, "start");
         });
         QObject::connect(&isocket, &QTcpSocket::disconnected, [this](){
             isocket.close();
-            requestStart();
+            QMetaObject::invokeMethod(iparent, "start");
         });
         QObject::connect(&isocket, &QTcpSocket::readyRead, [this](){
             if ( ibuffer.size() > (int) KPacketMaxLength ) {
@@ -229,7 +229,7 @@ void
 HttpClient::timerEvent(QTimerEvent* e) {
     if ( pimp != nullptr ) {
         if ( e->timerId() == pimp->itimer.timerId() )
-            pimp->requestStart();
+            QMetaObject::invokeMethod(this, "start");
     }
 }
 ///////////////////////////////////////////////////////////////////////////////

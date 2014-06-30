@@ -84,7 +84,6 @@ public:
         ifinishedPackets  = 0;
         ifinishedCount    = 0;
 
-        itick.tick();
         for ( size_t i = 0;    i < iclientCount;    i++ ) {
             HttpClient* client = new HttpClient(i+1, this);
             iclients.insert(i+1, client);
@@ -98,7 +97,12 @@ public:
                              [this](int clientId, size_t packets) {
                 yetAnotherFinished(clientId, packets);
             });
-            client->start();
+        }
+
+        itick.tick();
+        for ( size_t i = 0;    i < iclientCount;    i++ ) {
+            HttpClient* cli = iclients.value(i+1);
+            QMetaObject::invokeMethod(cli, "start");
         }
     }
 
@@ -112,6 +116,7 @@ protected:
             client->deleteLater();
         iclients.remove(clientId);
         printf("client #%d finished.\n", clientId);
+        fflush(stdout);
 
         if ( ifinishedCount == iclientCount ) {
             uint32_t diff = itick.tock();
