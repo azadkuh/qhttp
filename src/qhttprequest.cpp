@@ -50,18 +50,13 @@ QHttpRequest::~QHttpRequest() {
 #endif
 }
 
-QString
-QHttpRequest::MethodToString(THttpMethod method) {
-    return http_method_str(static_cast<http_method>(method));
-}
-
 THttpMethod QHttpRequest::method() const {
     return pimp->imethod;
 }
 
 const QString
 QHttpRequest::methodString() const {
-    return MethodToString(method());
+    return http_method_str(static_cast<http_method>(pimp->imethod));
 }
 
 const QUrl&

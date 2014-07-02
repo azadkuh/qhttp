@@ -59,6 +59,7 @@ class QHTTPSERVER_API QHttpServer : public QTcpServer
 
 public:
     static const char* statusCodeMessage(TStatusCode);
+    static const char* methodString(THttpMethod);
 
 public:
     /** construct a new HTTP Server. */

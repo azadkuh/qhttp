@@ -105,9 +105,6 @@ private:
     class               Private;
     Private*            pimp;
 
-
-    static QString      MethodToString(THttpMethod method);
-
     explicit            QHttpRequest(QTcpSocket*);
 
     friend class        QHttpConnection;

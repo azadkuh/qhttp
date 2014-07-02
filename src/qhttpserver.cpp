@@ -29,6 +29,8 @@
 #include <QVariant>
 #include <QDebug>
 
+#include "http-parser/http_parser.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 #define HTTP_STATUS_MAP(XX)                    \
     XX(100, "Continue")                        \
@@ -141,6 +143,11 @@ QHttpServer::statusCodeMessage(TStatusCode code) {
     }
 
     return nullptr;
+}
+
+const char*
+QHttpServer::methodString(THttpMethod method) {
+    return http_method_str(static_cast<http_method>(method));
 }
 
 quint32
