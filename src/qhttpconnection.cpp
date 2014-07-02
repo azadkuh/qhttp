@@ -62,25 +62,6 @@ QHttpConnection::timerEvent(QTimerEvent *) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void
-QHttpConnection::Private::parseRequest() {
-    Q_ASSERT(iparser);
-
-    while (isocket->bytesAvailable()) {
-        char buffer[4096] = {0};
-        size_t readLength = isocket->read(buffer, 4095);
-
-#       if QHTTPSERVER_MESSAGES_LOG > 0
-        iinputBuffer.append(buffer);
-#       endif
-
-        http_parser_execute(iparser, iparserSettings,
-                            buffer, readLength);
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 int
 QHttpConnection::Private::messageBegin(http_parser*) {
     itempUrl.clear();
