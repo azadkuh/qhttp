@@ -1,6 +1,7 @@
 #ifndef QHTTPRESPONSE_PRIVATE_HPP
 #define QHTTPRESPONSE_PRIVATE_HPP
 ///////////////////////////////////////////////////////////////////////////////
+#include "qhttpbase.hpp"
 #include "qhttpresponse.hpp"
 #include "qhttpserver.hpp"
 #include "qhttpconnection.hpp"
@@ -10,7 +11,7 @@
 #include <QTcpSocket>
 
 ///////////////////////////////////////////////////////////////////////////////
-class QHttpResponse::Private
+class QHttpResponse::Private : public HttpResponseBase
 {
     QHttpResponse*      iparent;
 
@@ -68,7 +69,6 @@ public:
 
 
 public:
-    THeaderHash          iheaders;
     QTcpSocket*          isocket;
 
     bool                 iheaderWritten;

@@ -2,19 +2,17 @@
 #define QHTTPREQUEST_PRIVATE_HPP
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "qhttpbase.hpp"
 #include "qhttprequest.hpp"
 #include "qhttpconnection.hpp"
 ///////////////////////////////////////////////////////////////////////////////
-class QHttpRequest::Private
+class QHttpRequest::Private : public HttpRequestBase
 {
 public:
     explicit Private() : isuccessful(false) {
     }
 
 public:
-    THeaderHash              iheaders;
-    THttpMethod              imethod;
-    QUrl                     iurl;
     QString                  iversion;
     QString                  iremoteAddress;
     quint16                  iremotePort;
