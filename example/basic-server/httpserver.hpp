@@ -7,41 +7,39 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace am {
 ///////////////////////////////////////////////////////////////////////////////
+/** a simple HTTP server who collects body data and gives response. */
 class HttpServer : public QHttpServer
 {
     Q_OBJECT
 
 public:
-    explicit    HttpServer(QObject *parent);
-    virtual     ~HttpServer();
+    explicit        HttpServer(QObject *parent);
+    virtual        ~HttpServer();
 
 signals:
-    void        closed();
+    /** if a client sends an HTTP header as "command: quit", this server stops and emit this signal. */
+    void            closed();
 
 protected:
-    virtual void incomingRequest(QHttpRequest*, QHttpResponse*);
+    virtual void    incomingConnection(QHttpConnection* connection);    ///< overload
 
-    uint32_t    icounter;
-
+    uint32_t        icounter;   ///< a dumb counter for incomming requests.
 };
 ///////////////////////////////////////////////////////////////////////////////
-
+/** connection class for gathering incomming chunks of data. */
 class ClientConnection : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit    ClientConnection(QHttpRequest*, QHttpResponse*, QObject*);
+    explicit        ClientConnection(uint32_t id, QHttpConnection*);
+    void            processRequest(QHttpRequest*, QHttpResponse*);
 
 signals:
-    void        requestQuit();
+    void            requestQuit();
 
 protected:
-    void        onComplete();
-
-protected:
-    QHttpRequest*   ireq;
-    QHttpResponse*  iresp;
+    uint32_t        iconnectionId;
     QByteArray      ibody;
 };
 

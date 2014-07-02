@@ -86,7 +86,7 @@ QHttpConnection::Private::messageBegin(http_parser*) {
     itempUrl.clear();
     itempUrl.reserve(128);
 
-    irequest = new QHttpRequest(iparent);
+    irequest = new QHttpRequest(isocket);
     return 0;
 }
 
@@ -149,7 +149,7 @@ QHttpConnection::Private::headersComplete(http_parser* parser) {
 
     // set method
     irequest->pimp->imethod =
-            static_cast<QHttpRequest::HttpMethod>(parser->method);
+            static_cast<THttpMethod>(parser->method);
 
     // set version
     irequest->pimp->iversion = QString("%1.%2")

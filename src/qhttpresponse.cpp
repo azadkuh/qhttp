@@ -54,7 +54,7 @@ QHttpResponse::setHeader(const QByteArray &field, const QByteArray &value) {
 }
 
 void
-QHttpResponse::writeHead(int status) {
+QHttpResponse::writeHead(TStatusCode status) {
     if ( pimp->ifinished ) {
         qWarning()
             << "QHttpResponse::writeHead() Cannot write headers after response has finished.";
@@ -68,17 +68,14 @@ QHttpResponse::writeHead(int status) {
 
     pimp->write(QString("HTTP/1.1 %1 %2\r\n")
                 .arg(status)
-                .arg(QHttpServer::statusCodes()[status]).toLatin1()
+                .arg(QHttpServer::statusCodeMessage(status)
+                     ).toLatin1()
                 );
     pimp->writeHeaders();
     pimp->write("\r\n");
+    pimp->isocket->flush();
 
     pimp->iheaderWritten = true;
-}
-
-void
-QHttpResponse::writeHead(StatusCode statusCode) {
-    writeHead(static_cast<int>(statusCode));
 }
 
 void
@@ -105,6 +102,7 @@ QHttpResponse::end(const QByteArray &data) {
     if ( data.size() > 0 )
         write(data);
 
+    pimp->isocket->flush();
     pimp->ifinished = true;
 
     emit done(!pimp->ikeepAlive);

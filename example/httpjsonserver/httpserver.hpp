@@ -20,10 +20,7 @@ signals:
     void         closed();
 
 protected:
-    virtual void incomingRequest(QHttpRequest*, QHttpResponse*);
-
-    uint32_t     icounter;
-
+    void         incomingConnection(QHttpConnection *connection);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -33,18 +30,16 @@ class ClientConnection : public QObject
     Q_OBJECT
 
 public:
-    explicit    ClientConnection(QHttpRequest*, QHttpResponse*, QObject*);
-    virtual    ~ClientConnection();
+    explicit        ClientConnection(QHttpConnection*);
+    void            processRequest(QHttpRequest*, QHttpResponse*);
 
 signals:
-    void        requestQuit();
+    void            requestQuit();
 
 protected:
-    void        onComplete();
+    void            onComplete();
 
 protected:
-    QHttpRequest*   ireq;
-    QHttpResponse*  iresp;
     QByteArray      ibody;
 };
 

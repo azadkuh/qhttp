@@ -9,68 +9,72 @@
 namespace am {
 ///////////////////////////////////////////////////////////////////////////////
 HttpServer::HttpServer(QObject *parent) : QHttpServer(parent), icounter(0) {
-    QObject::connect(this, &HttpServer::newRequest, [this](QHttpRequest* req, QHttpResponse* resp){
-        this->incomingRequest(req, resp);
-    });
 }
 
 HttpServer::~HttpServer() {
 }
 
 void
-HttpServer::incomingRequest(QHttpRequest* req, QHttpResponse* resp) {
-    printf("a new request (#%d) is comming from %s:%d\n",
-           ++icounter,
-           req->remoteAddress().toUtf8().constData(),
-           req->remotePort());
+HttpServer::incomingConnection(QHttpConnection *connection) {
+    ClientConnection* cc = new ClientConnection(icounter++, connection);
 
-    QString body = QString("Hello World\n    packet count = %1\n    time = %2\n")
-                   .arg(icounter)
-                   .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
-
-    resp->setHeader("content-length", QString::number(body.size()).toLatin1());
-    //resp->setHeader("connection", "close");
-    resp->writeHead(200);
-    resp->write(body.toUtf8());
-
-    ClientConnection* cc = new ClientConnection(req, resp, this);
-    QObject::connect(cc,       &ClientConnection::requestQuit,
-                     this,     &HttpServer::closed,
-                     Qt::QueuedConnection);
+    QObject::connect(cc,        &ClientConnection::requestQuit, [this](){
+        this->close();
+        emit closed();
+    });
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
-ClientConnection::ClientConnection(QHttpRequest *req, QHttpResponse *resp, QObject* p) :
-    QObject(p), ireq(req), iresp(resp) {
+ClientConnection::ClientConnection(uint32_t id, QHttpConnection* conn)
+    : QObject(conn), iconnectionId(id) {
+
+    QObject::connect(conn, &QHttpConnection::dropped, [this](){
+        deleteLater();
+    });
+
+    QObject::connect(conn, &QHttpConnection::newRequest,
+                     [this](QHttpRequest* req, QHttpResponse* res){
+        processRequest(req, res);
+    });
+}
+
+void
+ClientConnection::processRequest(QHttpRequest* req, QHttpResponse* res) {
 
     QObject::connect(req, &QHttpRequest::data, [this](const QByteArray& chunk){
         ibody.append(chunk);
     });
 
-    QObject::connect(req,      &QHttpRequest::end,
-                     this,     &ClientConnection::onComplete
-                     );
+    QObject::connect(req, &QHttpRequest::end, [this, req](){
+        if ( req->method() == EHTTP_POST )
+            printf("body: \"%s\"\n", ibody.constData());
+
+
+        printf("end of client connection\n");
+
+        const THeaderHash &headers = req->headers();
+
+        if ( headers.value("command") == "quit" ) {
+            printf("a quit has been requested!\n");
+            emit requestQuit();
+        }
+    });
+
+    printf("a new request (#%d) is comming from %s:%d\n",
+           iconnectionId,
+           req->remoteAddress().toUtf8().constData(),
+           req->remotePort());
+
+    QString body = QString("Hello World\n    packet count = %1\n    time = %2\n")
+                   .arg(iconnectionId)
+                   .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
+
+    res->setHeader("content-length", QString::number(body.size()).toLatin1());
+    res->setHeader("connection", "close");
+    res->writeHead(ESTATUS_OK);
+    res->write(body.toUtf8());
 }
 
-void
-ClientConnection::onComplete() {
-    const THeaderHash &headers = ireq->headers();
-
-    if ( headers.value("command") == "quit" ) {
-        printf("a quit has been requested!\n");
-        emit requestQuit();
-    }
-
-    if ( ireq->method() == QHttpRequest::HTTP_POST )
-        printf("body: \"%s\"\n", ibody.constData());
-
-
-    printf("end of client connection\n");
-    iresp->deleteLater();
-    ireq->deleteLater();
-    deleteLater();
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 } // namespace am

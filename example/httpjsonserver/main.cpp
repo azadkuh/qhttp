@@ -39,6 +39,11 @@ public:
 
         printf("listening @ %d --timeout %u\n\n",
                iport, itimeOut);
+
+        QObject::connect(&iserver,      &am::HttpServer::closed,
+                         this,          &QCoreApplication::quit,
+                         Qt::QueuedConnection
+                         );
     }
 
     bool        start() {

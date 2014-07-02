@@ -30,71 +30,79 @@
 #include <QDebug>
 
 ///////////////////////////////////////////////////////////////////////////////
+#define HTTP_STATUS_MAP(XX)                    \
+    XX(100, "Continue")                        \
+    XX(101, "Switching Protocols")             \
+    /* RFC 2518) obsoleted by RFC 4918 */      \
+    XX(102, "Processing")                      \
+    XX(200, "OK")                              \
+    XX(201, "Created")                         \
+    XX(202, "Accepted")                        \
+    XX(203, "Non-Authoritative Information")   \
+    XX(204, "No Content")                      \
+    XX(205, "Reset Content")                   \
+    XX(206, "Partial Content")                 \
+    /* RFC 4918 */                             \
+    XX(207, "Multi-Status")                    \
+    XX(300, "Multiple Choices")                \
+    XX(301, "Moved Permanently")               \
+    XX(302, "Moved Temporarily")               \
+    XX(303, "See Other")                       \
+    XX(304, "Not Modified")                    \
+    XX(305, "Use Proxy")                       \
+    XX(307, "Temporary Redirect")              \
+    XX(400, "Bad Request")                     \
+    XX(401, "Unauthorized")                    \
+    XX(402, "Payment Required")                \
+    XX(403, "Forbidden")                       \
+    XX(404, "Not Found")                       \
+    XX(405, "Method Not Allowed")              \
+    XX(406, "Not Acceptable")                  \
+    XX(407, "Proxy Authentication Required")   \
+    XX(408, "Request Time-out")                \
+    XX(409, "Conflict")                        \
+    XX(410, "Gone")                            \
+    XX(411, "Length Required")                 \
+    XX(412, "Precondition Failed")             \
+    XX(413, "Request Entity Too Large")        \
+    XX(414, "Request-URI Too Large")           \
+    XX(415, "Unsupported Media Type")          \
+    XX(416, "Requested Range Not Satisfiable") \
+    XX(417, "Expectation Failed")              \
+    /* RFC 2324 */                             \
+    XX(418, "I\"m a teapot")                   \
+    /* RFC 4918 */                             \
+    XX(422, "Unprocessable Entity")            \
+    /* RFC 4918 */                             \
+    XX(423, "Locked")                          \
+    /* RFC 4918 */                             \
+    XX(424, "Failed Dependency")               \
+    /* RFC 4918 */                             \
+    XX(425, "Unordered Collection")            \
+    /* RFC 2817 */                             \
+    XX(426, "Upgrade Required")                \
+    XX(500, "Internal Server Error")           \
+    XX(501, "Not Implemented")                 \
+    XX(502, "Bad Gateway")                     \
+    XX(503, "Service Unavailable")             \
+    XX(504, "Gateway Time-out")                \
+    XX(505, "HTTP Version not supported")      \
+    /* RFC 2295 */                             \
+    XX(506, "Variant Also Negotiates")         \
+    /* RFC 4918 */                             \
+    XX(507, "Insufficient Storage")            \
+    XX(509, "Bandwidth Limit Exceeded")        \
+    /* RFC 2774 */                             \
+    XX(510, "Not Extended")
 
-struct StatusCodes
-{
-    QHash<int, QString>     istatusHash;
-
-    StatusCodes() {
-#define STATUS_CODE(num, reason) istatusHash.insert(num, reason);
-    // {{{
-    STATUS_CODE(100, "Continue")
-    STATUS_CODE(101, "Switching Protocols")
-    STATUS_CODE(102, "Processing") // RFC 2518) obsoleted by RFC 4918
-    STATUS_CODE(200, "OK")
-    STATUS_CODE(201, "Created")
-    STATUS_CODE(202, "Accepted")
-    STATUS_CODE(203, "Non-Authoritative Information")
-    STATUS_CODE(204, "No Content")
-    STATUS_CODE(205, "Reset Content")
-    STATUS_CODE(206, "Partial Content")
-    STATUS_CODE(207, "Multi-Status") // RFC 4918
-    STATUS_CODE(300, "Multiple Choices")
-    STATUS_CODE(301, "Moved Permanently")
-    STATUS_CODE(302, "Moved Temporarily")
-    STATUS_CODE(303, "See Other")
-    STATUS_CODE(304, "Not Modified")
-    STATUS_CODE(305, "Use Proxy")
-    STATUS_CODE(307, "Temporary Redirect")
-    STATUS_CODE(400, "Bad Request")
-    STATUS_CODE(401, "Unauthorized")
-    STATUS_CODE(402, "Payment Required")
-    STATUS_CODE(403, "Forbidden")
-    STATUS_CODE(404, "Not Found")
-    STATUS_CODE(405, "Method Not Allowed")
-    STATUS_CODE(406, "Not Acceptable")
-    STATUS_CODE(407, "Proxy Authentication Required")
-    STATUS_CODE(408, "Request Time-out")
-    STATUS_CODE(409, "Conflict")
-    STATUS_CODE(410, "Gone")
-    STATUS_CODE(411, "Length Required")
-    STATUS_CODE(412, "Precondition Failed")
-    STATUS_CODE(413, "Request Entity Too Large")
-    STATUS_CODE(414, "Request-URI Too Large")
-    STATUS_CODE(415, "Unsupported Media Type")
-    STATUS_CODE(416, "Requested Range Not Satisfiable")
-    STATUS_CODE(417, "Expectation Failed")
-    STATUS_CODE(418, "I\"m a teapot")        // RFC 2324
-    STATUS_CODE(422, "Unprocessable Entity") // RFC 4918
-    STATUS_CODE(423, "Locked")               // RFC 4918
-    STATUS_CODE(424, "Failed Dependency")    // RFC 4918
-    STATUS_CODE(425, "Unordered Collection") // RFC 4918
-    STATUS_CODE(426, "Upgrade Required")     // RFC 2817
-    STATUS_CODE(500, "Internal Server Error")
-    STATUS_CODE(501, "Not Implemented")
-    STATUS_CODE(502, "Bad Gateway")
-    STATUS_CODE(503, "Service Unavailable")
-    STATUS_CODE(504, "Gateway Time-out")
-    STATUS_CODE(505, "HTTP Version not supported")
-    STATUS_CODE(506, "Variant Also Negotiates") // RFC 2295
-    STATUS_CODE(507, "Insufficient Storage")    // RFC 4918
-    STATUS_CODE(509, "Bandwidth Limit Exceeded")
-    STATUS_CODE(510, "Not Extended") // RFC 2774
-    // }}}
-    }
+#define PATCH_STATUS_CODES(n,s) {n, s},
+static struct {
+    int         code;
+    const char* message;
+} g_status_codes[] {
+    HTTP_STATUS_MAP(PATCH_STATUS_CODES)
 };
-
-Q_GLOBAL_STATIC(StatusCodes, gStatusCodes)
+#undef PATCH_STATUS_CODES
 
 ///////////////////////////////////////////////////////////////////////////////
 class QHttpServer::Private
@@ -124,9 +132,15 @@ QHttpServer::listen(const QHostAddress& address, quint16 port) {
     return QTcpServer::listen(address, port);
 }
 
-const TStatusCodes&
-QHttpServer::statusCodes() {
-    return gStatusCodes->istatusHash;
+const char*
+QHttpServer::statusCodeMessage(TStatusCode code) {
+    size_t count = sizeof(g_status_codes) / sizeof(g_status_codes[0]);
+    for ( size_t i = 0;    i < count;    i++ ) {
+        if ( g_status_codes[i].code == code )
+            return g_status_codes[i].message;
+    }
+
+    return nullptr;
 }
 
 quint32

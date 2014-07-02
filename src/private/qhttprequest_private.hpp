@@ -13,7 +13,7 @@ public:
 
 public:
     THeaderHash              iheaders;
-    QHttpRequest::HttpMethod imethod;
+    THttpMethod              imethod;
     QUrl                     iurl;
     QString                  iversion;
     QString                  iremoteAddress;

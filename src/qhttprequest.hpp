@@ -48,51 +48,11 @@ class QHTTPSERVER_API QHttpRequest : public QObject
     Q_PROPERTY(THeaderHash  headers         READ headers)
     Q_PROPERTY(QUrl         url             READ url)
 
-    Q_ENUMS(HttpMethod)
-
-public:
-    /** Request method enumeration.
-     * @note Taken from http_parser.h
-     * -- make sure to keep synced */
-    enum HttpMethod {
-        HTTP_DELETE = 0,
-        HTTP_GET,
-        HTTP_HEAD,
-        HTTP_POST,
-        HTTP_PUT,
-        // pathological
-        HTTP_CONNECT,
-        HTTP_OPTIONS,
-        HTTP_TRACE,
-        // webdav
-        HTTP_COPY,
-        HTTP_LOCK,
-        HTTP_MKCOL,
-        HTTP_MOVE,
-        HTTP_PROPFIND,
-        HTTP_PROPPATCH,
-        HTTP_SEARCH,
-        HTTP_UNLOCK,
-        // subversion
-        HTTP_REPORT,
-        HTTP_MKACTIVITY,
-        HTTP_CHECKOUT,
-        HTTP_MERGE,
-        // upnp
-        HTTP_MSEARCH,
-        HTTP_NOTIFY,
-        HTTP_SUBSCRIBE,
-        HTTP_UNSUBSCRIBE,
-        // RFC-5789
-        HTTP_PATCH,
-        HTTP_PURGE
-    };
-
 public:
     virtual ~QHttpRequest();
 
     /** The method used for the request. */
-    HttpMethod          method() const ;
+    THttpMethod         method() const ;
 
     /** Returns the method string for the request.
      * @note This will plainly transform the enum into a string HTTP_GET -> "HTTP_GET". */
@@ -146,9 +106,9 @@ private:
     Private*            pimp;
 
 
-    static QString      MethodToString(QHttpRequest::HttpMethod method);
+    static QString      MethodToString(THttpMethod method);
 
-    explicit            QHttpRequest(QObject *connection);
+    explicit            QHttpRequest(QTcpSocket*);
 
     friend class        QHttpConnection;
     friend class        QHttpClient;

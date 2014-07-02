@@ -22,11 +22,17 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 #include "private/qhttprequest_private.hpp"
+#include "http-parser/http_parser.h"
 
+#include <QTcpSocket>
 ///////////////////////////////////////////////////////////////////////////////
-QHttpRequest::QHttpRequest(QObject *parent)
-    : QObject(parent), pimp(nullptr) {
+QHttpRequest::QHttpRequest(QTcpSocket *socket)
+    : QObject(socket), pimp(nullptr) {
     pimp    = new Private();
+
+    QObject::connect(socket, &QTcpSocket::disconnected, [this](){
+        deleteLater();
+    });
 
 #if QHTTPSERVER_MEMORY_LOG > 0
     fprintf(stderr, "    %s:%s(%d): obj = %p\n", __FILE__, __FUNCTION__, __LINE__, this);
@@ -45,13 +51,11 @@ QHttpRequest::~QHttpRequest() {
 }
 
 QString
-QHttpRequest::MethodToString(HttpMethod method) {
-    int index = staticMetaObject.indexOfEnumerator("HttpMethod");
-    return staticMetaObject.enumerator(index).valueToKey(method);
+QHttpRequest::MethodToString(THttpMethod method) {
+    return http_method_str(static_cast<http_method>(method));
 }
 
-QHttpRequest::HttpMethod
-QHttpRequest::method() const {
+THttpMethod QHttpRequest::method() const {
     return pimp->imethod;
 }
 

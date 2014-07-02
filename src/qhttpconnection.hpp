@@ -43,6 +43,8 @@ public:
 signals:
     void            newRequest(QHttpRequest *, QHttpResponse *);
 
+    void            dropped();
+
 protected:
     explicit        QHttpConnection(qintptr handle, QObject *parent, quint32 timeOut = 0);
     void            timerEvent(QTimerEvent*);

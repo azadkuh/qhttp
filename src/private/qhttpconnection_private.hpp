@@ -74,7 +74,7 @@ public:
         });
 
         QObject::connect(isocket, &QTcpSocket::disconnected, [this](){
-            isocket->deleteLater();
+            emit iparent->dropped();
             iparent->deleteLater();
         });
     }

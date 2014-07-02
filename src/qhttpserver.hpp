@@ -58,7 +58,7 @@ class QHTTPSERVER_API QHttpServer : public QTcpServer
     Q_PROPERTY(quint32 timeOut READ timeOut WRITE setTimeOut)
 
 public:
-    static const TStatusCodes& statusCodes();
+    static const char* statusCodeMessage(TStatusCode);
 
 public:
     /** construct a new HTTP Server. */
