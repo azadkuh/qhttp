@@ -8,7 +8,7 @@
 namespace am {
 ///////////////////////////////////////////////////////////////////////////////
 /** a simple HTTP server who collects body data and gives response. */
-class HttpServer : public QHttpServer
+class HttpServer : public qhttp::server::QHttpServer
 {
     Q_OBJECT
 
@@ -21,7 +21,7 @@ signals:
     void            closed();
 
 protected:
-    virtual void    incomingConnection(QHttpConnection* connection);    ///< overload
+    virtual void    incomingConnection(qhttp::server::QHttpConnection* connection);    ///< overload
 
     uint32_t        icounter;   ///< a dumb counter for incomming requests.
 };
@@ -32,8 +32,8 @@ class ClientConnection : public QObject
     Q_OBJECT
 
 public:
-    explicit        ClientConnection(uint32_t id, QHttpConnection*);
-    void            processRequest(QHttpRequest*, QHttpResponse*);
+    explicit        ClientConnection(uint32_t id, qhttp::server::QHttpConnection*);
+    void            processRequest(qhttp::server::QHttpRequest*, qhttp::server::QHttpResponse*);
 
 signals:
     void            requestQuit();

@@ -20,7 +20,7 @@ HttpServer::~HttpServer() {
 }
 
 void
-HttpServer::incomingConnection(QHttpConnection* conn) {
+HttpServer::incomingConnection(qhttp::server::QHttpConnection* conn) {
     ClientConnection* cc = new ClientConnection(conn);
 
     QObject::connect(cc, &ClientConnection::requestQuit, [this](){
@@ -32,22 +32,24 @@ HttpServer::incomingConnection(QHttpConnection* conn) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-ClientConnection::ClientConnection(QHttpConnection* conn)
+ClientConnection::ClientConnection(qhttp::server::QHttpConnection* conn)
     : QObject(conn) {
 
-    QObject::connect(conn, &QHttpConnection::dropped, [this](){
+    QObject::connect(conn, &qhttp::server::QHttpConnection::dropped, [this](){
         deleteLater();
     });
 
-    QObject::connect(conn, &QHttpConnection::newRequest,
+    QObject::connect(conn, &qhttp::server::QHttpConnection::newRequest,
                      this, &ClientConnection::processRequest
                      );
 }
 
 void
-ClientConnection::processRequest(QHttpRequest *req, QHttpResponse *res) {
+ClientConnection::processRequest(qhttp::server::QHttpRequest *req,
+                                 qhttp::server::QHttpResponse *res) {
 
-    QObject::connect(req, &QHttpRequest::data, [this](const QByteArray& chunk) {
+    QObject::connect(req, &qhttp::server::QHttpRequest::data,
+                     [this](const QByteArray& chunk) {
         // data attack!
         if ( ibody.size() > 4096 )
             this->deleteLater();
@@ -56,13 +58,14 @@ ClientConnection::processRequest(QHttpRequest *req, QHttpResponse *res) {
     });
 
 
-    QObject::connect(req,      &QHttpRequest::end, [this, req, res](){
+    QObject::connect(req, &qhttp::server::QHttpRequest::end,
+                     [this, req, res](){
         res->setHeader("connection", "close");
 
         if ( req->headers().value("command", "") == "quit" ) {
             puts("a quit header is received!");
 
-            res->writeHead(ESTATUS_OK);
+            res->writeHead(qhttp::ESTATUS_OK);
             res->end("server closed!\n");
             emit requestQuit();
             return;
@@ -100,11 +103,11 @@ ClientConnection::processRequest(QHttpRequest *req, QHttpResponse *res) {
         }
 
         if ( clientStatus ) {
-            res->writeHead(ESTATUS_OK);
+            res->writeHead(qhttp::ESTATUS_OK);
             res->end(QByteArray(buffer));
 
         } else {
-            res->writeHead(ESTATUS_BAD_REQUEST);
+            res->writeHead(qhttp::ESTATUS_BAD_REQUEST);
             res->end("bad request: the json value is not present or invalid!\n");
         }
     });

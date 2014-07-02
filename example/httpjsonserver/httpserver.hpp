@@ -8,7 +8,7 @@
 namespace am {
 ///////////////////////////////////////////////////////////////////////////////
 
-class HttpServer : public QHttpServer
+class HttpServer : public qhttp::server::QHttpServer
 {
     Q_OBJECT
 
@@ -20,7 +20,7 @@ signals:
     void         closed();
 
 protected:
-    void         incomingConnection(QHttpConnection *connection);
+    void         incomingConnection(qhttp::server::QHttpConnection *connection);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -30,8 +30,8 @@ class ClientConnection : public QObject
     Q_OBJECT
 
 public:
-    explicit        ClientConnection(QHttpConnection*);
-    void            processRequest(QHttpRequest*, QHttpResponse*);
+    explicit        ClientConnection(qhttp::server::QHttpConnection*);
+    void            processRequest(qhttp::server::QHttpRequest*, qhttp::server::QHttpResponse*);
 
 signals:
     void            requestQuit();

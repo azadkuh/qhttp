@@ -15,7 +15,7 @@ HttpServer::~HttpServer() {
 }
 
 void
-HttpServer::incomingConnection(QHttpConnection *connection) {
+HttpServer::incomingConnection(qhttp::server::QHttpConnection *connection) {
     ClientConnection* cc = new ClientConnection(icounter++, connection);
 
     QObject::connect(cc,        &ClientConnection::requestQuit, [this](){
@@ -25,34 +25,35 @@ HttpServer::incomingConnection(QHttpConnection *connection) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-ClientConnection::ClientConnection(uint32_t id, QHttpConnection* conn)
+ClientConnection::ClientConnection(uint32_t id, qhttp::server::QHttpConnection* conn)
     : QObject(conn), iconnectionId(id) {
 
-    QObject::connect(conn, &QHttpConnection::dropped, [this](){
+    QObject::connect(conn, &qhttp::server::QHttpConnection::dropped, [this](){
         deleteLater();
     });
 
-    QObject::connect(conn, &QHttpConnection::newRequest,
-                     [this](QHttpRequest* req, QHttpResponse* res){
+    QObject::connect(conn, &qhttp::server::QHttpConnection::newRequest,
+                     [this](qhttp::server::QHttpRequest* req, qhttp::server::QHttpResponse* res){
         processRequest(req, res);
     });
 }
 
 void
-ClientConnection::processRequest(QHttpRequest* req, QHttpResponse* res) {
+ClientConnection::processRequest(qhttp::server::QHttpRequest* req,
+                                 qhttp::server::QHttpResponse* res) {
 
-    QObject::connect(req, &QHttpRequest::data, [this](const QByteArray& chunk){
+    QObject::connect(req, &qhttp::server::QHttpRequest::data, [this](const QByteArray& chunk){
         ibody.append(chunk);
     });
 
-    QObject::connect(req, &QHttpRequest::end, [this, req](){
-        if ( req->method() == EHTTP_POST )
+    QObject::connect(req, &qhttp::server::QHttpRequest::end, [this, req](){
+        if ( req->method() == qhttp::EHTTP_POST )
             printf("body: \"%s\"\n", ibody.constData());
 
 
         printf("end of client connection\n");
 
-        const THeaderHash &headers = req->headers();
+        const qhttp::THeaderHash &headers = req->headers();
 
         if ( headers.value("command") == "quit" ) {
             printf("a quit has been requested!\n");
@@ -73,7 +74,7 @@ ClientConnection::processRequest(QHttpRequest* req, QHttpResponse* res) {
 
     res->setHeader("content-length", QString::number(body.size()).toLatin1());
     res->setHeader("connection", "close");
-    res->writeHead(ESTATUS_OK);
+    res->writeHead(qhttp::ESTATUS_OK);
     res->write(body.toUtf8());
 }
 
