@@ -114,6 +114,7 @@ int
 QHttpConnection::Private::headersComplete(http_parser* parser) {
     Q_ASSERT(irequest);
 
+#if defined(USE_CUSTOM_URL_CREATOR)
     // get parsed url
     struct http_parser_url urlInfo;
     int r = http_parser_parse_url(itempUrl.constData(),
@@ -127,6 +128,13 @@ QHttpConnection::Private::headersComplete(http_parser* parser) {
                                  itempUrl.constData(),
                                  urlInfo
                                  );
+    printf("tempUrl:\n%s\nurl:\n%s\n",
+           itempUrl.constData(),
+           qPrintable(irequest->pimp->iurl.toString())
+           );
+#else
+    irequest->pimp->iurl = QUrl(itempUrl);
+#endif // defined(USE_CUSTOM_URL_CREATOR)
 
     // set method
     irequest->pimp->imethod =
@@ -189,6 +197,10 @@ QHttpConnection::Private::messageComplete(http_parser*) {
 }
 
 
+
+///////////////////////////////////////////////////////////////////////////////
+#if defined(USE_CUSTOM_URL_CREATOR)
+///////////////////////////////////////////////////////////////////////////////
 /* URL Utilities */
 #define HAS_URL_FIELD(info, field) (info.field_set &(1 << (field)))
 
@@ -225,6 +237,7 @@ QHttpConnection::Private::createUrl(const char *urlData, const http_parser_url &
 #undef CHECK_AND_SET_FIELD
 #undef GET_FIELD
 #undef HAS_URL_FIELD
-
+///////////////////////////////////////////////////////////////////////////////
+#endif // defined(USE_CUSTOM_URL_CREATOR)
 ///////////////////////////////////////////////////////////////////////////////
 

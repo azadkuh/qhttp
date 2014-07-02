@@ -60,10 +60,12 @@ ClientConnection::processRequest(QHttpRequest* req, QHttpResponse* res) {
         }
     });
 
-    printf("a new request (#%d) is comming from %s:%d\n",
+    printf("a new request (#%d) is comming from %s:%d\nurl: %s\n",
            iconnectionId,
            req->remoteAddress().toUtf8().constData(),
-           req->remotePort());
+           req->remotePort(),
+           qPrintable(req->url().toString())
+           );
 
     QString body = QString("Hello World\n    packet count = %1\n    time = %2\n")
                    .arg(iconnectionId)

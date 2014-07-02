@@ -72,8 +72,10 @@ public:
     int          body(http_parser *parser, const char *at, size_t length);
     int          messageComplete(http_parser *parser);
 
+#ifdef USE_CUSTOM_URL_CREATOR
 public:
     static QUrl  createUrl(const char *urlData, const http_parser_url &urlInfo);
+#endif // USE_CUSTOM_URL_CREATOR
 };
 
 ///////////////////////////////////////////////////////////////////////////////
