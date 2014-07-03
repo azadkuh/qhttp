@@ -4,7 +4,7 @@ CONFIG      += console
 CONFIG      += c++11
 osx:CONFIG  -= app_bundle
 
-TARGET       = httpclient
+TARGET       = httpclient-qt
 TEMPLATE     = app
 PRJDIR       = ../..
 include($$PRJDIR/commondir.pri)

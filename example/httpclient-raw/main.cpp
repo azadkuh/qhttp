@@ -42,12 +42,12 @@ public:
                                             "number", "100"));
 
         parser.addOption(QCommandLineOption(QStringList() << "i" << "interval",
-                                            "time interval between each request in [mSec]. default: 1000",
-                                            "number", "1000"));
+                                            "time interval between each request in [mSec]. default: 0",
+                                            "number", "0"));
 
         parser.addOption(QCommandLineOption(QStringList() << "k" << "keep",
-                                            "keep a connection alive or disconnect after each response. default: yes",
-                                            "yes/no", "yes"));
+                                            "keep a connection alive or disconnect after each response. default: no",
+                                            "yes/no", "no"));
 
         parser.process(*this);
         QStringList args = parser.positionalArguments();
