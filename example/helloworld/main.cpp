@@ -12,11 +12,11 @@ int main(int argc, char ** argv) {
 
     QObject::connect(&server, &qhttp::server::QHttpServer::newRequest,
                      [](qhttp::server::QHttpRequest* req, qhttp::server::QHttpResponse* res) {
-        res->setHeader("connection", "close");      // set connection type to close (vs default keep-alive)
+        res->setHeader("connection", "close");      // it's the default header, this line can be omitted.
         res->writeHead(qhttp::ESTATUS_OK);          // status 200
         res->end("Hello World!\n");                 // response body data
 
-        // when connection closes, the req and res will be deleted automatically.
+        // when "connection: close", the req and res will be deleted automatically.
     });
 
 

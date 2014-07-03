@@ -42,7 +42,8 @@ public:
         });
         QObject::connect(&isocket, &QTcpSocket::disconnected, [this](){
             isocket.close();
-            QMetaObject::invokeMethod(iparent, "start");
+            if ( isleep == 0 )
+                QMetaObject::invokeMethod(iparent, "start");
         });
         QObject::connect(&isocket, &QTcpSocket::readyRead, [this](){
             if ( ibuffer.size() > (int) KPacketMaxLength ) {
@@ -61,6 +62,7 @@ public:
         if ( icommandCounter < irequests )
             return true;
 
+        itimer.stop();
         isocket.disconnectFromHost();
         emit iparent->finished(iclientId, icommandCounter);
         return false;
@@ -98,6 +100,9 @@ public:
         isocket.write(requestHeader);
         isocket.write(requestData);
         isocket.flush();
+
+        if ( isleep > 0 )
+            itimer.start(isleep, iparent);
     }
 
 protected:

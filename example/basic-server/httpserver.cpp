@@ -47,7 +47,7 @@ ClientConnection::processRequest(qhttp::server::QHttpRequest* req,
     });
 
     QObject::connect(req, &qhttp::server::QHttpRequest::end, [this, req, res](){
-        printf("a new request (#%d) is comming from %s:%d\nurl: %s\n",
+        printf("connection (#%d), a new request is comming from %s:%d\nurl: %s\n",
                iconnectionId,
                req->remoteAddress().toUtf8().constData(),
                req->remotePort(),
@@ -62,12 +62,6 @@ ClientConnection::processRequest(qhttp::server::QHttpRequest* req,
                        .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
 
         res->setHeader("content-length", QString::number(body.size()).toLatin1());
-
-        if ( req->headers().value("connection", "close") == "keep-alive" )
-            res->setHeader("connection", "keep-alive");
-        else
-            res->setHeader("connection", "close");
-
         res->writeHead(qhttp::ESTATUS_OK);
         res->end(body.toUtf8());
 

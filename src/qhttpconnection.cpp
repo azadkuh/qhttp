@@ -161,8 +161,7 @@ QHttpConnection::Private::headersComplete(http_parser* parser) {
 
     iresponse = new QHttpResponse(isocket);
 
-    if ( parser->http_major < 1 || parser->http_minor < 1 ||
-          irequest->pimp->iheaders.value("connection", "") == "close" ) {
+    if ( parser->http_major < 1 || parser->http_minor < 1  ) {
 
         iresponse->pimp->ikeepAlive = false;
     }
