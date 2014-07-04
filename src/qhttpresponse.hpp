@@ -92,7 +92,7 @@ private:
 
     explicit    QHttpResponse(QTcpSocket*);
 
-    friend class QHttpConnection;
+    friend class QHttpConnectionPrivate;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

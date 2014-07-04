@@ -35,7 +35,7 @@ HttpServer::incomingConnection(qhttp::server::QHttpConnection* conn) {
 ClientConnection::ClientConnection(qhttp::server::QHttpConnection* conn)
     : QObject(conn) {
 
-    QObject::connect(conn, &qhttp::server::QHttpConnection::dropped, [this](){
+    QObject::connect(conn, &qhttp::server::QHttpConnection::disconnected, [this](){
         deleteLater();
     });
 

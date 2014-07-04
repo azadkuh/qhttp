@@ -26,18 +26,24 @@
 #include "qhttpserverapi.hpp"
 #include "qhttpserverfwd.hpp"
 
-#include <QObject>
+#include <QTcpSocket>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
-class QHTTPSERVER_API QHttpConnection : public QObject
+class QHTTPSERVER_API QHttpConnection : public QTcpSocket
 {
     Q_OBJECT
 
 public:
-    virtual ~QHttpConnection();
+    virtual        ~QHttpConnection();
+
+    /** set an optional timer event to close the connection. */
+    void            setTimeOut(quint32 miliSeconds);
+
+    /** forcefully kill (close) a connection. */
+    void            killConnection();
 
     QHttpRequest*   latestRequest() const;
     QHttpResponse*  latestResponse() const;
@@ -45,15 +51,14 @@ public:
 signals:
     void            newRequest(QHttpRequest *, QHttpResponse *);
 
-    void            dropped();
-
 protected:
-    explicit        QHttpConnection(qintptr handle, QObject *parent, quint32 timeOut = 0);
+    explicit        QHttpConnection(QObject *parent);
+    explicit        QHttpConnection(QHttpConnectionPrivate& dd, QObject *parent);
     void            timerEvent(QTimerEvent*);
 
-    class           Private;
-    Private*        pimp;
-
+    Q_DECLARE_PRIVATE(QHttpConnection)
+    Q_DISABLE_COPY(QHttpConnection)
+    QScopedPointer<QHttpConnectionPrivate> d_ptr;
     friend class    QHttpServer;
 };
 

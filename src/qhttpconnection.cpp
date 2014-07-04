@@ -27,45 +27,56 @@
 namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
-QHttpConnection::QHttpConnection(qintptr handle, QObject *parent, quint32 timeOut)
-    : QObject(parent), pimp(nullptr) {
-    pimp    = new Private(handle, this, timeOut);
+QHttpConnection::QHttpConnection(QObject *parent) : QTcpSocket(parent),
+    d_ptr(new QHttpConnectionPrivate(this)) {
+#if QHTTPSERVER_MEMORY_LOG > 0
+    fprintf(stderr, "%s:%s(%d): obj = %p\n", __FILE__, __FUNCTION__, __LINE__, this);
+#endif
+}
 
+QHttpConnection::QHttpConnection(QHttpConnectionPrivate &dd, QObject *parent)
+    : QTcpSocket(parent), d_ptr(&dd) {
 #if QHTTPSERVER_MEMORY_LOG > 0
     fprintf(stderr, "%s:%s(%d): obj = %p\n", __FILE__, __FUNCTION__, __LINE__, this);
 #endif
 }
 
 QHttpConnection::~QHttpConnection() {
-    if ( pimp != nullptr ) {
-        delete pimp;
-        pimp = nullptr;
-    }
-
 #if QHTTPSERVER_MEMORY_LOG > 0
     fprintf(stderr, "%s:%s(%d): obj = %p\n", __FILE__, __FUNCTION__, __LINE__, this);
 #endif
 }
 
+void
+QHttpConnection::setTimeOut(quint32 miliSeconds) {
+    if ( miliSeconds != 0 )
+        d_func()->itimer.start(miliSeconds, this);
+}
+
+void
+QHttpConnection::killConnection() {
+    disconnectFromHost();
+}
+
 QHttpRequest*
 QHttpConnection::latestRequest() const {
-    return pimp->irequest;
+    return d_func()->irequest;
 }
 
 QHttpResponse*
 QHttpConnection::latestResponse() const {
-    return pimp->iresponse;
+    return d_func()->iresponse;
 }
 
 void
 QHttpConnection::timerEvent(QTimerEvent *) {
-    pimp->isocket->disconnectFromHost();
+    disconnectFromHost();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 int
-QHttpConnection::Private::messageBegin(http_parser*) {
+QHttpConnectionPrivate::messageBegin(http_parser*) {
     itempUrl.clear();
     itempUrl.reserve(128);
 
@@ -74,7 +85,7 @@ QHttpConnection::Private::messageBegin(http_parser*) {
 }
 
 int
-QHttpConnection::Private::url(http_parser*, const char* at, size_t length) {
+QHttpConnectionPrivate::url(http_parser*, const char* at, size_t length) {
     Q_ASSERT(irequest);
 
     itempUrl.append(at, length);
@@ -82,7 +93,7 @@ QHttpConnection::Private::url(http_parser*, const char* at, size_t length) {
 }
 
 int
-QHttpConnection::Private::headerField(http_parser*, const char* at, size_t length) {
+QHttpConnectionPrivate::headerField(http_parser*, const char* at, size_t length) {
     Q_ASSERT(irequest);
 
     // insert the header we parsed previously
@@ -105,7 +116,7 @@ QHttpConnection::Private::headerField(http_parser*, const char* at, size_t lengt
 }
 
 int
-QHttpConnection::Private::headerValue(http_parser*, const char* at, size_t length) {
+QHttpConnectionPrivate::headerValue(http_parser*, const char* at, size_t length) {
     Q_ASSERT(irequest);
 
     itempHeaderValue.append(at, length);
@@ -113,7 +124,7 @@ QHttpConnection::Private::headerValue(http_parser*, const char* at, size_t lengt
 }
 
 int
-QHttpConnection::Private::headersComplete(http_parser* parser) {
+QHttpConnectionPrivate::headersComplete(http_parser* parser) {
     Q_ASSERT(irequest);
 
 #if defined(USE_CUSTOM_URL_CREATOR)
@@ -167,12 +178,12 @@ QHttpConnection::Private::headersComplete(http_parser* parser) {
     }
 
     // we are good to go!
-    emit iparent->newRequest(irequest, iresponse);
+    emit q_ptr->newRequest(irequest, iresponse);
     return 0;
 }
 
 int
-QHttpConnection::Private::body(http_parser*, const char* at, size_t length) {
+QHttpConnectionPrivate::body(http_parser*, const char* at, size_t length) {
     Q_ASSERT(irequest);
 
     emit irequest->data(QByteArray(at, length));
@@ -180,7 +191,7 @@ QHttpConnection::Private::body(http_parser*, const char* at, size_t length) {
 }
 
 int
-QHttpConnection::Private::messageComplete(http_parser*) {
+QHttpConnectionPrivate::messageComplete(http_parser*) {
     Q_ASSERT(irequest);
 
 #   if QHTTPSERVER_MESSAGES_LOG > 0
@@ -212,7 +223,7 @@ QHttpConnection::Private::messageComplete(http_parser*) {
     (HAS_URL_FIELD(info, field) ? GET_FIELD(data, info, field) : QString())
 
 QUrl
-QHttpConnection::Private::createUrl(const char *urlData, const http_parser_url &urlInfo) {
+QHttpConnectionPrivate::createUrl(const char *urlData, const http_parser_url &urlInfo) {
     QUrl url;
     url.setScheme(CHECK_AND_GET_FIELD(urlData, urlInfo, UF_SCHEMA));
     url.setHost(CHECK_AND_GET_FIELD(urlData, urlInfo, UF_HOST));

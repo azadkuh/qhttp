@@ -11,16 +11,18 @@
 #include "private/qhttpresponse_private.hpp"
 
 #include <QBasicTimer>
-
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
-class QHttpConnection::Private : public HttpParserBase<QHttpConnection::Private>
+class QHttpConnectionPrivate : public HttpParserBase<QHttpConnectionPrivate>
 {
-public:
-    QHttpConnection*        iparent;
+    Q_DECLARE_PUBLIC(QHttpConnection)
 
+protected:
+    QHttpConnection* const q_ptr;
+
+public:
     // Since there can only be one request at any time even with pipelining.
     QHttpRequest*           irequest;      ///< latest request
     QHttpResponse*          iresponse;     ///< latest response
@@ -32,17 +34,12 @@ public:
 #   endif
 
 public:
-    explicit     Private(qintptr handle, QHttpConnection* p, quint32 timeOut)
-        : HttpParserBase(HTTP_REQUEST), iparent(p),
+    explicit    QHttpConnectionPrivate(QHttpConnection* p)
+        : HttpParserBase(HTTP_REQUEST), q_ptr(p),
         irequest(nullptr),
         iresponse(nullptr) {
 
-
-        if ( timeOut != 0 )
-            itimer.start(timeOut, iparent);
-
-        isocket        = new QTcpSocket(iparent);
-        isocket->setSocketDescriptor(handle);
+        isocket        = q_func();
 
         QObject::connect(isocket, &QTcpSocket::readyRead, [this](){
             while (isocket->bytesAvailable()) {
@@ -58,12 +55,8 @@ public:
         });
 
         QObject::connect(isocket, &QTcpSocket::disconnected, [this](){
-            emit iparent->dropped();
-            iparent->deleteLater();
+            q_func()->deleteLater();
         });
-    }
-
-    ~Private() {
     }
 
 public:

@@ -155,10 +155,11 @@ QHttpServer::setTimeOut(quint32 newValue) {
 
 void
 QHttpServer::incomingConnection(qintptr handle) {
-    incomingConnection(new QHttpConnection(handle,
-                                           this,
-                                           d_func()->itimeOut)
-                       );
+    QHttpConnection* conn = new QHttpConnection(this);
+    conn->setSocketDescriptor(handle);
+    conn->setTimeOut(d_func()->itimeOut);
+
+    incomingConnection(conn);
 }
 
 void

@@ -109,8 +109,7 @@ private:
 
     explicit            QHttpRequest(QTcpSocket*);
 
-    friend class        QHttpConnection;
-    friend class        QHttpClient;
+    friend class        QHttpConnectionPrivate;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
