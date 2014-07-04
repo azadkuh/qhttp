@@ -20,7 +20,7 @@
  * IN THE SOFTWARE.
  */
 ///////////////////////////////////////////////////////////////////////////////
-#include "qhttpserver.hpp"
+#include "private/qhttpserver_private.hpp"
 #include "qhttpconnection.hpp"
 #include "qhttprequest.hpp"
 #include "qhttpresponse.hpp"
@@ -110,26 +110,16 @@ static struct {
 #undef PATCH_STATUS_CODES
 
 ///////////////////////////////////////////////////////////////////////////////
-class QHttpServer::Private
-{
-public:
-    quint32         itimeOut;
 
-public:
-    explicit    Private() : itimeOut(0) {
-    }
-};
-///////////////////////////////////////////////////////////////////////////////
+QHttpServer::QHttpServer(QObject *parent)
+    : QTcpServer(parent), d_ptr(new QHttpServerPrivate) {
+}
 
-QHttpServer::QHttpServer(QObject *parent) : QTcpServer(parent), pimp(nullptr) {
-    pimp    = new Private();
+QHttpServer::QHttpServer(QHttpServerPrivate &dd, QObject *parent)
+    : QTcpServer(parent), d_ptr(&dd) {
 }
 
 QHttpServer::~QHttpServer() {
-    if ( pimp != nullptr ) {
-        delete pimp;
-        pimp = nullptr;
-    }
 }
 
 bool
@@ -155,19 +145,19 @@ QHttpServer::methodString(THttpMethod method) {
 
 quint32
 QHttpServer::timeOut() const {
-    return pimp->itimeOut;
+    return d_func()->itimeOut;
 }
 
 void
 QHttpServer::setTimeOut(quint32 newValue) {
-    pimp->itimeOut = newValue;
+    d_func()->itimeOut = newValue;
 }
 
 void
 QHttpServer::incomingConnection(qintptr handle) {
     incomingConnection(new QHttpConnection(handle,
                                            this,
-                                           pimp->itimeOut)
+                                           d_func()->itimeOut)
                        );
 }
 

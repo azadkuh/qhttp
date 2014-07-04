@@ -39,11 +39,6 @@ namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
 
-/** Maps status codes to string reason phrases. */
-typedef QHash<int, QString> TStatusCodes;
-
-///////////////////////////////////////////////////////////////////////////////
-
 /** The QHttpServer class forms the basis of this project.
  * It is a fast, non-blocking HTTP server.
  *  These are the steps to create a server, handle and respond to requests:
@@ -104,9 +99,12 @@ protected:
     virtual void incomingConnection(QHttpConnection* connection);
 
 private:
+    explicit QHttpServer(QHttpServerPrivate&, QObject *parent);
     virtual void incomingConnection(qintptr handle);
-    class        Private;
-    Private*     pimp;
+
+    Q_DECLARE_PRIVATE(QHttpServer)
+    Q_DISABLE_COPY(QHttpServer)
+    QScopedPointer<QHttpServerPrivate>  d_ptr;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

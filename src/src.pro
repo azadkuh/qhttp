@@ -28,7 +28,8 @@ HEADERS += \
     private/qhttpresponse_private.hpp \
     private/qhttprequest_private.hpp \
     private/qhttpconnection_private.hpp \
-    private/qhttpbase.hpp
+    private/qhttpbase.hpp \
+    private/qhttpserver_private.hpp
 
 SOURCES += $$PRJDIR/3rdparty/http-parser/http_parser.c
 HEADERS += $$PRJDIR/3rdparty/http-parser/http_parser.h

@@ -109,6 +109,12 @@ class QHttpServer;
 class QHttpConnection;
 class QHttpRequest;
 class QHttpResponse;
+
+// Privte classes
+class QHttpServerPrivate;
+class QHttpConnectionPrivate;
+class QHttpRequestPrivate;
+class QHttpResponsePrivate;
 ///////////////////////////////////////////////////////////////////////////////
 } // namespace server
 } // namespace qhttp
