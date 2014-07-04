@@ -16,6 +16,9 @@ public:
     explicit Private() : isuccessful(false) {
     }
 
+    virtual ~Private() {
+    }
+
 public:
     QString                  iversion;
     QString                  iremoteAddress;

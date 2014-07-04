@@ -51,7 +51,7 @@ class QHTTPSERVER_API QHttpRequest : public QObject
     Q_PROPERTY(QUrl         url             READ url)
 
 public:
-    virtual ~QHttpRequest();
+    virtual            ~QHttpRequest();
 
     /** The method used for the request. */
     THttpMethod         method() const ;

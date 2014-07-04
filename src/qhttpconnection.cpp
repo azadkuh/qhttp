@@ -29,22 +29,16 @@ namespace server {
 ///////////////////////////////////////////////////////////////////////////////
 QHttpConnection::QHttpConnection(QObject *parent) : QTcpSocket(parent),
     d_ptr(new QHttpConnectionPrivate(this)) {
-#if QHTTPSERVER_MEMORY_LOG > 0
-    fprintf(stderr, "%s:%s(%d): obj = %p\n", __FILE__, __FUNCTION__, __LINE__, this);
-#endif
+    QHTTP_LINE_LOG
 }
 
 QHttpConnection::QHttpConnection(QHttpConnectionPrivate &dd, QObject *parent)
     : QTcpSocket(parent), d_ptr(&dd) {
-#if QHTTPSERVER_MEMORY_LOG > 0
-    fprintf(stderr, "%s:%s(%d): obj = %p\n", __FILE__, __FUNCTION__, __LINE__, this);
-#endif
+    QHTTP_LINE_LOG
 }
 
 QHttpConnection::~QHttpConnection() {
-#if QHTTPSERVER_MEMORY_LOG > 0
-    fprintf(stderr, "%s:%s(%d): obj = %p\n", __FILE__, __FUNCTION__, __LINE__, this);
-#endif
+    QHTTP_LINE_LOG
 }
 
 void
@@ -194,7 +188,7 @@ int
 QHttpConnectionPrivate::messageComplete(http_parser*) {
     Q_ASSERT(irequest);
 
-#   if QHTTPSERVER_MESSAGES_LOG > 0
+#   if QHTTP_MESSAGES_LOG > 0
     QFile f("/tmp/incomingMessages.log");
     if ( f.open(QIODevice::Append | QIODevice::WriteOnly) ) {
         f.write(iinputBuffer);

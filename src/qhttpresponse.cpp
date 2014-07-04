@@ -29,9 +29,7 @@ QHttpResponse::QHttpResponse(QTcpSocket* socket)
     : QObject(socket) , pimp(nullptr) {
     pimp    = new Private(this, socket);
 
-#if QHTTPSERVER_MEMORY_LOG > 0
-    fprintf(stderr, "    %s:%s(%d): obj = %p\n", __FILE__, __FUNCTION__, __LINE__, this);
-#endif
+    QHTTP_LINE_LOG
 }
 
 QHttpResponse::~QHttpResponse() {
@@ -43,9 +41,7 @@ QHttpResponse::~QHttpResponse() {
         pimp  = nullptr;
     }
 
-#if QHTTPSERVER_MEMORY_LOG > 0
-    fprintf(stderr, "    %s:%s(%d): obj = %p\n", __FILE__, __FUNCTION__, __LINE__, this);
-#endif
+    QHTTP_LINE_LOG
 }
 
 void

@@ -17,6 +17,9 @@ public:
 public:
     explicit    QHttpServerPrivate() : itimeOut(0) {
     }
+
+    virtual    ~QHttpServerPrivate() {
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

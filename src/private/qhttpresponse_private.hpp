@@ -40,6 +40,9 @@ public:
         });
     }
 
+    virtual    ~Private() {
+    }
+
     void        reset() {
         isocket                    = nullptr;
 

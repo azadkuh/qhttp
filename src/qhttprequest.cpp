@@ -37,9 +37,7 @@ QHttpRequest::QHttpRequest(QTcpSocket *socket)
         deleteLater();
     });
 
-#if QHTTPSERVER_MEMORY_LOG > 0
-    fprintf(stderr, "    %s:%s(%d): obj = %p\n", __FILE__, __FUNCTION__, __LINE__, this);
-#endif
+    QHTTP_LINE_LOG
 }
 
 QHttpRequest::~QHttpRequest() {
@@ -48,9 +46,7 @@ QHttpRequest::~QHttpRequest() {
         pimp = nullptr;
     }
 
-#if QHTTPSERVER_MEMORY_LOG > 0
-    fprintf(stderr, "    %s:%s(%d): obj = %p\n", __FILE__, __FUNCTION__, __LINE__, this);
-#endif
+    QHTTP_LINE_LOG
 }
 
 THttpMethod QHttpRequest::method() const {

@@ -29,7 +29,7 @@ public:
 
     QBasicTimer             itimer;
 
-#   if QHTTPSERVER_MESSAGES_LOG > 0
+#   if QHTTP_MESSAGES_LOG > 0
     QByteArray              iinputBuffer;
 #   endif
 
@@ -46,7 +46,7 @@ public:
                 char buffer[4096] = {0};
                 size_t readLength = isocket->read(buffer, 4095);
 
-        #       if QHTTPSERVER_MESSAGES_LOG > 0
+        #       if QHTTP_MESSAGES_LOG > 0
                 iinputBuffer.append(buffer);
         #       endif
 
@@ -57,6 +57,9 @@ public:
         QObject::connect(isocket, &QTcpSocket::disconnected, [this](){
             q_func()->deleteLater();
         });
+    }
+
+    virtual ~QHttpConnectionPrivate() {
     }
 
 public:
