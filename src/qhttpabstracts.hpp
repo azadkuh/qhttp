@@ -32,7 +32,6 @@ public:
      *  until the receiving the full request has completed. */
     virtual bool                isSuccessful() const=0;
 
-
 signals:
     /** Emitted when new body data has been received.
      * @note This may be emitted zero or more times depending on the transfer type.
@@ -44,12 +43,61 @@ signals:
     void                        end();
 
 public:
-    virtual ~QHttpAbstractInput();
+    virtual                    ~QHttpAbstractInput();
 
 protected:
-    explicit QHttpAbstractInput(QObject* parent);
+    explicit                    QHttpAbstractInput(QObject* parent);
 
     Q_DISABLE_COPY(QHttpAbstractInput)
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class QHttpAbstractOutput : public QObject
+{
+    Q_OBJECT
+
+public:
+    /** changes the HTTP version string ex: "1.1" or "1.0".
+     * version is "1.1" set by default. */
+    virtual void            setVersion(const QString& versionString)=0;
+
+    /** adds an HTTP header to the packet.
+     * @note this method does not actually write anything to socket, just prepares the headers(). */
+    virtual void            addHeader(const QByteArray& field, const QByteArray& value)=0;
+
+    /** returns all the headers that already been set. */
+    virtual THeaderHash&    headers()=0;
+
+    /** writes a block of data into the HTTP packet.
+     * @note headers are written (flushed) before any data.
+     * @warning after calling this method add a new header, set staus code, set Url have no effect! */
+    virtual void            write(const QByteArray &data)=0;
+
+    /** ends (finishes) the outgoing packet by calling write().
+     * headers and data will be flushed to the underlying socket.
+     *
+     * @sa write() */
+    virtual void            end(const QByteArray &data = QByteArray())=0;
+
+signals:
+    /** Emitted when all the data has been sent.
+     * this signal indicates that the underlaying socket has transmitted all
+     *  of it's buffered data. */
+    void                    allBytesWritten();
+
+    /** Emitted when the packet is finished and reports if it was the last packet.
+     * if it was the last packet (google for "Connection: keep-alive / close")
+     *  the http connection (socket) will be closed automatically. */
+    void                    done(bool wasTheLastPacket);
+
+public:
+    virtual                ~QHttpAbstractOutput();
+
+protected:
+    explicit                QHttpAbstractOutput(QObject* parent);
+
+    Q_DISABLE_COPY(QHttpAbstractOutput)
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -60,12 +60,12 @@ ClientConnection::processRequest(qhttp::server::QHttpRequest *req,
 
     QObject::connect(req, &qhttp::server::QHttpRequest::end,
                      [this, req, res](){
-        res->setHeader("connection", "close");
+        res->addHeader("connection", "close");
 
         if ( req->headers().value("command", "") == "quit" ) {
             puts("a quit header is received!");
 
-            res->writeHead(qhttp::ESTATUS_OK);
+            res->setStatusCode(qhttp::ESTATUS_OK);
             res->end("server closed!\n");
             emit requestQuit();
             return;
@@ -103,11 +103,11 @@ ClientConnection::processRequest(qhttp::server::QHttpRequest *req,
         }
 
         if ( clientStatus ) {
-            res->writeHead(qhttp::ESTATUS_OK);
+            res->setStatusCode(qhttp::ESTATUS_OK);
             res->end(QByteArray(buffer));
 
         } else {
-            res->writeHead(qhttp::ESTATUS_BAD_REQUEST);
+            res->setStatusCode(qhttp::ESTATUS_BAD_REQUEST);
             res->end("bad request: the json value is not present or invalid!\n");
         }
     });

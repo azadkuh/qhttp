@@ -61,8 +61,8 @@ ClientConnection::processRequest(qhttp::server::QHttpRequest* req,
                        .arg(iconnectionId)
                        .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
 
-        res->setHeader("content-length", QString::number(body.size()).toLatin1());
-        res->writeHead(qhttp::ESTATUS_OK);
+        res->setStatusCode(qhttp::ESTATUS_OK);
+        res->addHeader("content-length", QString::number(body.size()).toLatin1());
         res->end(body.toUtf8());
 
         if ( req->headers().value("command") == "quit" ) {

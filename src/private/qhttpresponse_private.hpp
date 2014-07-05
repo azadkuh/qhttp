@@ -57,12 +57,17 @@ public:
         itransmitLen = itransmitPos = 0;
     }
 
-    void        writeHeaders();
-    void        writeHeader(const QByteArray& field, const QByteArray& value);
+    void        ensureWritingHeaders();
 
-    void        write(const QByteArray &data) {
-        isocket->write(data);
-        itransmitLen += data.size();
+    void        writeHeaders();
+
+protected:
+    void        writeHeader(const QByteArray& field, const QByteArray& value) {
+        QByteArray buffer = QByteArray(field)
+                            .append(": ")
+                            .append(value)
+                            .append("\r\n");
+        write(buffer);
     }
 
     void        updateWriteCount(qint64 count) {
@@ -77,6 +82,10 @@ public:
         }
     }
 
+    void        write(const QByteArray &data) {
+        isocket->write(data);
+        itransmitLen += data.size();
+    }
 
 public:
     QTcpSocket*          isocket;

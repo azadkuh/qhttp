@@ -31,7 +31,6 @@ public:
     }
 
 public:
-    QString                  iversion;
     QString                  iremoteAddress;
     quint16                  iremotePort;
     bool                     isuccessful;

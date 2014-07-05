@@ -5,11 +5,15 @@ namespace qhttp {
 ///////////////////////////////////////////////////////////////////////////////
 
 QHttpAbstractInput::QHttpAbstractInput(QObject* parent) : QObject(parent) {
-    QHTTP_LINE_DEEPLOG
 }
 
 QHttpAbstractInput::~QHttpAbstractInput() {
-    QHTTP_LINE_DEEPLOG
+}
+
+QHttpAbstractOutput::QHttpAbstractOutput(QObject *parent) : QObject(parent) {
+}
+
+QHttpAbstractOutput::~QHttpAbstractOutput() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////

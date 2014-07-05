@@ -24,10 +24,8 @@
 #define Q_HTTP_RESPONSE_HPP
 
 ///////////////////////////////////////////////////////////////////////////////
-#include "qhttpserverapi.hpp"
-#include "qhttpserverfwd.hpp"
 
-#include <QObject>
+#include "qhttpabstracts.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
@@ -42,54 +40,40 @@ namespace server {
  * <li>Call end() when the resonse can be sent back</li>
  * </ol>
  */
-class QHTTPSERVER_API QHttpResponse : public QObject
+class QHTTPSERVER_API QHttpResponse : public QHttpAbstractOutput
 {
     Q_OBJECT
 
 public:
-    virtual     ~QHttpResponse();
+    virtual        ~QHttpResponse();
 
 public:
-    /** Set the value of a HTTP header.
-     * @note You must call this with all your custom headers
-     *  before calling writeHead(), write() or end(). */
-    void        setHeader(const QByteArray& field, const QByteArray& value);
+    /** set the response HTTP status code. @sa TStatusCode.
+     * default value is ESTATUS_BAD_REQUEST.
+     * @sa write()
+     */
+    void            setStatusCode(TStatusCode code);
 
-    /** Writes the header section of the response.
-     * @param statusCode Status code for the response.
-     *  @note Any headers should be set before invoking this function with setHeader(). */
-    void        writeHead(TStatusCode statusCode);
+    /** @see QHttpAbstractOutput::setVersion(). */
+    void            setVersion(const QString& versionString);
 
-    /** Writes a block of data to the client.
-     * @note writeHead() must be called before this function. */
-    void        write(const QByteArray &data);
+    /** @see QHttpAbstractOutput::addHeader(). */
+    void            addHeader(const QByteArray& field, const QByteArray& value);
 
-    /** Ends (finishes) the response.
-     * Data will be flushed to the underlying socket and the connection itself will be closed if
-     * this is the last response.
-     *
-     * This will emit done() and queue this object for deletion.
-     * For details see \ref memorymanagement.
-     * @param data Optional data to be written before finishing. */
-    void        end(const QByteArray &data = QByteArray());
+    /** @see QHttpAbstractOutput::headers(). */
+    THeaderHash&    headers();
 
-signals:
-    /** Emitted when all the data has been sent.
-     * This signal indicates that the underlaying socket has transmitted all
-     *  of it's buffered data. It is possible to implement memory-efficient
-     *  file transfers by calling \ref write() for a block of data only after
-     *  receiving this signal. */
-    void        allBytesWritten();
+    /** @see QHttpAbstractOutput::write(). */
+    void            write(const QByteArray &data);
 
-    /** Emitted when the response is finished and reports if it was the last response.
-     * if it was the last response (google for "Connection: keep-alive / close")
-     *  the http connection (socket) will be closed automatically. */
-    void        done(bool wasTheLastResponse);
+    /** @see QHttpAbstractOutput::end(). */
+    void            end(const QByteArray &data = QByteArray());
 
-private:
-    explicit    QHttpResponse(QTcpSocket*);
-    explicit    QHttpResponse(QHttpResponsePrivate&, QTcpSocket*);
-    friend class QHttpConnectionPrivate;
+
+protected:
+    explicit        QHttpResponse(QTcpSocket*);
+    explicit        QHttpResponse(QHttpResponsePrivate&, QTcpSocket*);
+    friend class    QHttpConnectionPrivate;
 
     Q_DECLARE_PRIVATE(QHttpResponse)
     QScopedPointer<QHttpResponsePrivate> d_ptr;

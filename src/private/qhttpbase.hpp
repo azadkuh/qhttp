@@ -17,6 +17,7 @@ class HttpBase
 {
 public:
     THeaderHash         iheaders;
+    QString             iversion;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -33,7 +34,13 @@ public:
 class HttpResponseBase : public HttpBase
 {
 public:
-    int                 istatus;
+    HttpResponseBase() {
+        istatus     = ESTATUS_BAD_REQUEST;
+        iversion    = "1.1";
+    }
+
+public:
+    TStatusCode         istatus;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

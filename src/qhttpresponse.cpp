@@ -26,12 +26,12 @@ namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
 QHttpResponse::QHttpResponse(QTcpSocket* socket)
-    : QObject(socket) , d_ptr(new QHttpResponsePrivate(socket, this)) {
+    : QHttpAbstractOutput(socket) , d_ptr(new QHttpResponsePrivate(socket, this)) {
     QHTTP_LINE_LOG
 }
 
 QHttpResponse::QHttpResponse(QHttpResponsePrivate& dd, QTcpSocket* socket)
-    : QObject(socket) , d_ptr(&dd) {
+    : QHttpAbstractOutput(socket) , d_ptr(&dd) {
     QHTTP_LINE_LOG
 }
 
@@ -40,7 +40,17 @@ QHttpResponse::~QHttpResponse() {
 }
 
 void
-QHttpResponse::setHeader(const QByteArray &field, const QByteArray &value) {
+QHttpResponse::setStatusCode(TStatusCode code) {
+    d_func()->istatus   = code;
+}
+
+void
+QHttpResponse::setVersion(const QString &versionString) {
+    d_func()->iversion  = versionString;
+}
+
+void
+QHttpResponse::addHeader(const QByteArray &field, const QByteArray &value) {
     Q_D(QHttpResponse);
 
     if ( !d->ifinished )
@@ -49,47 +59,19 @@ QHttpResponse::setHeader(const QByteArray &field, const QByteArray &value) {
         qWarning() << "QHttpResponse::setHeader() Cannot set headers after response has finished.";
 }
 
-void
-QHttpResponse::writeHead(TStatusCode status) {
-    Q_D(QHttpResponse);
-
-    if ( d->ifinished ) {
-        qWarning()
-            << "QHttpResponse::writeHead() Cannot write headers after response has finished.";
-        return;
-    }
-
-    if ( d->iheaderWritten ) {
-        qWarning() << "QHttpResponse::writeHead() Already called once for this response.";
-        return;
-    }
-
-    d->write(QString("HTTP/1.1 %1 %2\r\n")
-             .arg(status)
-             .arg(QHttpServer::statusCodeMessage(status))
-             .toLatin1()
-                );
-    d->writeHeaders();
-    d->write("\r\n");
-    d->isocket->flush();
-
-    d->iheaderWritten = true;
+THeaderHash&
+QHttpResponse::headers() {
+    return d_func()->iheaders;
 }
 
 void
 QHttpResponse::write(const QByteArray &data) {
     Q_D(QHttpResponse);
 
-    if ( d->ifinished ) {
-        qWarning() << "QHttpResponse::write() Cannot write body after response has finished.";
+    if ( d->ifinished )
         return;
-    }
 
-    if ( !d->iheaderWritten ) {
-        qWarning() << "QHttpResponse::write() You must call writeHead() before writing body data.";
-        return;
-    }
-
+    d->ensureWritingHeaders();
     d->write(data);
 }
 
@@ -100,6 +82,7 @@ QHttpResponse::end(const QByteArray &data) {
     if ( d->ifinished )
         return;
 
+    d->ensureWritingHeaders();
 
     if ( data.size() > 0 )
         write(data);
@@ -112,21 +95,26 @@ QHttpResponse::end(const QByteArray &data) {
 
 ///////////////////////////////////////////////////////////////////////////////
 void
-QHttpResponsePrivate::writeHeader(const QByteArray& field, const QByteArray& value) {
-    if ( !ifinished ) {
-        QByteArray buffer = QByteArray(field)
-                            .append(": ")
-                            .append(value)
-                            .append("\r\n");
-        write(buffer);
-    } else
-        qWarning()
-            << "QHttpResponse::writeHeader() Cannot write headers after response has finished.";
+QHttpResponsePrivate::ensureWritingHeaders() {
+    if ( ifinished    ||    iheaderWritten )
+        return;
+
+    write(QString("HTTP/%1 %2 %3\r\n")
+          .arg(iversion)
+          .arg(istatus)
+          .arg(QHttpServer::statusCodeMessage(istatus))
+          .toLatin1()
+          );
+    writeHeaders();
+    write("\r\n");
+    isocket->flush();
+
+    iheaderWritten = true;
 }
 
 void
 QHttpResponsePrivate::writeHeaders() {
-    if ( ifinished )
+    if ( ifinished    ||    iheaderWritten )
         return;
 
     bool bsentConnectionHeader       = false;
