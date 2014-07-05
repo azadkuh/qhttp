@@ -14,12 +14,13 @@
 namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
-class QHttpResponse::Private : public HttpResponseBase
+class QHttpResponsePrivate : public HttpResponseBase
 {
-    QHttpResponse*      iparent;
+    Q_DECLARE_PUBLIC(QHttpResponse)
 
 public:
-    explicit    Private(QHttpResponse* parent, QTcpSocket* sok) : iparent(parent) {
+    explicit    QHttpResponsePrivate(QTcpSocket* sok, QHttpResponse* q)
+        : q_ptr(q) {
         reset();
 
         isocket    = sok;
@@ -30,10 +31,10 @@ public:
 
         QObject::connect(isocket, &QTcpSocket::disconnected, [this](){
             ifinished   = true;
-            iparent->deleteLater();
+            q_func()->deleteLater();
         });
 
-        QObject::connect(iparent,     &QHttpResponse::done,
+        QObject::connect(q_func(),     &QHttpResponse::done,
                          [this](bool wasTheLastResponse){
             if ( wasTheLastResponse )
                 isocket->disconnectFromHost();
@@ -42,7 +43,7 @@ public:
         QHTTP_LINE_DEEPLOG
     }
 
-    virtual    ~Private() {
+    virtual    ~QHttpResponsePrivate() {
         QHTTP_LINE_DEEPLOG
     }
 
@@ -72,7 +73,7 @@ public:
         if ( itransmitPos == itransmitLen ) {
             itransmitLen = 0;
             itransmitPos = 0;
-            emit iparent->allBytesWritten();
+            emit q_func()->allBytesWritten();
         }
     }
 
@@ -88,6 +89,8 @@ public:
     qint64               itransmitLen;
     qint64               itransmitPos;
 
+protected:
+    QHttpResponse*       q_ptr;
 
 };
 

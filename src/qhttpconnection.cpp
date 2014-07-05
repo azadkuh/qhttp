@@ -170,7 +170,7 @@ QHttpConnectionPrivate::headersComplete(http_parser* parser) {
 
     if ( parser->http_major < 1 || parser->http_minor < 1  ) {
 
-        iresponse->pimp->ikeepAlive = false;
+        iresponse->d_func()->ikeepAlive = false;
     }
 
     // we are good to go!

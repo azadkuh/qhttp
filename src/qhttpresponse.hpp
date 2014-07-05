@@ -87,12 +87,12 @@ signals:
     void        done(bool wasTheLastResponse);
 
 private:
-    class       Private;
-    Private     *pimp;
-
     explicit    QHttpResponse(QTcpSocket*);
-
+    explicit    QHttpResponse(QHttpResponsePrivate&, QTcpSocket*);
     friend class QHttpConnectionPrivate;
+
+    Q_DECLARE_PRIVATE(QHttpResponse)
+    QScopedPointer<QHttpResponsePrivate> d_ptr;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
