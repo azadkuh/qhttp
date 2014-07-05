@@ -53,12 +53,13 @@ signals:
 
 protected:
     explicit        QHttpConnection(QObject *parent);
-    explicit        QHttpConnection(QHttpConnectionPrivate& dd, QObject *parent);
+    explicit        QHttpConnection(QHttpConnectionPrivate&, QObject *);
     void            timerEvent(QTimerEvent*);
 
-    Q_DECLARE_PRIVATE(QHttpConnection)
     Q_DISABLE_COPY(QHttpConnection)
-    QScopedPointer<QHttpConnectionPrivate> d_ptr;
+    Q_DECLARE_PRIVATE(QHttpConnection)
+    QScopedPointer<QHttpConnectionPrivate>    d_ptr;
+
     friend class    QHttpServer;
 };
 

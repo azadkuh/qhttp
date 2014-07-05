@@ -38,9 +38,12 @@ public:
             if ( wasTheLastResponse )
                 isocket->disconnectFromHost();
         });
+
+        QHTTP_LINE_DEEPLOG
     }
 
     virtual    ~Private() {
+        QHTTP_LINE_DEEPLOG
     }
 
     void        reset() {

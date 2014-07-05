@@ -24,12 +24,8 @@
 #define Q_HTTP_REQUEST_HPP
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "qhttpserverapi.hpp"
-#include "qhttpserverfwd.hpp"
+#include "qhttpabstracts.hpp"
 
-#include <QObject>
-#include <QMetaEnum>
-#include <QMetaType>
 #include <QUrl>
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
@@ -43,15 +39,22 @@ namespace server {
  *
  * The class is <b>read-only</b>.
  */
-class QHTTPSERVER_API QHttpRequest : public QObject
+class QHTTPSERVER_API QHttpRequest : public QHttpAbstractInput
 {
     Q_OBJECT
 
-    Q_PROPERTY(THeaderHash  headers         READ headers)
-    Q_PROPERTY(QUrl         url             READ url)
-
 public:
     virtual            ~QHttpRequest();
+
+    /** @see QHttpAbstractInput::headers(). */
+    const THeaderHash&  headers() const;
+
+    /** @see QHttpAbstractInput::httpVersion(). */
+    const QString&      httpVersion() const;
+
+    /** @see QHttpAbstractInput::isSuccessful(). */
+    bool                isSuccessful() const;
+
 
     /** The method used for the request. */
     THttpMethod         method() const ;
@@ -64,52 +67,20 @@ public:
      * This includes the path and query string. @sa path(). */
     const QUrl&         url() const;
 
-    /** The HTTP version of the request.
-     * @return A string in the form of "x.x" */
-    const QString&      httpVersion() const;
-
-    /** Return all the headers sent by the client.
-     * This returns a reference. If you want to store headers
-     *  somewhere else, where the request may be deleted,
-     *  make sure you store them as a copy.
-     * @note All header names are <b>lowercase</b> . */
-    const THeaderHash&  headers() const;
-
     /** IP Address of the client in dotted decimal format. */
     const QString&      remoteAddress() const;
 
     /** Outbound connection port for the client. */
     quint16             remotePort() const;
 
-    /** If this request was successfully received.
-     * Set before end() has been emitted, stating whether
-     *  the message was properly received. This is false
-     *  until the receiving the full request has completed. */
-    bool                isSuccessful() const;
 
-signals:
-    /** Emitted when new body data has been received.
-     * @note This may be emitted zero or more times
-     *  depending on the request type. @param data Received data. */
-    void                data(const QByteArray &data);
-
-    /** Emitted when the request has been fully received.
-     * @note The no more data() signals will be emitted after this. */
-    void                end();
-
-public:
-    /** Set the value of a HTTP header.
-     * @note You must call this with all your custom headers
-     *  before calling writeHead(), write() or end(). */
-    void                setHeader(const QByteArray& field, const QByteArray& value);
-
-private:
-    class               Private;
-    Private*            pimp;
-
+protected:
     explicit            QHttpRequest(QTcpSocket*);
-
+    explicit            QHttpRequest(QHttpRequestPrivate&, QTcpSocket*);
     friend class        QHttpConnectionPrivate;
+
+    Q_DECLARE_PRIVATE(QHttpRequest)
+    QScopedPointer<QHttpRequestPrivate> d_ptr;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -27,12 +27,12 @@
 namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
-QHttpConnection::QHttpConnection(QObject *parent) : QTcpSocket(parent),
-    d_ptr(new QHttpConnectionPrivate(this)) {
+QHttpConnection::QHttpConnection(QObject *parent)
+    : QTcpSocket(parent), d_ptr(new QHttpConnectionPrivate(this)) {
     QHTTP_LINE_LOG
 }
 
-QHttpConnection::QHttpConnection(QHttpConnectionPrivate &dd, QObject *parent)
+QHttpConnection::QHttpConnection(QHttpConnectionPrivate& dd, QObject* parent)
     : QTcpSocket(parent), d_ptr(&dd) {
     QHTTP_LINE_LOG
 }
@@ -74,7 +74,9 @@ QHttpConnectionPrivate::messageBegin(http_parser*) {
     itempUrl.clear();
     itempUrl.reserve(128);
 
-    irequest = new QHttpRequest(isocket);
+    QTcpSocket* sok = static_cast<QTcpSocket*>(q_ptr);
+    Q_ASSERT(sok);
+    irequest = new QHttpRequest(sok);
     return 0;
 }
 
@@ -94,7 +96,7 @@ QHttpConnectionPrivate::headerField(http_parser*, const char* at, size_t length)
     // into the header map
     if ( !itempHeaderField.isEmpty() && !itempHeaderValue.isEmpty() ) {
         // header names are always lower-cased
-        irequest->pimp->iheaders.insert(
+        irequest->d_func()->iheaders.insert(
                     itempHeaderField.toLower(),
                     itempHeaderValue.toLower()
                     );
@@ -131,36 +133,36 @@ QHttpConnectionPrivate::headersComplete(http_parser* parser) {
     Q_ASSERT(r == 0);
     Q_UNUSED(r);
 
-    irequest->pimp->iurl = createUrl(
+    irequest->d_func()->iurl = createUrl(
                                  itempUrl.constData(),
                                  urlInfo
                                  );
     printf("tempUrl:\n%s\nurl:\n%s\n",
            itempUrl.constData(),
-           qPrintable(irequest->pimp->iurl.toString())
+           qPrintable(irequest->d_func()->iurl.toString())
            );
 #else
-    irequest->pimp->iurl = QUrl(itempUrl);
+    irequest->d_func()->iurl = QUrl(itempUrl);
 #endif // defined(USE_CUSTOM_URL_CREATOR)
 
     // set method
-    irequest->pimp->imethod =
+    irequest->d_func()->imethod =
             static_cast<THttpMethod>(parser->method);
 
     // set version
-    irequest->pimp->iversion = QString("%1.%2")
+    irequest->d_func()->iversion = QString("%1.%2")
                                  .arg(parser->http_major)
                                  .arg(parser->http_minor);
 
     // Insert last remaining header
-    irequest->pimp->iheaders.insert(
+    irequest->d_func()->iheaders.insert(
                 itempHeaderField.toLower(),
                 itempHeaderValue.toLower()
                 );
 
     // set client information
-    irequest->pimp->iremoteAddress = isocket->peerAddress().toString();
-    irequest->pimp->iremotePort    = isocket->peerPort();
+    irequest->d_func()->iremoteAddress = isocket->peerAddress().toString();
+    irequest->d_func()->iremotePort    = isocket->peerPort();
 
 
 
@@ -197,7 +199,7 @@ QHttpConnectionPrivate::messageComplete(http_parser*) {
     }
 #   endif
 
-    irequest->pimp->isuccessful = true;
+    irequest->d_func()->isuccessful = true;
     emit irequest->end();
     return 0;
 }

@@ -16,9 +16,11 @@ public:
 
 public:
     explicit    QHttpServerPrivate() : itimeOut(0) {
+        QHTTP_LINE_DEEPLOG
     }
 
     virtual    ~QHttpServerPrivate() {
+        QHTTP_LINE_DEEPLOG
     }
 };
 

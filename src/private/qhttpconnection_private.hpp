@@ -15,12 +15,9 @@
 namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
-class QHttpConnectionPrivate : public HttpParserBase<QHttpConnectionPrivate>
+class QHttpConnectionPrivate  : public HttpParserBase<QHttpConnectionPrivate>
 {
     Q_DECLARE_PUBLIC(QHttpConnection)
-
-protected:
-    QHttpConnection* const q_ptr;
 
 public:
     // Since there can only be one request at any time even with pipelining.
@@ -34,12 +31,11 @@ public:
 #   endif
 
 public:
-    explicit    QHttpConnectionPrivate(QHttpConnection* p)
-        : HttpParserBase(HTTP_REQUEST), q_ptr(p),
-        irequest(nullptr),
-        iresponse(nullptr) {
-
-        isocket        = q_func();
+    explicit    QHttpConnectionPrivate(QHttpConnection* q)
+        : HttpParserBase(HTTP_REQUEST), q_ptr(q) {
+        irequest       = nullptr;
+        iresponse      = nullptr;
+        isocket        = q;
 
         QObject::connect(isocket, &QTcpSocket::readyRead, [this](){
             while (isocket->bytesAvailable()) {
@@ -55,11 +51,14 @@ public:
         });
 
         QObject::connect(isocket, &QTcpSocket::disconnected, [this](){
-            q_func()->deleteLater();
+            q_ptr->deleteLater();
         });
+
+        QHTTP_LINE_DEEPLOG
     }
 
     virtual ~QHttpConnectionPrivate() {
+        QHTTP_LINE_DEEPLOG
     }
 
 public:
@@ -75,6 +74,9 @@ public:
 public:
     static QUrl  createUrl(const char *urlData, const http_parser_url &urlInfo);
 #endif // USE_CUSTOM_URL_CREATOR
+
+protected:
+    QHttpConnection* q_ptr;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

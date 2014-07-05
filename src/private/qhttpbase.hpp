@@ -46,10 +46,12 @@ public:
         iparser(nullptr), iparserSettings(nullptr) {
         // create http_parser object
         iparser         = new http_parser();
-        iparser->data   = this;
+        memset(iparser, 0, sizeof(http_parser));
+        iparser->data   = static_cast<T*>(this);
         http_parser_init(iparser, type);
 
         iparserSettings = new http_parser_settings();
+        memset(iparserSettings, 0, sizeof(http_parser_settings));
         iparserSettings->on_message_begin    = onMessageBegin;
         iparserSettings->on_url              = onUrl;
         iparserSettings->on_header_field     = onHeaderField;

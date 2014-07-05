@@ -29,68 +29,58 @@
 namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
-QHttpRequest::QHttpRequest(QTcpSocket *socket)
-    : QObject(socket), pimp(nullptr) {
-    pimp    = new Private();
+QHttpRequest::QHttpRequest(QTcpSocket *socket) : QHttpAbstractInput(socket) {
+    d_ptr.reset(new QHttpRequestPrivate(socket, this));
+    QHTTP_LINE_LOG
+}
 
-    QObject::connect(socket, &QTcpSocket::disconnected, [this](){
-        deleteLater();
-    });
-
+QHttpRequest::QHttpRequest(QHttpRequestPrivate &dd, QTcpSocket *socket)
+    : QHttpAbstractInput(socket), d_ptr(&dd) {
     QHTTP_LINE_LOG
 }
 
 QHttpRequest::~QHttpRequest() {
-    if ( pimp != nullptr ) {
-        delete pimp;
-        pimp = nullptr;
-    }
-
     QHTTP_LINE_LOG
 }
 
-THttpMethod QHttpRequest::method() const {
-    return pimp->imethod;
+THttpMethod
+QHttpRequest::method() const {
+    return d_func()->imethod;
 }
 
 const QString
 QHttpRequest::methodString() const {
-    return http_method_str(static_cast<http_method>(pimp->imethod));
+    return http_method_str(static_cast<http_method>(d_func()->imethod));
 }
 
 const QUrl&
 QHttpRequest::url() const {
-    return pimp->iurl;
+    return d_func()->iurl;
 }
 
 const QString&
 QHttpRequest::httpVersion() const {
-    return pimp->iversion;
+    return d_func()->iversion;
 }
 
 const THeaderHash&
 QHttpRequest::headers() const {
-    return pimp->iheaders;
+    return d_func()->iheaders;
 }
 
 const QString&
 QHttpRequest::remoteAddress() const {
-    return pimp->iremoteAddress;
+    return d_func()->iremoteAddress;
 }
 
 quint16
 QHttpRequest::remotePort() const {
-    return pimp->iremotePort;
+    return d_func()->iremotePort;
 }
 
 bool
 QHttpRequest::isSuccessful() const {
-    return pimp->isuccessful;
-}
-
-void
-QHttpRequest::setHeader(const QByteArray &field, const QByteArray &value) {
-    pimp->iheaders.insert(field.toLower(), value.toLower());
+    return d_func()->isuccessful;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
