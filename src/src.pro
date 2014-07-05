@@ -1,5 +1,4 @@
 QT       += core network
-#QT       += core-private network-private
 QT       -= gui
 
 TARGET    = qhttpserver
@@ -10,7 +9,7 @@ CONFIG   += c++11
 PRJDIR    = ..
 include($$PRJDIR/commondir.pri)
 
-DEFINES += QHTTP_MEMORY_LOG=2 QHTTP_MESSAGES_LOG=0
+DEFINES += QHTTP_MEMORY_LOG=0 QHTTP_MESSAGES_LOG=0
 
 
 SOURCES += \

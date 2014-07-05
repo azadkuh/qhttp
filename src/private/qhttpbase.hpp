@@ -42,39 +42,26 @@ template<class T>
 class HttpParserBase
 {
 public:
-    HttpParserBase(http_parser_type type) : isocket(nullptr),
-        iparser(nullptr), iparserSettings(nullptr) {
+    HttpParserBase(http_parser_type type) : isocket(nullptr) {
         // create http_parser object
-        iparser         = new http_parser();
-        memset(iparser, 0, sizeof(http_parser));
-        iparser->data   = static_cast<T*>(this);
-        http_parser_init(iparser, type);
+        iparser.data  = static_cast<T*>(this);
+        http_parser_init(&iparser, type);
 
-        iparserSettings = new http_parser_settings();
-        memset(iparserSettings, 0, sizeof(http_parser_settings));
-        iparserSettings->on_message_begin    = onMessageBegin;
-        iparserSettings->on_url              = onUrl;
-        iparserSettings->on_header_field     = onHeaderField;
-        iparserSettings->on_header_value     = onHeaderValue;
-        iparserSettings->on_headers_complete = onHeadersComplete;
-        iparserSettings->on_body             = onBody;
-        iparserSettings->on_message_complete = onMessageComplete;
+        memset(&iparserSettings, 0, sizeof(http_parser_settings));
+        iparserSettings.on_message_begin    = onMessageBegin;
+        iparserSettings.on_url              = onUrl;
+        iparserSettings.on_header_field     = onHeaderField;
+        iparserSettings.on_header_value     = onHeaderValue;
+        iparserSettings.on_headers_complete = onHeadersComplete;
+        iparserSettings.on_body             = onBody;
+        iparserSettings.on_message_complete = onMessageComplete;
     }
 
-    ~HttpParserBase() {
-        if ( iparser != nullptr ) {
-            delete iparser;
-            iparser = nullptr;
-        }
-
-        if ( iparserSettings != nullptr ) {
-            delete iparserSettings;
-            iparserSettings = nullptr;
-        }
+    virtual ~HttpParserBase() {
     }
 
     void         parse(const char* data, size_t length) {
-        http_parser_execute(iparser, iparserSettings,
+        http_parser_execute(&iparser, &iparserSettings,
                             data, length);
     }
 
@@ -123,8 +110,8 @@ public:
     QByteArray              itempUrl;
 
 private:
-    http_parser*            iparser;
-    http_parser_settings*   iparserSettings;
+    http_parser             iparser;
+    http_parser_settings    iparserSettings;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
