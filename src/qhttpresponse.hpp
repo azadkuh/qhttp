@@ -54,6 +54,7 @@ public:
      */
     void            setStatusCode(TStatusCode code);
 
+public: // QHttpAbstractOutput methods:
     /** @see QHttpAbstractOutput::setVersion(). */
     void            setVersion(const QString& versionString);
 

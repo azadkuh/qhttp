@@ -46,6 +46,7 @@ class QHTTPSERVER_API QHttpRequest : public QHttpAbstractInput
 public:
     virtual            ~QHttpRequest();
 
+public: // QHttpAbstractInput methods:
     /** @see QHttpAbstractInput::headers(). */
     const THeaderHash&  headers() const;
 
@@ -56,6 +57,7 @@ public:
     bool                isSuccessful() const;
 
 
+public:
     /** The method used for the request. */
     THttpMethod         method() const ;
 

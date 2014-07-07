@@ -9,7 +9,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
 ///////////////////////////////////////////////////////////////////////////////
-
+/** an interface for input (incoming) HTTP packets.
+ * server::QHttpRequest or client::QHttpResponse inherit from this class. */
 class QHttpAbstractInput : public QObject
 {
     Q_OBJECT
@@ -53,6 +54,8 @@ protected:
 
 ///////////////////////////////////////////////////////////////////////////////
 
+/** an interface for output (outgoing) HTTP packets.
+ * server::QHttpResponse or client::QHttpRequest inherit from this class. */
 class QHttpAbstractOutput : public QObject
 {
     Q_OBJECT
