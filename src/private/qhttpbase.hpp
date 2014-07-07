@@ -49,7 +49,7 @@ template<class T>
 class HttpParserBase
 {
 public:
-    HttpParserBase(http_parser_type type) : isocket(nullptr) {
+    explicit     HttpParserBase(http_parser_type type) : isocket(nullptr) {
         // create http_parser object
         iparser.data  = static_cast<T*>(this);
         http_parser_init(&iparser, type);
@@ -64,7 +64,7 @@ public:
         iparserSettings.on_message_complete = onMessageComplete;
     }
 
-    virtual ~HttpParserBase() {
+    virtual     ~HttpParserBase() {
     }
 
     void         parse(const char* data, size_t length) {
@@ -119,6 +119,93 @@ public:
 private:
     http_parser             iparser;
     http_parser_settings    iparserSettings;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<class T>
+class HttpWriterBase
+{
+public:
+    explicit    HttpWriterBase(QTcpSocket* sok) : isocket(sok) {
+        iheaderWritten   = false;
+        ifinished        = false;
+        itransmitLen     = itransmitPos    = 0;
+
+        QObject::connect(isocket, &QTcpSocket::bytesWritten, [this](qint64 byteCount){
+            updateWriteCount(byteCount);
+        });
+    }
+
+    virtual    ~HttpWriterBase() {
+    }
+
+public:
+    bool        addHeader(const QByteArray &field, const QByteArray &value) {
+        if ( ifinished )
+            return false;
+
+        static_cast<T*>(this)->iheaders.insert(field.toLower(), value);
+        return true;
+    }
+
+    bool        writeHeader(const QByteArray& field, const QByteArray& value) {
+        if ( ifinished )
+            return false;
+
+        QByteArray buffer = QByteArray(field)
+                            .append(": ")
+                            .append(value)
+                            .append("\r\n");
+        writeRaw(buffer);
+        return true;
+    }
+
+    bool        writeData(const QByteArray& data) {
+        if ( ifinished )
+            return false;
+
+        static_cast<T*>(this)->ensureWritingHeaders();
+        writeRaw(data);
+        return true;
+    }
+
+    bool        endPacket(const QByteArray& data) {
+        if ( !writeData(data) )
+            return false;
+
+        isocket->flush();
+        ifinished = true;
+        return true;
+    }
+
+protected:
+    void        updateWriteCount(qint64 count) {
+        Q_ASSERT(itransmitPos + count <= itransmitLen);
+
+        itransmitPos += count;
+
+        if ( itransmitPos == itransmitLen ) {
+            itransmitLen = 0;
+            itransmitPos = 0;
+            static_cast<T*>(this)->allBytesWritten();
+        }
+    }
+
+    void        writeRaw(const QByteArray &data) {
+        isocket->write(data);
+        itransmitLen += data.size();
+    }
+
+public:
+    QTcpSocket*         isocket;
+
+    bool                iheaderWritten;
+    bool                ifinished;
+
+    // Keep track of transmit buffer status
+    qint64              itransmitLen;
+    qint64              itransmitPos;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

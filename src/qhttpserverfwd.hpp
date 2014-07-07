@@ -19,7 +19,18 @@ struct http_parser;
 namespace qhttp {
 ///////////////////////////////////////////////////////////////////////////////
 /** A map of request or response headers. */
-typedef QHash<QByteArray, QByteArray>   THeaderHash;
+class THeaderHash : public QHash<QByteArray, QByteArray>
+{
+public:
+    inline bool    has(const QByteArray& key) const {
+        return contains(key.toLower());
+    }
+
+    inline bool    keyHasValue(const QByteArray& key, const QByteArray& value) const {
+        const QByteArray& v = QHash<QByteArray, QByteArray>::value(key);
+        return qstrnicmp(value.constData(), v.constData(), v.size()) == 0;
+    }
+};
 
 /** Request method enumeration.
  * @note Taken from http_parser.h */
@@ -117,6 +128,19 @@ class QHttpRequestPrivate;
 class QHttpResponsePrivate;
 ///////////////////////////////////////////////////////////////////////////////
 } // namespace server
+///////////////////////////////////////////////////////////////////////////////
+namespace client {
+///////////////////////////////////////////////////////////////////////////////
+class QHttpClient;
+class QHttpRequest;
+class QHttpResponse;
+
+// Private classes
+class QHttpClientPrivate;
+class QHttpRequestPrivate;
+class QHttpResponsePrivate;
+///////////////////////////////////////////////////////////////////////////////
+} // namespace client
 ///////////////////////////////////////////////////////////////////////////////
 #if QHTTP_MEMORY_LOG > 0
 #   define QHTTP_LINE_LOG fprintf(stderr, "%s(%d) %s(): obj = %p\n",\

@@ -137,10 +137,6 @@ QHttpConnectionPrivate::headersComplete(http_parser* parser) {
                                  itempUrl.constData(),
                                  urlInfo
                                  );
-    printf("tempUrl:\n%s\nurl:\n%s\n",
-           itempUrl.constData(),
-           qPrintable(irequest->d_func()->iurl.toString())
-           );
 #else
     irequest->d_func()->iurl = QUrl(itempUrl);
 #endif // defined(USE_CUSTOM_URL_CREATOR)

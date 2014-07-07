@@ -51,12 +51,7 @@ QHttpResponse::setVersion(const QString &versionString) {
 
 void
 QHttpResponse::addHeader(const QByteArray &field, const QByteArray &value) {
-    Q_D(QHttpResponse);
-
-    if ( !d->ifinished )
-        d->iheaders[field.toLower()] = value.toLower();
-    else
-        qWarning() << "QHttpResponse::setHeader() Cannot set headers after response has finished.";
+    d_func()->addHeader(field, value);
 }
 
 THeaderHash&
@@ -66,31 +61,15 @@ QHttpResponse::headers() {
 
 void
 QHttpResponse::write(const QByteArray &data) {
-    Q_D(QHttpResponse);
-
-    if ( d->ifinished )
-        return;
-
-    d->ensureWritingHeaders();
-    d->write(data);
+    d_func()->writeData(data);
 }
 
 void
 QHttpResponse::end(const QByteArray &data) {
     Q_D(QHttpResponse);
 
-    if ( d->ifinished )
-        return;
-
-    d->ensureWritingHeaders();
-
-    if ( data.size() > 0 )
-        write(data);
-
-    d->isocket->flush();
-    d->ifinished = true;
-
-    emit done(!d->ikeepAlive);
+    if ( d->endPacket(data) )
+        emit done(!d->ikeepAlive);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -99,14 +78,14 @@ QHttpResponsePrivate::ensureWritingHeaders() {
     if ( ifinished    ||    iheaderWritten )
         return;
 
-    write(QString("HTTP/%1 %2 %3\r\n")
-          .arg(iversion)
-          .arg(istatus)
-          .arg(QHttpServer::statusCodeMessage(istatus))
-          .toLatin1()
-          );
+    writeRaw(QString("HTTP/%1 %2 %3\r\n")
+             .arg(iversion)
+             .arg(istatus)
+             .arg(QHttpServer::statusCodeMessage(istatus))
+             .toLatin1()
+             );
     writeHeaders();
-    write("\r\n");
+    writeRaw("\r\n");
     isocket->flush();
 
     iheaderWritten = true;
