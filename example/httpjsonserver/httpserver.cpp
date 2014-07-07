@@ -58,11 +58,10 @@ ClientConnection::processRequest(qhttp::server::QHttpRequest *req,
     });
 
 
-    QObject::connect(req, &qhttp::server::QHttpRequest::end,
-                     [this, req, res](){
+    QObject::connect(req, &qhttp::server::QHttpRequest::end, [this, req, res](){
         res->addHeader("connection", "close");
 
-        if ( req->headers().value("command", "") == "quit" ) {
+        if ( req->headers().keyHasValue("command", "quit" ) ) {
             puts("a quit header is received!");
 
             res->setStatusCode(qhttp::ESTATUS_OK);

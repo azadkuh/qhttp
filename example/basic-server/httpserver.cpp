@@ -65,7 +65,7 @@ ClientConnection::processRequest(qhttp::server::QHttpRequest* req,
         res->addHeader("content-length", QString::number(body.size()).toLatin1());
         res->end(body.toUtf8());
 
-        if ( req->headers().value("command") == "quit" ) {
+        if ( req->headers().keyHasValue("command", "quit") ) {
             printf("a quit has been requested!\n");
             emit requestQuit();
         }
