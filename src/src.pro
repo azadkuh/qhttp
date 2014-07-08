@@ -14,29 +14,28 @@ DEFINES  += QHTTP_MEMORY_LOG=0 QHTTP_MESSAGES_LOG=0
 
 SOURCES  += \
     qhttpabstracts.cpp \
-    qhttpconnection.cpp \
-    qhttprequest.cpp \
-    qhttpresponse.cpp \
+    qhttpserverconnection.cpp \
+    qhttpserverrequest.cpp \
+    qhttpserverresponse.cpp \
     qhttpserver.cpp \
     qhttpclientrequest.cpp \
     qhttpclientresponse.cpp \
     qhttpclient.cpp
 
 HEADERS  += \
-    qhttpserverapi.hpp \
-    qhttpserverfwd.hpp \
+    qhttpfwd.hpp \
     qhttpabstracts.hpp \
-    qhttpconnection.hpp \
-    qhttprequest.hpp \
-    qhttpresponse.hpp \
+    qhttpserverconnection.hpp \
+    qhttpserverrequest.hpp \
+    qhttpserverresponse.hpp \
     qhttpserver.hpp \
     qhttpclient.hpp \
     qhttpclientresponse.hpp \
     qhttpclientrequest.hpp \
     private/qhttpbase.hpp \
-    private/qhttpconnection_private.hpp \
-    private/qhttprequest_private.hpp \
-    private/qhttpresponse_private.hpp \
+    private/qhttpserverconnection_private.hpp \
+    private/qhttpserverrequest_private.hpp \
+    private/qhttpserverresponse_private.hpp \
     private/qhttpserver_private.hpp \
     private/qhttpclientrequest_private.hpp \
     private/qhttpclientresponse_private.hpp \

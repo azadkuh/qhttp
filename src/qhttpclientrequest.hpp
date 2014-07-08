@@ -1,5 +1,5 @@
-#ifndef QHTTP_CLIENT_REQUEST_HPP
-#define QHTTP_CLIENT_REQUEST_HPP
+#ifndef QHTTPCLIENT_REQUEST_HPP
+#define QHTTPCLIENT_REQUEST_HPP
 
 ///////////////////////////////////////////////////////////////////////////////
 #include "qhttpabstracts.hpp"
@@ -8,6 +8,10 @@
 namespace qhttp {
 namespace client {
 ///////////////////////////////////////////////////////////////////////////////
+/** a class for building a new HTTP request.
+ * the life cycle of this class and the memory management is handled by QHttpClient.
+ * @sa QHttpClient
+ */
 class QHttpRequest : public QHttpAbstractOutput
 {
     Q_OBJECT
@@ -45,4 +49,4 @@ protected:
 } // namespace client
 } // namespace qhttp
 ///////////////////////////////////////////////////////////////////////////////
-#endif // define QHTTP_CLIENT_REQUEST_HPP
+#endif // define QHTTPCLIENT_REQUEST_HPP

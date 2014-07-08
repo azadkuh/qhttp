@@ -1,8 +1,8 @@
 #include "httpserver.hpp"
 
-#include "qhttpconnection.hpp"
-#include "qhttprequest.hpp"
-#include "qhttpresponse.hpp"
+#include "qhttpserverconnection.hpp"
+#include "qhttpserverrequest.hpp"
+#include "qhttpserverresponse.hpp"
 
 #include <QtCore/QDateTime>
 

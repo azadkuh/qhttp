@@ -1,7 +1,7 @@
 #ifndef QHTTPBASE_HPP
 #define QHTTPBASE_HPP
 
-#include "qhttpserverfwd.hpp"
+#include "qhttpfwd.hpp"
 
 #include <QTcpSocket>
 #include <QHostAddress>

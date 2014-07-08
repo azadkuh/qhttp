@@ -1,14 +1,14 @@
-#ifndef QHTTPCONNECTION_PRIVATE_HPP
-#define QHTTPCONNECTION_PRIVATE_HPP
+#ifndef QHTTPSERVER_CONNECTION_PRIVATE_HPP
+#define QHTTPSERVER_CONNECTION_PRIVATE_HPP
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "qhttpconnection.hpp"
+#include "qhttpserverconnection.hpp"
 
-#include "qhttprequest.hpp"
-#include "qhttpresponse.hpp"
+#include "qhttpserverrequest.hpp"
+#include "qhttpserverresponse.hpp"
 
-#include "private/qhttprequest_private.hpp"
-#include "private/qhttpresponse_private.hpp"
+#include "private/qhttpserverrequest_private.hpp"
+#include "private/qhttpserverresponse_private.hpp"
 
 #include <QBasicTimer>
 #include <QFile>
@@ -98,4 +98,4 @@ protected:
 } // namespace server
 } // namespace qhttp
 ///////////////////////////////////////////////////////////////////////////////
-#endif // QHTTPCONNECTION_PRIVATE_HPP
+#endif // QHTTPSERVER_CONNECTION_PRIVATE_HPP

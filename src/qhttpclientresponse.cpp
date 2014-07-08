@@ -24,7 +24,7 @@ QHttpResponse::status() const {
     return d_func()->istatus;
 }
 
-const QString
+const QString&
 QHttpResponse::statusString() const {
     return d_func()->icustomeStatusMessage;
 }

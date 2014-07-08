@@ -1,5 +1,5 @@
-#ifndef QHTTP_CLIENT_RESPONSE_HPP
-#define QHTTP_CLIENT_RESPONSE_HPP
+#ifndef QHTTPCLIENT_RESPONSE_HPP
+#define QHTTPCLIENT_RESPONSE_HPP
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "qhttpabstracts.hpp"
@@ -9,7 +9,11 @@
 namespace qhttp {
 namespace client {
 ///////////////////////////////////////////////////////////////////////////////
-class  QHttpResponse : public QHttpAbstractInput
+/** a class for reading incoming HTTP response from a server.
+ * the life cycle of this class and the memory management is handled by QHttpClient.
+ * @sa QHttpClient
+ */
+class QHttpResponse : public QHttpAbstractInput
 {
     Q_OBJECT
 
@@ -28,16 +32,13 @@ public: // QHttpAbstractInput methods:
 
 
 public:
-    /** The status of the response. */
+    /** The status code of this response. */
     TStatusCode         status() const ;
 
-    /** The server status message.
+    /** The server status message as string.
      *  may be slightly different than: @code qhttp::Stringify::toString(status()); @endcode
-     *  bases on server status implementation. */
-    const QString       statusString() const;
-
-
-
+     *  depending on implementation of HTTP server. */
+    const QString&      statusString() const;
 
 protected:
     explicit            QHttpResponse(QTcpSocket*);
@@ -52,4 +53,4 @@ protected:
 } // namespace client
 } // namespace qhttp
 ///////////////////////////////////////////////////////////////////////////////
-#endif // define QHTTP_CLIENT_RESPONSE_HPP
+#endif // define QHTTPCLIENT_RESPONSE_HPP

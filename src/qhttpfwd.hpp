@@ -1,11 +1,9 @@
-
-///////////////////////////////////////////////////////////////////////////////
-#ifndef Q_HTTP_SERVER_FWD_HPP
-#define Q_HTTP_SERVER_FWD_HPP
+#ifndef QHTTPFWD_HPP
+#define QHTTPFWD_HPP
 ///////////////////////////////////////////////////////////////////////////////
 #include <QHash>
 #include <QString>
-
+#include <QtGlobal>
 ///////////////////////////////////////////////////////////////////////////////
 // Qt
 class QTcpServer;
@@ -18,14 +16,17 @@ struct http_parser;
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
 ///////////////////////////////////////////////////////////////////////////////
+
 /** A map of request or response headers. */
 class THeaderHash : public QHash<QByteArray, QByteArray>
 {
 public:
+    /** checks for a header item, regardless of the case of the characters. */
     inline bool    has(const QByteArray& key) const {
         return contains(key.toLower());
     }
 
+    /** checks if a header has the specified value ignoring the case of the characters. */
     inline bool    keyHasValue(const QByteArray& key, const QByteArray& value) const {
         if ( !contains(key) )
             return false;
@@ -145,6 +146,18 @@ class QHttpResponsePrivate;
 ///////////////////////////////////////////////////////////////////////////////
 } // namespace client
 ///////////////////////////////////////////////////////////////////////////////
+#ifdef Q_OS_WIN
+#   warning "this library has not beet tested under Windows!"
+#   if defined(QHTTP_EXPORT)
+#       define QHTTP_API __declspec(dllexport)
+#   else
+#       define QHTTP_API __declspec(dllimport)
+#   endif
+#else
+#   define QHTTPSERVER_API
+#endif
+
+
 #if QHTTP_MEMORY_LOG > 0
 #   define QHTTP_LINE_LOG fprintf(stderr, "%s(%d) %s(): obj = %p\n",\
     __FILE__, __LINE__, __FUNCTION__, this);
@@ -160,4 +173,4 @@ class QHttpResponsePrivate;
 ///////////////////////////////////////////////////////////////////////////////
 } // namespace qhttp
 ///////////////////////////////////////////////////////////////////////////////
-#endif // define Q_HTTP_SERVER_FWD_HPP
+#endif // define QHTTPFWD_HPP

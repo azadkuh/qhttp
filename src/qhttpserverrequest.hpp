@@ -1,27 +1,5 @@
-/*
- * Copyright 2011-2014 Nikhil Marathe <nsm.nikhil@gmail.com>
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to
- * deal in the Software without restriction, including without limitation the
- * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
- * sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
- * IN THE SOFTWARE.
- */
-
-#ifndef Q_HTTP_REQUEST_HPP
-#define Q_HTTP_REQUEST_HPP
+#ifndef QHTTPSERVER_REQUEST_HPP
+#define QHTTPSERVER_REQUEST_HPP
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "qhttpabstracts.hpp"
@@ -32,14 +10,10 @@ namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
 /** The QHttpRequest class represents the header and body data sent by the client.
- * it comes in via the data() signal. As a consequence the application's request
- *  callback should ensure that it connects to the data() signal before control
- *  returns back to the event loop. Otherwise there is a risk of some data never
- *  being received by the application.
- *
  * The class is <b>read-only</b>.
+ * @sa QHttpConnection
  */
-class QHTTPSERVER_API QHttpRequest : public QHttpAbstractInput
+class QHttpRequest : public QHttpAbstractInput
 {
     Q_OBJECT
 
@@ -89,4 +63,4 @@ protected:
 } // namespace server
 } // namespace qhttp
 ///////////////////////////////////////////////////////////////////////////////
-#endif // define Q_HTTP_REQUEST_HPP
+#endif // define QHTTPSERVER_REQUEST_HPP

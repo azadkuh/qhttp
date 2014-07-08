@@ -1,10 +1,10 @@
-#ifndef QHTTPREQUEST_PRIVATE_HPP
-#define QHTTPREQUEST_PRIVATE_HPP
+#ifndef QHTTPSERVER_REQUEST_PRIVATE_HPP
+#define QHTTPSERVER_REQUEST_PRIVATE_HPP
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "qhttpbase.hpp"
-#include "qhttprequest.hpp"
-#include "qhttpconnection.hpp"
+#include "qhttpserverrequest.hpp"
+#include "qhttpserverconnection.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
@@ -44,4 +44,4 @@ protected:
 } // namespace server
 } // namespace qhttp
 ///////////////////////////////////////////////////////////////////////////////
-#endif // QHTTPREQUEST_PRIVATE_HPP
+#endif // QHTTPSERVER_REQUEST_PRIVATE_HPP

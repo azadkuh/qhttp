@@ -4,6 +4,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
 ///////////////////////////////////////////////////////////////////////////////
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#   ifdef Q_OS_WIN
+#       warning "this library has not beet tested under Windows!"
+#   endif
+#else
+#   error "to compile QHttp classes, Qt 5.0 or later is needed."
+#endif
 
 #define HTTP_STATUS_MAP(XX)                    \
     XX(100, "Continue")                        \

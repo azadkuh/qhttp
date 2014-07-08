@@ -2,23 +2,26 @@
 #define QHTTPABSTRACTS_HPP
 
 ///////////////////////////////////////////////////////////////////////////////
-#include "qhttpserverapi.hpp"
-#include "qhttpserverfwd.hpp"
+#include "qhttpfwd.hpp"
 
 #include <QObject>
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
 ///////////////////////////////////////////////////////////////////////////////
 
+/** a utility class to give the string representation of qhttp types. */
 class Stringify
 {
 public:
+    /** returns the standard message for an HTTP status code. */
     static const char* toString(TStatusCode);
 
+    /** returns the standars name of an HTTP method. */
     static const char* toString(THttpMethod);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+
 /** an interface for input (incoming) HTTP packets.
  * server::QHttpRequest or client::QHttpResponse inherit from this class. */
 class QHttpAbstractInput : public QObject

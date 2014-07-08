@@ -1,5 +1,5 @@
-#ifndef QHTTP_CLIENT_RESPONSE_PRIVATE_HPP
-#define QHTTP_CLIENT_RESPONSE_PRIVATE_HPP
+#ifndef QHTTPCLIENT_RESPONSE_PRIVATE_HPP
+#define QHTTPCLIENT_RESPONSE_PRIVATE_HPP
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "qhttpbase.hpp"
@@ -40,4 +40,4 @@ protected:
 } // namespace client
 } // namespace qhttp
 ///////////////////////////////////////////////////////////////////////////////
-#endif // QHTTP_CLIENT_RESPONSE_PRIVATE_HPP
+#endif // QHTTPCLIENT_RESPONSE_PRIVATE_HPP

@@ -1,10 +1,10 @@
-#ifndef QHTTPRESPONSE_PRIVATE_HPP
-#define QHTTPRESPONSE_PRIVATE_HPP
+#ifndef QHTTPSERVER_RESPONSE_PRIVATE_HPP
+#define QHTTPSERVER_RESPONSE_PRIVATE_HPP
 ///////////////////////////////////////////////////////////////////////////////
 #include "qhttpbase.hpp"
-#include "qhttpresponse.hpp"
+#include "qhttpserverresponse.hpp"
 #include "qhttpserver.hpp"
-#include "qhttpconnection.hpp"
+#include "qhttpserverconnection.hpp"
 
 #include <QDateTime>
 #include <QLocale>
@@ -62,4 +62,4 @@ protected:
 } // namespace server
 } // namespace qhttp
 ///////////////////////////////////////////////////////////////////////////////
-#endif // QHTTPRESPONSE_PRIVATE_HPP
+#endif // QHTTPSERVER_RESPONSE_PRIVATE_HPP
