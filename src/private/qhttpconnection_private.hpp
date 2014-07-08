@@ -76,7 +76,7 @@ public:
 #endif // USE_CUSTOM_URL_CREATOR
 
 protected:
-    QHttpConnection* q_ptr;
+    QHttpConnection* const q_ptr;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

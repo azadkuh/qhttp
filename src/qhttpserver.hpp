@@ -61,9 +61,9 @@ public:
 
 public:
     /** construct a new HTTP Server. */
-    QHttpServer(QObject *parent = nullptr);
+    explicit    QHttpServer(QObject *parent = nullptr);
 
-    virtual     ~QHttpServer();
+    virtual    ~QHttpServer();
 
     /** starts the server on @c port listening on all interfaces. */
     bool        listen(const QHostAddress& address, quint16 port);
@@ -72,12 +72,12 @@ public:
         return listen(QHostAddress::Any, port);
     }
 
-    /** returns time-out value [mSec] for open connections (sockets).
+    /** returns timeout value [mSec] for open connections (sockets).
      *  @sa setTimeOut(). */
     quint32     timeOut()const;
 
     /** set time-out for new open connections in miliseconds [mSec].
-     * new incoming connections will be forcefully closed after this time out if this value is non-zero.
+     * new incoming connections will be forcefully closed after this time out.
      *  a zero (0) value disables timer for new connections. */
     void        setTimeOut(quint32);
 
@@ -99,7 +99,7 @@ protected:
     virtual void incomingConnection(QHttpConnection* connection);
 
 private:
-    explicit QHttpServer(QHttpServerPrivate&, QObject *parent);
+    explicit    QHttpServer(QHttpServerPrivate&, QObject *parent);
     virtual void incomingConnection(qintptr handle);
 
     Q_DECLARE_PRIVATE(QHttpServer)
