@@ -72,13 +72,16 @@ public:
     }
 
 public:
-    int          messageBegin(http_parser *parser);
-    int          url(http_parser *parser, const char *at, size_t length);
-    int          headerField(http_parser *parser, const char *at, size_t length);
-    int          headerValue(http_parser *parser, const char *at, size_t length);
-    int          headersComplete(http_parser *parser);
-    int          body(http_parser *parser, const char *at, size_t length);
-    int          messageComplete(http_parser *parser);
+    int          messageBegin(http_parser* parser);
+    int          url(http_parser* parser, const char* at, size_t length);
+    int          status(http_parser*, const char*, size_t) {
+        return 0;   // not used in parsing incoming request.
+    }
+    int          headerField(http_parser* parser, const char* at, size_t length);
+    int          headerValue(http_parser* parser, const char* at, size_t length);
+    int          headersComplete(http_parser* parser);
+    int          body(http_parser* parser, const char* at, size_t length);
+    int          messageComplete(http_parser* parser);
 
 #ifdef USE_CUSTOM_URL_CREATOR
 public:

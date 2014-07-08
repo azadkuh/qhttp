@@ -57,6 +57,7 @@ public:
         memset(&iparserSettings, 0, sizeof(http_parser_settings));
         iparserSettings.on_message_begin    = onMessageBegin;
         iparserSettings.on_url              = onUrl;
+        iparserSettings.on_status           = onStatus;
         iparserSettings.on_header_field     = onHeaderField;
         iparserSettings.on_header_value     = onHeaderValue;
         iparserSettings.on_headers_complete = onHeadersComplete;
@@ -73,37 +74,42 @@ public:
     }
 
 public: // callback functions for http_parser_settings
-    static int   onMessageBegin(http_parser *parser) {
+    static int   onMessageBegin(http_parser* parser) {
         T *me = static_cast<T*>(parser->data);
         return me->messageBegin(parser);
     }
 
-    static int   onUrl(http_parser *parser, const char *at, size_t length) {
+    static int   onUrl(http_parser* parser, const char* at, size_t length) {
         T *me = static_cast<T*>(parser->data);
         return me->url(parser, at, length);
     }
 
-    static int   onHeaderField(http_parser *parser, const char *at, size_t length) {
+    static int  onStatus(http_parser* parser, const char* at, size_t length) {
+        T *me = static_cast<T*>(parser->data);
+        return me->status(parser, at, length);
+    }
+
+    static int   onHeaderField(http_parser* parser, const char* at, size_t length) {
         T *me = static_cast<T*>(parser->data);
         return me->headerField(parser, at, length);
     }
 
-    static int   onHeaderValue(http_parser *parser, const char *at, size_t length) {
+    static int   onHeaderValue(http_parser* parser, const char* at, size_t length) {
         T *me = static_cast<T*>(parser->data);
         return me->headerValue(parser, at, length);
     }
 
-    static int   onHeadersComplete(http_parser *parser) {
+    static int   onHeadersComplete(http_parser* parser) {
         T *me = static_cast<T*>(parser->data);
         return me->headersComplete(parser);
     }
 
-    static int   onBody(http_parser *parser, const char *at, size_t length) {
+    static int   onBody(http_parser* parser, const char* at, size_t length) {
         T *me = static_cast<T*>(parser->data);
         return me->body(parser, at, length);
     }
 
-    static int   onMessageComplete(http_parser *parser) {
+    static int   onMessageComplete(http_parser* parser) {
         T *me = static_cast<T*>(parser->data);
         return me->messageComplete(parser);
     }
