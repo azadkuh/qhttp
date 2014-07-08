@@ -27,6 +27,9 @@ public:
     }
 
     inline bool    keyHasValue(const QByteArray& key, const QByteArray& value) const {
+        if ( !contains(key) )
+            return false;
+
         const QByteArray& v = QHash<QByteArray, QByteArray>::value(key);
         return qstrnicmp(value.constData(), v.constData(), v.size()) == 0;
     }

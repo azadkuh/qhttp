@@ -11,6 +11,7 @@
 #include "private/qhttpresponse_private.hpp"
 
 #include <QBasicTimer>
+#include <QFile>
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
 namespace server {
@@ -42,15 +43,24 @@ public:
                 char buffer[4096] = {0};
                 size_t readLength = isocket->read(buffer, 4095);
 
-        #       if QHTTP_MESSAGES_LOG > 0
+#              if QHTTP_MESSAGES_LOG > 0
                 iinputBuffer.append(buffer);
-        #       endif
+#              endif
 
                 parse(buffer, readLength);
             }
         });
 
         QObject::connect(isocket, &QTcpSocket::disconnected, [this](){
+
+#           if QHTTP_MESSAGES_LOG > 0
+            QFile f("/tmp/incomingMessages.log");
+            if ( f.open(QIODevice::Append | QIODevice::WriteOnly) ) {
+                f.write(iinputBuffer);
+                f.write("\n---------------------\n");
+                f.flush();
+            }
+#           endif
             q_ptr->deleteLater();
         });
 

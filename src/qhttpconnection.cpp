@@ -22,7 +22,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "private/qhttpconnection_private.hpp"
-#include <QFile>
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
 namespace server {
@@ -185,15 +184,6 @@ QHttpConnectionPrivate::body(http_parser*, const char* at, size_t length) {
 int
 QHttpConnectionPrivate::messageComplete(http_parser*) {
     Q_ASSERT(irequest);
-
-#   if QHTTP_MESSAGES_LOG > 0
-    QFile f("/tmp/incomingMessages.log");
-    if ( f.open(QIODevice::Append | QIODevice::WriteOnly) ) {
-        f.write(iinputBuffer);
-        f.write("\n---------------------\n");
-        f.flush();
-    }
-#   endif
 
     irequest->d_func()->isuccessful = true;
     emit irequest->end();
