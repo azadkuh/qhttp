@@ -55,20 +55,36 @@ public:
 
 signals:
     /** emitted when a new HTTP connection to the server is established.
-     * @param req the request instance for assinging the request headers and body.
-     * @sa request()
+     * if you overload onRequestReady this signal won't be emitted.
+     * @sa onRequestReady
      * @sa QHttpRequest
      */
     void        connected(QHttpRequest* req);
 
     /** emitted when a new response is received from the server.
-     * @param res the instance for reading incoming response.
+     * if you overload onResponseReady this signal won't be emitted.
+     * @sa onResponseReady
      * @sa QHttpResponse
      */
     void        newResponse(QHttpResponse* res);
 
     /** emitted when the connection has been dropped or disconnected. */
     void        disconnected();
+
+protected:
+    /** called when a new HTTP connection is established.
+     * you can overload this method, the default implementaion only emits connected().
+     * @param req the request instance for assinging the request headers and body.
+     * @see connected(QHttpRequest*)
+     */
+    virtual void onRequestReady(QHttpRequest* req);
+
+    /** called when a new response is received from the server.
+     *  you can overload this method, the default implementaion only emits newResponse().
+     * @param res the instance for reading incoming response.
+     * @see newResponse(QHttpResponse*)
+     */
+    virtual void onResponseReady(QHttpResponse* res);
 
 protected:
     explicit    QHttpClient(QHttpClientPrivate&, QObject*);

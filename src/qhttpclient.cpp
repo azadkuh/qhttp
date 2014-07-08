@@ -59,6 +59,16 @@ QHttpClient::timerEvent(QTimerEvent *e) {
     }
 }
 
+void
+QHttpClient::onRequestReady(QHttpRequest *req) {
+    emit connected(req);
+}
+
+void
+QHttpClient::onResponseReady(QHttpResponse *res) {
+    emit newResponse(res);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 int
@@ -124,7 +134,7 @@ QHttpClientPrivate::headersComplete(http_parser*) {
                 itempHeaderValue.toLower()
                 );
 
-    emit q_func()->newResponse(ilastResponse);
+    emit q_func()->onResponseReady(ilastResponse);
     return 0;
 }
 

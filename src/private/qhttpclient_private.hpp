@@ -30,11 +30,15 @@ public:
 
 public:
     explicit    QHttpClientPrivate(QHttpClient* q)
-        : HttpParserBase(HTTP_RESPONSE), itimeOut(0), q_ptr(q) {
+        : HttpParserBase(HTTP_RESPONSE), q_ptr(q) {
+        Q_ASSERT(q_func());
+        istatus         = ESTATUS_BAD_REQUEST;
+        itimeOut        = 0;
+
         ilastRequest    = nullptr;
         ilastResponse   = nullptr;
 
-        isocket         = new QTcpSocket(q_ptr);
+        isocket         = new QTcpSocket(q_func());
 
         QObject::connect(isocket,  &QTcpSocket::connected, [this]{
             ilastRequest  = new QHttpRequest(isocket);
@@ -44,7 +48,7 @@ public:
             if ( itimeOut > 0 )
                 itimer.start(itimeOut, Qt::CoarseTimer, q_func());
 
-            emit q_func()->connected(ilastRequest);
+            emit q_func()->onRequestReady(ilastRequest);
         });
 
         QObject::connect(isocket,  &QTcpSocket::readyRead, [this](){

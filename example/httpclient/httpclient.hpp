@@ -2,10 +2,11 @@
 #define HTTPCLIENT_HPP
 ///////////////////////////////////////////////////////////////////////////////
 #include <QObject>
-
+#include "qhttpclient.hpp"
 ///////////////////////////////////////////////////////////////////////////////
+class HttpClientPrivate;
 
-class HttpClient : public QObject
+class HttpClient : public qhttp::client::QHttpClient
 {
     Q_OBJECT
 
@@ -49,8 +50,11 @@ public:     // properties
 
 protected:
     void            timerEvent(QTimerEvent*);
-    class           Private;
-    Private*        pimp;
+    void            onRequestReady(qhttp::client::QHttpRequest*);
+    void            onResponseReady(qhttp::client::QHttpResponse*);
+
+private:
+    Q_DECLARE_PRIVATE(HttpClient)
 };
 
 ///////////////////////////////////////////////////////////////////////////////
