@@ -81,7 +81,7 @@ QHttpResponsePrivate::ensureWritingHeaders() {
     writeRaw(QString("HTTP/%1 %2 %3\r\n")
              .arg(iversion)
              .arg(istatus)
-             .arg(QHttpServer::statusCodeMessage(istatus))
+             .arg(Stringify::toString(istatus))
              .toLatin1()
              );
     writeHeaders();

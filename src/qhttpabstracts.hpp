@@ -9,6 +9,16 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
 ///////////////////////////////////////////////////////////////////////////////
+
+class Stringify
+{
+public:
+    static const char* toString(TStatusCode);
+
+    static const char* toString(THttpMethod);
+};
+
+///////////////////////////////////////////////////////////////////////////////
 /** an interface for input (incoming) HTTP packets.
  * server::QHttpRequest or client::QHttpResponse inherit from this class. */
 class QHttpAbstractInput : public QObject

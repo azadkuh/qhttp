@@ -21,6 +21,8 @@ class QHttpConnectionPrivate  : public HttpParserBase<QHttpConnectionPrivate>
     Q_DECLARE_PUBLIC(QHttpConnection)
 
 public:
+    QByteArray              itempUrl;
+
     // Since there can only be one request at any time even with pipelining.
     QHttpRequest*           irequest;      ///< latest request
     QHttpResponse*          iresponse;     ///< latest response

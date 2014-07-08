@@ -120,7 +120,6 @@ public:
     // The ones we are reading in from the parser
     QByteArray              itempHeaderField;
     QByteArray              itempHeaderValue;
-    QByteArray              itempUrl;
 
 private:
     http_parser             iparser;

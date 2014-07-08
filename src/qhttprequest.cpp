@@ -29,8 +29,8 @@
 namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
-QHttpRequest::QHttpRequest(QTcpSocket *socket) : QHttpAbstractInput(socket) {
-    d_ptr.reset(new QHttpRequestPrivate(socket, this));
+QHttpRequest::QHttpRequest(QTcpSocket *socket)
+    : QHttpAbstractInput(socket), d_ptr(new QHttpRequestPrivate(socket, this)) {
     QHTTP_LINE_LOG
 }
 
