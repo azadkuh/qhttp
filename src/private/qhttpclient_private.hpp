@@ -42,7 +42,7 @@ public:
             ilastRequest->d_func()->iurl     = ilastUrl;
 
             if ( itimeOut > 0 )
-                itimer.start(itimeOut, q_func());
+                itimer.start(itimeOut, Qt::CoarseTimer, q_func());
 
             emit q_func()->connected(ilastRequest);
         });

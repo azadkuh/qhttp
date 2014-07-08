@@ -21,7 +21,7 @@ QHttpConnection::~QHttpConnection() {
 void
 QHttpConnection::setTimeOut(quint32 miliSeconds) {
     if ( miliSeconds != 0 )
-        d_func()->itimer.start(miliSeconds, this);
+        d_func()->itimer.start(miliSeconds, Qt::CoarseTimer, this);
 }
 
 void
