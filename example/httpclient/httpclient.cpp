@@ -232,6 +232,8 @@ HttpClient::onResponseReady(qhttp::client::QHttpResponse *res) {
     QObject::connect(res, &qhttp::client::QHttpResponse::data,
                      [this, d](const QByteArray& chunk){
         d->ibuffer.append(chunk);
+        puts("data chunk:");
+        puts(chunk.constData());
     });
 
     QObject::connect(res, &qhttp::client::QHttpResponse::end,

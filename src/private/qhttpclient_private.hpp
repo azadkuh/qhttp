@@ -6,7 +6,9 @@
 #include "qhttpclientrequest_private.hpp"
 #include "qhttpclientresponse_private.hpp"
 
+#include <QPointer>
 #include <QBasicTimer>
+#include <QFile>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
@@ -25,16 +27,10 @@ public:
     quint32         itimeOut;
     QBasicTimer     itimer;
 
-    QHttpRequest*   ilastRequest;
-    QHttpResponse*  ilastResponse;
-
 public:
     explicit     QHttpClientPrivate(QHttpClient* q) : HttpParserBase(HTTP_RESPONSE), q_ptr(q) {
         istatus         = ESTATUS_BAD_REQUEST;
         itimeOut        = 0;
-
-        ilastRequest    = nullptr;
-        ilastResponse   = nullptr;
 
         QHTTP_LINE_DEEPLOG
     }
@@ -49,6 +45,10 @@ public:
         isocket         = new QTcpSocket(q_func());
 
         QObject::connect(isocket,  &QTcpSocket::connected, [this]{
+#               if QHTTP_MESSAGES_LOG > 0
+                iinputBuffer.clear();
+#               endif
+
             ilastRequest  = new QHttpRequest(isocket);
             ilastRequest->d_func()->imethod  = ilastMethod;
             ilastRequest->d_func()->iurl     = ilastUrl;
@@ -64,13 +64,27 @@ public:
                 char buffer[4097] = {0};
                 size_t readLength = isocket->read(buffer, 4096);
 
+#               if QHTTP_MESSAGES_LOG > 0
+                iinputBuffer.append(buffer);
+#               endif
+
                 parse(buffer, readLength);
             }
         });
 
-        QObject::connect(isocket,  &QTcpSocket::disconnected,
-                         q_func(), &QHttpClient::disconnected
-                         );
+        QObject::connect(isocket,  &QTcpSocket::disconnected, [this]{
+#           if QHTTP_MESSAGES_LOG > 0
+            QFile f("/tmp/qhttpclient-incomming.log");
+            if ( f.open(QIODevice::Append | QIODevice::WriteOnly) ) {
+                f.write(iinputBuffer);
+                f.write("\n---------------------\n");
+                f.flush();
+            }
+#           endif
+
+            puts("http client socket has been disconnected.");
+            emit q_func()->disconnected();
+        });
     }
 
 public:
@@ -87,6 +101,13 @@ public:
 
 protected:
     QHttpClient* const      q_ptr;
+
+    QPointer<QHttpRequest>  ilastRequest;
+    QPointer<QHttpResponse> ilastResponse;
+
+#   if QHTTP_MESSAGES_LOG > 0
+    QByteArray              iinputBuffer;
+#   endif
 };
 
 ///////////////////////////////////////////////////////////////////////////////

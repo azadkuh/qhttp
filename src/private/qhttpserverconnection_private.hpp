@@ -65,7 +65,7 @@ public:
         QObject::connect(isocket, &QTcpSocket::disconnected, [this](){
 
 #           if QHTTP_MESSAGES_LOG > 0
-            QFile f("/tmp/incomingMessages.log");
+            QFile f("/tmp/qhttpserver-incomming.log");
             if ( f.open(QIODevice::Append | QIODevice::WriteOnly) ) {
                 f.write(iinputBuffer);
                 f.write("\n---------------------\n");
