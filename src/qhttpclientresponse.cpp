@@ -7,11 +7,13 @@ namespace client {
 ///////////////////////////////////////////////////////////////////////////////
 QHttpResponse::QHttpResponse(QTcpSocket *socket)
     : QHttpAbstractInput(socket), d_ptr(new QHttpResponsePrivate(socket, this)) {
+    d_ptr->initialize();
     QHTTP_LINE_LOG
 }
 
 QHttpResponse::QHttpResponse(QHttpResponsePrivate &dd, QTcpSocket *socket)
     : QHttpAbstractInput(socket), d_ptr(&dd) {
+    d_ptr->initialize();
     QHTTP_LINE_LOG
 }
 

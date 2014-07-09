@@ -25,6 +25,16 @@ public:
 
         ikeepAlive                 = false;
 
+        QHTTP_LINE_DEEPLOG
+    }
+
+    virtual    ~QHttpResponsePrivate() {
+        QHTTP_LINE_DEEPLOG
+    }
+
+    void        initialize() {
+        HttpWriterBase::initialize();
+
         QObject::connect(isocket,      &QTcpSocket::disconnected, [this]() {
             ifinished   = true;
             q_func()->deleteLater();
@@ -34,12 +44,6 @@ public:
             if ( wasTheLastResponse )
                 isocket->disconnectFromHost();
         });
-
-        QHTTP_LINE_DEEPLOG
-    }
-
-    virtual    ~QHttpResponsePrivate() {
-        QHTTP_LINE_DEEPLOG
     }
 
     void        allBytesWritten() {
@@ -51,11 +55,10 @@ public:
     void        writeHeaders();
 
 public:
-    bool                 ikeepAlive;
+    bool        ikeepAlive;
 
 protected:
-    QHttpResponse*       q_ptr;
-
+    QHttpResponse* const q_ptr;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

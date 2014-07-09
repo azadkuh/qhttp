@@ -29,14 +29,22 @@ public:
     QHttpResponse*  ilastResponse;
 
 public:
-    explicit    QHttpClientPrivate(QHttpClient* q)
-        : HttpParserBase(HTTP_RESPONSE), q_ptr(q) {
-        Q_ASSERT(q_func());
+    explicit     QHttpClientPrivate(QHttpClient* q) : HttpParserBase(HTTP_RESPONSE), q_ptr(q) {
         istatus         = ESTATUS_BAD_REQUEST;
         itimeOut        = 0;
 
         ilastRequest    = nullptr;
         ilastResponse   = nullptr;
+
+        QHTTP_LINE_DEEPLOG
+    }
+
+    virtual     ~QHttpClientPrivate() {
+        QHTTP_LINE_DEEPLOG
+    }
+
+    void         initialize() {
+        Q_ASSERT(q_func());
 
         isocket         = new QTcpSocket(q_func());
 
@@ -63,12 +71,6 @@ public:
         QObject::connect(isocket,  &QTcpSocket::disconnected,
                          q_func(), &QHttpClient::disconnected
                          );
-
-        QHTTP_LINE_DEEPLOG
-    }
-
-    virtual    ~QHttpClientPrivate() {
-        QHTTP_LINE_DEEPLOG
     }
 
 public:

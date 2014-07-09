@@ -6,11 +6,13 @@ namespace server {
 ///////////////////////////////////////////////////////////////////////////////
 QHttpConnection::QHttpConnection(QObject *parent)
     : QTcpSocket(parent), d_ptr(new QHttpConnectionPrivate(this)) {
+    d_ptr->initialize();
     QHTTP_LINE_LOG
 }
 
 QHttpConnection::QHttpConnection(QHttpConnectionPrivate& dd, QObject* parent)
     : QTcpSocket(parent), d_ptr(&dd) {
+    d_ptr->initialize();
     QHTTP_LINE_LOG
 }
 

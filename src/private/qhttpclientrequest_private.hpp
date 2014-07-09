@@ -21,16 +21,20 @@ public:
         ikeepAlive  = false;
         iversion    = "1.1";
 
-        QObject::connect(isocket,      &QTcpSocket::disconnected, [this]() {
-            ifinished   = true;
-            q_func()->deleteLater();
-        });
-
         QHTTP_LINE_DEEPLOG
     }
 
     virtual    ~QHttpRequestPrivate() {
         QHTTP_LINE_DEEPLOG
+    }
+
+    void        initialize() {
+        HttpWriterBase::initialize();
+
+        QObject::connect(isocket,      &QTcpSocket::disconnected, [this]() {
+            ifinished   = true;
+            q_func()->deleteLater();
+        });
     }
 
     void        allBytesWritten() {
@@ -43,6 +47,7 @@ public:
 
 public:
     bool                 ikeepAlive;
+
 protected:
     QHttpRequest* const  q_ptr;
 };

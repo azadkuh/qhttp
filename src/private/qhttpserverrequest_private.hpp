@@ -12,32 +12,35 @@ namespace server {
 ///////////////////////////////////////////////////////////////////////////////
 class QHttpRequestPrivate : public HttpRequestBase
 {
-public:
-    explicit QHttpRequestPrivate(QTcpSocket* sok, QHttpRequest* q) : q_ptr(q) {
-        Q_ASSERT(q_ptr);
+    Q_DECLARE_PUBLIC(QHttpRequest)
 
+public:
+    explicit    QHttpRequestPrivate(QTcpSocket* sok, QHttpRequest* q) : q_ptr(q) {
         isuccessful = false;
         iremotePort = 0;
-
-        QObject::connect(sok, &QTcpSocket::disconnected, [this](){
-            q_ptr->deleteLater();
-        });
+        isocket     = sok;
 
         QHTTP_LINE_DEEPLOG
     }
 
-    virtual ~QHttpRequestPrivate() {
+    virtual    ~QHttpRequestPrivate() {
         QHTTP_LINE_DEEPLOG
+    }
+
+    void        initialize() {
+        QObject::connect(isocket, &QTcpSocket::disconnected, [this](){
+            q_ptr->deleteLater();
+        });
     }
 
 public:
-    QString                  iremoteAddress;
-    quint16                  iremotePort;
-    bool                     isuccessful;
+    QString     iremoteAddress;
+    quint16     iremotePort;
+    bool        isuccessful;
 
 protected:
+    QTcpSocket*             isocket;
     QHttpRequest* const     q_ptr;
-    Q_DECLARE_PUBLIC(QHttpRequest)
 };
 
 ///////////////////////////////////////////////////////////////////////////////

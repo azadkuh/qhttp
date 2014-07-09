@@ -6,11 +6,13 @@ namespace server {
 ///////////////////////////////////////////////////////////////////////////////
 QHttpResponse::QHttpResponse(QTcpSocket* socket)
     : QHttpAbstractOutput(socket) , d_ptr(new QHttpResponsePrivate(socket, this)) {
+    d_ptr->initialize();
     QHTTP_LINE_LOG
 }
 
 QHttpResponse::QHttpResponse(QHttpResponsePrivate& dd, QTcpSocket* socket)
     : QHttpAbstractOutput(socket) , d_ptr(&dd) {
+    d_ptr->initialize();
     QHTTP_LINE_LOG
 }
 

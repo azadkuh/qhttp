@@ -84,7 +84,7 @@ public: // callback functions for http_parser_settings
         return me->url(parser, at, length);
     }
 
-    static int  onStatus(http_parser* parser, const char* at, size_t length) {
+    static int   onStatus(http_parser* parser, const char* at, size_t length) {
         T *me = static_cast<T*>(parser->data);
         return me->status(parser, at, length);
     }
@@ -136,13 +136,16 @@ public:
         iheaderWritten   = false;
         ifinished        = false;
         itransmitLen     = itransmitPos    = 0;
+    }
+
+    virtual    ~HttpWriterBase() {
+    }
+
+    void        initialize() {
 
         QObject::connect(isocket, &QTcpSocket::bytesWritten, [this](qint64 byteCount){
             updateWriteCount(byteCount);
         });
-    }
-
-    virtual    ~HttpWriterBase() {
     }
 
 public:

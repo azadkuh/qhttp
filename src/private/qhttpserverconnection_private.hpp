@@ -40,6 +40,15 @@ public:
         iresponse      = nullptr;
         isocket        = q;
 
+        QHTTP_LINE_DEEPLOG
+    }
+
+    virtual    ~QHttpConnectionPrivate() {
+        QHTTP_LINE_DEEPLOG
+    }
+
+    void        initialize() {
+
         QObject::connect(isocket, &QTcpSocket::readyRead, [this](){
             while (isocket->bytesAvailable()) {
                 char buffer[4096] = {0};
@@ -65,12 +74,6 @@ public:
 #           endif
             q_ptr->deleteLater();
         });
-
-        QHTTP_LINE_DEEPLOG
-    }
-
-    virtual ~QHttpConnectionPrivate() {
-        QHTTP_LINE_DEEPLOG
     }
 
 public:

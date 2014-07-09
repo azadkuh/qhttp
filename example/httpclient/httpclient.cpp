@@ -17,7 +17,7 @@ class HttpClientPrivate : public qhttp::client::QHttpClientPrivate
     Q_DECLARE_PUBLIC(HttpClient)
 
 public:
-    int                    iclientId;
+    const int              iclientId;
 
     quint32                isleep;
     quint32                icommandCounter;
@@ -34,8 +34,11 @@ public:
 
 public:
     explicit    HttpClientPrivate(int clientId, HttpClient* q)
-        : qhttp::client::QHttpClientPrivate(q) {
-        iclientId       = clientId;
+        : qhttp::client::QHttpClientPrivate(q),
+          iclientId(clientId) {
+    }
+
+    void        initialize() {
         isleep          = 0;
         icommandCounter = 0;
         irequests       = 0;
@@ -114,6 +117,7 @@ protected:
 
 HttpClient::HttpClient(quint32 clientId, QObject *parent)
     : qhttp::client::QHttpClient(*new HttpClientPrivate(clientId, this), parent) {
+    d_func()->initialize();
 }
 
 HttpClient::~HttpClient() {
@@ -224,8 +228,6 @@ HttpClient::onResponseReady(qhttp::client::QHttpResponse *res) {
 
     d->ibuffer.clear();
     d->ibuffer.reserve(1024);
-    printf("got the response: clientId=%d, responseId=%d\n",
-           d->iclientId, d->icommandCounter);
 
     QObject::connect(res, &qhttp::client::QHttpResponse::data,
                      [this, d](const QByteArray& chunk){
@@ -234,6 +236,8 @@ HttpClient::onResponseReady(qhttp::client::QHttpResponse *res) {
 
     QObject::connect(res, &qhttp::client::QHttpResponse::end,
                      [this, d](){
+        printf("got the response: clientId=%d, responseId=%d\n",
+               d->iclientId, d->icommandCounter);
         d->onIncomming();
         close();
     });

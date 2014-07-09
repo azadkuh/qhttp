@@ -7,11 +7,13 @@ namespace client {
 ///////////////////////////////////////////////////////////////////////////////
 QHttpClient::QHttpClient(QObject *parent)
     : QObject(parent), d_ptr(new QHttpClientPrivate(this)) {
+    d_ptr->initialize();
     QHTTP_LINE_LOG
 }
 
 QHttpClient::QHttpClient(QHttpClientPrivate &dd, QObject *parent)
     : QObject(parent), d_ptr(&dd) {
+    d_ptr->initialize();
     QHTTP_LINE_LOG
 }
 
@@ -31,12 +33,12 @@ QHttpClient::setTimeOut(quint32 t) {
 
 bool
 QHttpClient::isOpen() const {
-    return d_func()->isocket->isOpen();
+    QTcpSocket& sok = *d_func()->isocket;
+    return sok.isOpen()    &&    sok.state() == QTcpSocket::ConnectedState;
 }
 
 void
 QHttpClient::close() {
-    d_func()->isocket->disconnectFromHost();
     d_func()->isocket->close();
 }
 

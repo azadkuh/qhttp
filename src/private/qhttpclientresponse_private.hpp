@@ -12,19 +12,21 @@ namespace client {
 class QHttpResponsePrivate : public HttpResponseBase
 {
 public:
-    explicit QHttpResponsePrivate(QTcpSocket* sok, QHttpResponse* q) : q_ptr(q) {
-        Q_ASSERT(q_ptr);
+    explicit    QHttpResponsePrivate(QTcpSocket* sok, QHttpResponse* q)
+        : isocket(sok), q_ptr(q) {
         isuccessful = false;
-
-        QObject::connect(sok, &QTcpSocket::disconnected, [this](){
-            q_ptr->deleteLater();
-        });
 
         QHTTP_LINE_DEEPLOG
     }
 
-    virtual ~QHttpResponsePrivate() {
+    virtual    ~QHttpResponsePrivate() {
         QHTTP_LINE_DEEPLOG
+    }
+
+    void       initialize() {
+        QObject::connect(isocket, &QTcpSocket::disconnected, [this](){
+            q_ptr->deleteLater();
+        });
     }
 
 public:
@@ -32,6 +34,7 @@ public:
     QString                 icustomeStatusMessage;
 
 protected:
+    QTcpSocket*             isocket;
     QHttpResponse* const    q_ptr;
     Q_DECLARE_PUBLIC(QHttpResponse)
 };
