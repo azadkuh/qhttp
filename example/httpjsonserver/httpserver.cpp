@@ -96,6 +96,8 @@ ClientConnection::processRequest(qhttp::server::QHttpRequest *req,
                         .addValue("requestId", requestId.toInt(&ok) + 1)
                    .endObject();
 
+                res->addHeader("content-length", QByteArray::number((int)strlen(buffer)));
+
                 clientStatus = true;
             }
 
