@@ -9,13 +9,10 @@ CONFIG      += c++11
 PRJDIR       = ../..
 include($$PRJDIR/commondir.pri)
 
-HEADERS   += \
-    httpserver.hpp
-
+HEADERS   +=
 
 SOURCES   += \
-    main.cpp \
-    httpserver.cpp
+    main.cpp
 
 
 LIBS      += $$PRJDIR/xbin/libqhttpserver.a
