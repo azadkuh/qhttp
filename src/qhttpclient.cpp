@@ -6,13 +6,13 @@ namespace qhttp {
 namespace client {
 ///////////////////////////////////////////////////////////////////////////////
 QHttpClient::QHttpClient(QObject *parent)
-    : QObject(parent), d_ptr(new QHttpClientPrivate(this)) {
+    : QTcpSocket(parent), d_ptr(new QHttpClientPrivate(this)) {
     d_ptr->initialize();
     QHTTP_LINE_LOG
 }
 
 QHttpClient::QHttpClient(QHttpClientPrivate &dd, QObject *parent)
-    : QObject(parent), d_ptr(&dd) {
+    : QTcpSocket(parent), d_ptr(&dd) {
     d_ptr->initialize();
     QHTTP_LINE_LOG
 }
@@ -33,13 +33,7 @@ QHttpClient::setTimeOut(quint32 t) {
 
 bool
 QHttpClient::isOpen() const {
-    QTcpSocket& sok = *d_func()->isocket;
-    return sok.isOpen()    &&    sok.state() == QTcpSocket::ConnectedState;
-}
-
-void
-QHttpClient::close() {
-    d_func()->isocket->close();
+    return QTcpSocket::isOpen()    &&    state() == QTcpSocket::ConnectedState;
 }
 
 void
@@ -49,7 +43,7 @@ QHttpClient::request(THttpMethod method, QUrl url) {
     d->ilastMethod  = method;
     d->ilastUrl     = url;
 
-    d->isocket->connectToHost(url.host(), url.port(80));
+    connectToHost(url.host(), url.port(80));
 }
 
 void
@@ -57,13 +51,13 @@ QHttpClient::timerEvent(QTimerEvent *e) {
     Q_D(QHttpClient);
 
     if ( e->timerId() == d->itimer.timerId() ) {
-        d->isocket->disconnectFromHost();
+        close();
     }
 }
 
 void
 QHttpClient::onRequestReady(QHttpRequest *req) {
-    emit connected(req);
+    emit httpConnected(req);
 }
 
 void
@@ -73,19 +67,51 @@ QHttpClient::onResponseReady(QHttpResponse *res) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void
+QHttpClientPrivate::onConnected() {
+    QHttpRequest *request = new QHttpRequest(isocket);
+
+    request->d_func()->imethod  = ilastMethod;
+    request->d_func()->iurl     = ilastUrl;
+
+    if ( itimeOut > 0 )
+        itimer.start(itimeOut, Qt::CoarseTimer, q_func());
+
+#   if QHTTP_MESSAGES_LOG > 0
+    iinputBuffer.clear();
+#   endif
+
+    q_func()->onRequestReady(request);
+}
+
+void
+QHttpClientPrivate::onReadyRead() {
+    while ( isocket->bytesAvailable() > 0 ) {
+        char buffer[4097] = {0};
+        size_t readLength = isocket->read(buffer, 4096);
+
+        parse(buffer, readLength);
+
+#       if QHTTP_MESSAGES_LOG > 0
+        iinputBuffer.append(buffer);
+#       endif
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 int
 QHttpClientPrivate::messageBegin(http_parser*) {
     itempHeaderField.clear();
     itempHeaderValue.clear();
 
-    ilastResponse = new QHttpResponse(isocket);
     return 0;
 }
 
 int
 QHttpClientPrivate::status(http_parser* parser, const char* at, size_t length) {
-    Q_ASSERT(ilastResponse);
 
+    ilastResponse = new QHttpResponse(isocket);
     ilastResponse->d_func()->istatus  = static_cast<TStatusCode>(parser->status_code);
     ilastResponse->d_func()->iversion = QString("%1.%2")
                                         .arg(parser->http_major)
@@ -136,7 +162,7 @@ QHttpClientPrivate::headersComplete(http_parser*) {
                 itempHeaderValue.toLower()
                 );
 
-    emit q_func()->onResponseReady(ilastResponse);
+    q_func()->onResponseReady(ilastResponse);
     return 0;
 }
 

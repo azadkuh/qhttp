@@ -4,7 +4,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "qhttpfwd.hpp"
 
-#include <QObject>
+#include <QTcpSocket>
 #include <QUrl>
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
@@ -18,7 +18,7 @@ namespace client {
  * in fact the QHttpRequest and QHttpResponse object will be deleted when the internal socket
  *  disconnects.
  */
-class QHttpClient : public QObject
+class QHttpClient : public QTcpSocket
 {
     Q_OBJECT
 
@@ -40,9 +40,6 @@ public:
     /** checks if the connetion to the server is open. */
     bool        isOpen() const;
 
-    /** frocefully disconnects from server and closes the connection. */
-    void        close();
-
 
     /** returns time-out value [mSec] for open connections (sockets).
      *  @sa setTimeOut(). */
@@ -59,7 +56,7 @@ signals:
      * @sa onRequestReady
      * @sa QHttpRequest
      */
-    void        connected(QHttpRequest* req);
+    void        httpConnected(QHttpRequest* req);
 
     /** emitted when a new response is received from the server.
      * if you overload onResponseReady this signal won't be emitted.
@@ -68,20 +65,19 @@ signals:
      */
     void        newResponse(QHttpResponse* res);
 
-    /** emitted when the connection has been dropped or disconnected. */
-    void        disconnected();
 
 protected:
     /** called when a new HTTP connection is established.
      * you can overload this method, the default implementaion only emits connected().
-     * @param req the request instance for assinging the request headers and body.
-     * @see connected(QHttpRequest*)
+     * @param req use this request instance for assinging the
+     *   request headers and sending optional body.
+     * @see httpConnected(QHttpRequest*)
      */
     virtual void onRequestReady(QHttpRequest* req);
 
     /** called when a new response is received from the server.
      *  you can overload this method, the default implementaion only emits newResponse().
-     * @param res the instance for reading incoming response.
+     * @param res use this instance for reading incoming response.
      * @see newResponse(QHttpResponse*)
      */
     virtual void onResponseReady(QHttpResponse* res);
