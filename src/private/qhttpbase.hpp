@@ -133,19 +133,23 @@ class HttpWriterBase
 {
 public:
     explicit    HttpWriterBase(QTcpSocket* sok) : isocket(sok) {
-        iheaderWritten   = false;
-        ifinished        = false;
-        itransmitLen     = itransmitPos    = 0;
     }
 
     virtual    ~HttpWriterBase() {
     }
 
     void        initialize() {
+        reset();
 
         QObject::connect(isocket, &QTcpSocket::bytesWritten, [this](qint64 byteCount){
             updateWriteCount(byteCount);
         });
+    }
+
+    void        reset() {
+        iheaderWritten   = false;
+        ifinished        = false;
+        itransmitLen     = itransmitPos    = 0;
     }
 
 public:
@@ -201,8 +205,8 @@ protected:
     }
 
     void        writeRaw(const QByteArray &data) {
-        isocket->write(data);
         itransmitLen += data.size();
+        isocket->write(data);
     }
 
 public:
