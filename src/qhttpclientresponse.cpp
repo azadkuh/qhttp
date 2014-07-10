@@ -46,6 +46,11 @@ QHttpResponse::isSuccessful() const {
     return d_func()->isuccessful;
 }
 
+void
+QHttpResponse::releaseConnection() {
+    d_func()->isocket->close();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 } // namespace client
 } // namespace qhttp

@@ -33,7 +33,7 @@ public:
 
         QObject::connect(isocket,      &QTcpSocket::disconnected, [this]() {
             ifinished   = true;
-            q_func()->deleteLater();
+            q_ptr->deleteLater();
         });
     }
 
