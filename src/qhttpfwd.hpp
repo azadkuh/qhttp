@@ -159,8 +159,8 @@ class QHttpResponsePrivate;
 
 
 #if QHTTP_MEMORY_LOG > 0
-#   define QHTTP_LINE_LOG fprintf(stderr, "%s(%d) %s(): obj = %p\n",\
-    __FILE__, __LINE__, __FUNCTION__, this);
+#   define QHTTP_LINE_LOG fprintf(stderr, "%s(): obj = %p    @ %s[%d]\n",\
+    __FUNCTION__, this, __FILE__, __LINE__);
 #else
 #   define QHTTP_LINE_LOG
 #endif
