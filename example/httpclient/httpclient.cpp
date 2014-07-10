@@ -1,8 +1,9 @@
+#define  QHTTP_MEMORY_LOG 0
 #include "httpclient.hpp"
 #include "include/jsonbuilder.hpp"
 #include "include/gason.hpp"
 
-#include "private/qhttpclient_private.hpp"
+#include "qhttpclient.hpp"
 #include "qhttpclientrequest.hpp"
 #include "qhttpclientresponse.hpp"
 
@@ -11,10 +12,11 @@
 
 #include <QTcpSocket>
 #include <QHostAddress>
+
 ///////////////////////////////////////////////////////////////////////////////
-class HttpClientPrivate : public qhttp::client::QHttpClientPrivate
+class HttpClientPrivate
 {
-    Q_DECLARE_PUBLIC(HttpClient)
+    HttpClient* const      q_ptr;
 
 public:
     const int              iclientId;
@@ -23,7 +25,7 @@ public:
     quint32                icommandCounter;
     quint32                irequests;
 
-    QBasicTimer            itimer;
+    QBasicTimer            isleepTimer;
     QString                iaddress;
     quint16                iport;
 
@@ -34,19 +36,17 @@ public:
 
 public:
     explicit    HttpClientPrivate(int clientId, HttpClient* q)
-        : qhttp::client::QHttpClientPrivate(q),
-          iclientId(clientId) {
-    }
+        : q_ptr(q), iclientId(clientId) {
 
-    void        initialize() {
         isleep          = 0;
         icommandCounter = 0;
         irequests       = 0;
 
-        QObject::connect(q_func(), &qhttp::client::QHttpClient::disconnected, [this](){
-            if ( isleep == 0 )
-                QMetaObject::invokeMethod(q_func(), "start");
-        });
+        QHTTP_LINE_LOG
+    }
+
+    virtual    ~HttpClientPrivate() {
+        QHTTP_LINE_LOG
     }
 
 public:
@@ -54,9 +54,8 @@ public:
         if ( icommandCounter < irequests )
             return true;
 
-        itimer.stop();
-        q_func()->close();
-        emit q_func()->finished(iclientId, icommandCounter);
+        isleepTimer.stop();
+        emit q_ptr->finished(iclientId, icommandCounter);
         return false;
     }
 
@@ -64,18 +63,31 @@ public:
         if ( !shouldSend() )
             return;
 
-        if ( !q_func()->isOpen() ) {
-            QUrl url;
-            url.setScheme("http");
-            url.setHost(iaddress);
-            url.setPort(iport);
-            url.setPath("/aPath/users");
+        qhttp::client::QHttpClient* client = new qhttp::client::QHttpClient(q_ptr);
 
-            q_func()->request(qhttp::EHTTP_POST, url);
-        }
+        QObject::connect(client,    &qhttp::client::QHttpClient::disconnected,
+                         [this](){
+            QMetaObject::invokeMethod(q_ptr, "start");
+        });
+        QObject::connect(client,    &qhttp::client::QHttpClient::httpConnected,
+                         [this](qhttp::client::QHttpRequest* req){
+            onRequestReady(req);
+        });
+        QObject::connect(client,    &qhttp::client::QHttpClient::newResponse,
+                         [this](qhttp::client::QHttpResponse* res){
+            onResponseReady(res);
+        });
+
+
+        QUrl url;
+        url.setScheme("http");
+        url.setHost(iaddress);
+        url.setPort(iport);
+        url.setPath("/aPath/users");
+
+        client->request(qhttp::EHTTP_POST, url);
     }
 
-protected:
     bool        onIncomming() {
         char buffer[1025] = {0};
         strncpy(buffer, ibuffer.constData(), 1024);
@@ -110,14 +122,45 @@ protected:
 
         return true;
     }
+
+    void        onRequestReady(qhttp::client::QHttpRequest *req) {
+        char requestData[257] = {0};
+        gason::JSonBuilder json(requestData, 256);
+        json.startObject()
+                .addValue("clientId", iclientId)
+                .addValue("requestId", (int)icommandCounter++)
+                .addValue("command", "request")
+            .endObject();
+
+        req->addHeader("connection", (ikeepAlive) ? "keep-alive" : "close");
+        req->addHeader("content-length", QByteArray::number((int)strlen(requestData)));
+
+        req->end(requestData);
+    }
+
+    void        onResponseReady(qhttp::client::QHttpResponse *res) {
+        ibuffer.clear();
+        ibuffer.reserve(1024);
+
+        QObject::connect(res, &qhttp::client::QHttpResponse::data,
+                         [this](const QByteArray& chunk){
+            ibuffer.append(chunk);
+        });
+
+        QObject::connect(res, &qhttp::client::QHttpResponse::end,
+                         [this, res](){
+            onIncomming();
+            res->releaseConnection();
+        });
+    }
+
 };
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-HttpClient::HttpClient(quint32 clientId, QObject *parent)
-    : qhttp::client::QHttpClient(*new HttpClientPrivate(clientId, this), parent) {
-    d_func()->initialize();
+HttpClient::HttpClient(quint32 clientId, QObject *parent) : QObject(parent),
+   d_ptr(new HttpClientPrivate(clientId, this)) {
 }
 
 HttpClient::~HttpClient() {
@@ -165,7 +208,7 @@ HttpClient::sleepTime() const {
 
 void
 HttpClient::setSleepTime(quint32 sleep) {
-    if ( sleep < 10000 )
+    if ( sleep < 100000 )
         d_func()->isleep = sleep;
     else
         d_func()->isleep = 100;
@@ -188,59 +231,20 @@ HttpClient::setKeepAlive(bool b) {
 
 void
 HttpClient::start() {
-    d_func()->requestStart();
+    Q_D(HttpClient);
+
+    if ( d->isleepTimer.isActive() )
+        return;
+
+    if ( d->isleep > 0 )
+        d->isleepTimer.start(d->isleep, Qt::CoarseTimer, this);
+    else
+        d->requestStart();
 }
 
 void
 HttpClient::timerEvent(QTimerEvent* e) {
     Q_D(HttpClient);
-    if ( e->timerId() == d->itimer.timerId() ) {
-        QMetaObject::invokeMethod(this, "start");
-    }
-
-    qhttp::client::QHttpClient::timerEvent(e);
-}
-
-void
-HttpClient::onRequestReady(qhttp::client::QHttpRequest *req) {
-    Q_D(HttpClient);
-
-    char requestData[257] = {0};
-    gason::JSonBuilder json(requestData, 256);
-    json.startObject()
-            .addValue("clientId", d->iclientId)
-            .addValue("requestId", (int)d->icommandCounter++)
-            .addValue("command", "request")
-        .endObject();
-
-    req->addHeader("connection", (d->ikeepAlive) ? "keep-alive" : "close");
-    req->addHeader("content-length", QByteArray::number((int)strlen(requestData)));
-
-    req->end(requestData);
-
-    if ( d->isleep > 0 )
-        d->itimer.start(d->isleep, this);
-}
-
-void
-HttpClient::onResponseReady(qhttp::client::QHttpResponse *res) {
-    Q_D(HttpClient);
-
-    d->ibuffer.clear();
-    d->ibuffer.reserve(1024);
-
-    QObject::connect(res, &qhttp::client::QHttpResponse::data,
-                     [this, d](const QByteArray& chunk){
-        d->ibuffer.append(chunk);
-        puts("data chunk:");
-        puts(chunk.constData());
-    });
-
-    QObject::connect(res, &qhttp::client::QHttpResponse::end,
-                     [this, d](){
-        printf("got the response: clientId=%d, responseId=%d\n",
-               d->iclientId, d->icommandCounter);
-        d->onIncomming();
-        close();
-    });
+    if ( e->timerId() == d->isleepTimer.timerId() )
+        d->requestStart();
 }
