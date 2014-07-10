@@ -6,41 +6,23 @@
 #include <QtCore/QCoreApplication>
 #include <QDateTime>
 #include <QLocale>
+
+using namespace qhttp::server;
 ///////////////////////////////////////////////////////////////////////////////
 
 /** connection class for gathering incomming chunks of data from HTTP client. */
 class ClientHandler : public QObject
 {
 public:
-    explicit        ClientHandler(quint64 id, qhttp::server::QHttpConnection* conn)
-        : QObject(conn), iconnectionId(id) {
-
-        // auto delete this after connection closes or drops.
-        QObject::connect(conn, &qhttp::server::QHttpConnection::disconnected, [this](){
-            deleteLater();
-        });
-
-        // process incomming connection.
-        QObject::connect(conn, &qhttp::server::QHttpConnection::newRequest,
-                         [this](qhttp::server::QHttpRequest* req, qhttp::server::QHttpResponse* res){
-            processRequest(req, res);
-        });
-
-    }
-
-    virtual        ~ClientHandler() {
-    }
-
-    void            processRequest(qhttp::server::QHttpRequest* req,
-                                   qhttp::server::QHttpResponse* res) {
-
+    explicit        ClientHandler(quint64 id, QHttpRequest* req, QHttpResponse* res)
+        : QObject(res), iconnectionId(id) {
         // append chunks of data into uniform body.
-        QObject::connect(req, &qhttp::server::QHttpRequest::data, [this](const QByteArray& chunk){
+        QObject::connect(req, &QHttpRequest::data, [this](const QByteArray& chunk){
             ibody.append(chunk);
         });
 
         // when all the incoming data are gathered, send some response to client.
-        QObject::connect(req, &qhttp::server::QHttpRequest::end, [this, req, res](){
+        QObject::connect(req, &QHttpRequest::end, [this, req, res](){
             printf("connection (#%llu): request from %s:%d\nurl: %s\n",
                    iconnectionId,
                    req->remoteAddress().toUtf8().constData(),
@@ -69,6 +51,10 @@ public:
         });
     }
 
+    virtual        ~ClientHandler() {
+        puts("~ClientHandler(): I'm called automatically!");
+    }
+
 protected:
     quint64         iconnectionId;
     QByteArray      ibody;
@@ -76,32 +62,26 @@ protected:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class HttpServer : public qhttp::server::QHttpServer
-{
-    quint64     iconnectionCounter;
-
-public:
-    explicit    HttpServer(QObject* parent)
-        : qhttp::server::QHttpServer(parent), iconnectionCounter(0) {
-    }
-
-    virtual    ~HttpServer() {
-    }
-
-protected:
-    void        incomingConnection(qhttp::server::QHttpConnection* connection) {
-        // the instance will be automatically deleted when the connection closes.
-        new ClientHandler(iconnectionCounter++, connection);
-    }
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
 int main(int argc, char ** argv) {
     QCoreApplication app(argc, argv);
 
-    HttpServer server(&app);
+    // dumb (trivial) connection counter
+    quint64 iconnectionCounter = 0;
+
+    QHttpServer server(&app);
     server.listen(8080);
+    QObject::connect(&server,    &QHttpServer::newRequest,
+                     [&](QHttpRequest* req, QHttpResponse* res){
+        new ClientHandler(iconnectionCounter++,
+                          req,
+                          res);
+        // this ClientHandler object will be deleted automatically when:
+        // socket disconnects (automatically after data has been sent to the client)
+        //     -> QHttpConnection destroys
+        //         -> QHttpRequest destroys
+        //         -> QHttpResponse destroys ->  ClientHandler destroys
+        // all by parent-child model of QObject.
+    });
 
     app.exec();
 }
