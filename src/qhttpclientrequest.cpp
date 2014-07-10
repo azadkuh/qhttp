@@ -59,12 +59,21 @@ QHttpRequestPrivate::ensureWritingHeaders() {
     if ( ifinished    ||    iheaderWritten )
         return;
 
-    writeRaw(QString("%1 %2 HTTP/%3\r\n")
-             .arg(http_method_str(static_cast<http_method>(imethod)))
-             .arg(iurl.path())
-             .arg(iversion)
-             .toLatin1()
-             );
+    QByteArray title;
+    title.reserve(512);
+    title.append(qhttp::Stringify::toString(imethod))
+            .append(" ")
+            .append(iurl.path(QUrl::FullyEncoded).toLatin1());
+
+    if ( iurl.hasQuery() )
+        title.append("?").append(iurl.query(QUrl::FullyEncoded).toLatin1());
+
+
+    title.append(" HTTP/")
+            .append(iversion.toLatin1())
+            .append("\r\n");
+
+    writeRaw(title);
     writeHeaders();
     writeRaw("\r\n");
     isocket->flush();
