@@ -13,11 +13,9 @@ INCLUDEPATH += ..
 
 
 SOURCES     += main.cpp \
-    httpserver.cpp \
     ../include/gason.cpp
 
 HEADERS     += \
-    httpserver.hpp \
     ../include/gason.hpp \
     ../include/jsonbuilder.hpp
 
