@@ -150,7 +150,7 @@ public:
         QObject::connect(res, &qhttp::client::QHttpResponse::end,
                          [this, res](){
             onIncomming();
-            res->releaseConnection();
+            res->connection()->close();
         });
     }
 
