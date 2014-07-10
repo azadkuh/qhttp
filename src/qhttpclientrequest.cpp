@@ -1,6 +1,5 @@
 #include "private/qhttpclientrequest_private.hpp"
-
-#include "http-parser/http_parser.h"
+#include "qhttpclient.hpp"
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
 namespace client {
@@ -47,6 +46,11 @@ QHttpRequest::end(const QByteArray &data) {
 
     if ( d->endPacket(data) )
         emit done(false);   // should wait for response packet
+}
+
+QHttpClient*
+QHttpRequest::connection() const {
+    return static_cast<QHttpClient*>(d_func()->isocket);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

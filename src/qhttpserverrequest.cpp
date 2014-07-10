@@ -60,6 +60,11 @@ QHttpRequest::isSuccessful() const {
     return d_func()->isuccessful;
 }
 
+QHttpConnection*
+QHttpRequest::connection() const {
+    return static_cast<QHttpConnection*>(d_func()->isocket);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 } // namespace server
 } // namespace qhttp

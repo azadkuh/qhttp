@@ -1,6 +1,5 @@
 #include "private/qhttpclientresponse_private.hpp"
-#include "qhttpserver.hpp"
-
+#include "qhttpclient.hpp"
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
 namespace client {
@@ -46,9 +45,9 @@ QHttpResponse::isSuccessful() const {
     return d_func()->isuccessful;
 }
 
-void
-QHttpResponse::releaseConnection() {
-    d_func()->isocket->close();
+QHttpClient*
+QHttpResponse::connection() const {
+    return static_cast<QHttpClient* const>(d_func()->isocket);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

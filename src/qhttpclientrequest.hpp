@@ -35,6 +35,9 @@ public: // QHttpAbstractOutput methods:
     /** @see QHttpAbstractOutput::end(). */
     void            end(const QByteArray &data = QByteArray());
 
+public:
+    /** returns parent QHttpClient object. */
+    QHttpClient*    connection() const;
 
 protected:
     explicit        QHttpRequest(QTcpSocket*);

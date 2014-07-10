@@ -40,9 +40,8 @@ public:
      *  depending on implementation of HTTP server. */
     const QString&      statusString() const;
 
-    /** Closes the HTTP connection associated to this response instance.
-     * the request, response and the connection instances will be deleted. */
-    void                releaseConnection();
+    /** returns parent QHttpClient object. */
+    QHttpClient*        connection() const;
 
 protected:
     explicit            QHttpResponse(QTcpSocket*);

@@ -53,6 +53,11 @@ QHttpResponse::end(const QByteArray &data) {
         emit done(!d->ikeepAlive);
 }
 
+QHttpConnection*
+QHttpResponse::connection() const {
+    return static_cast<QHttpConnection*>(d_func()->isocket);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 void
 QHttpResponsePrivate::ensureWritingHeaders() {

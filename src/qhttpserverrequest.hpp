@@ -49,6 +49,8 @@ public:
     /** Outbound connection port for the client. */
     quint16             remotePort() const;
 
+    /** returns the parent QHttpConnection object. */
+    QHttpConnection*    connection() const;
 
 protected:
     explicit            QHttpRequest(QTcpSocket*);
