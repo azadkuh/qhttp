@@ -5,12 +5,14 @@
  *
  * @author Ivan Vashchaev
  * @version 1.0.0
- * @date 2014-05-08
- * based on this commit: 9e292d4
+ * @date 2014-07-07
+ * based on this commit: ede29fc
+ * https://github.com/vivkin/gason
  *
  * @author amir zamani
  * @version 2.1.0
- * @date 2014-05-16
+ * @date 2014-07-11
+ * https://github.com/azadkuh/gason--
  *
  */
 
@@ -203,7 +205,8 @@ struct JsonIterator {
 };
 
 inline JsonIterator begin(JsonValue o) {
-    return JsonIterator(o.toNode());
+    bool bok;
+    return JsonIterator(o.toNode(&bok));
 }
 inline JsonIterator end(JsonValue) {
     return JsonIterator(nullptr);
