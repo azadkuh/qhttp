@@ -1,3 +1,11 @@
+/** HTTP server class.
+ * https://github.com/azadkuh/qhttp
+ *
+ * @author amir zamani
+ * @version 2.0.0
+ * @date 2014-07-11
+  */
+
 #ifndef QHTTPSERVER_HPP
 #define QHTTPSERVER_HPP
 
@@ -12,7 +20,7 @@ namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
 
-/** The QHttpServer class is a fast, non-blocking HTTP server. */
+/** The QHttpServer class is a fast, async (non-blocking) HTTP server. */
 class QHttpServer : public QTcpServer
 {
     Q_OBJECT

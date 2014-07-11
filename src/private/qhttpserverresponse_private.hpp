@@ -1,3 +1,11 @@
+/** private imeplementation.
+ * https://github.com/azadkuh/qhttp
+ *
+ * @author amir zamani
+ * @version 2.0.0
+ * @date 2014-07-11
+  */
+
 #ifndef QHTTPSERVER_RESPONSE_PRIVATE_HPP
 #define QHTTPSERVER_RESPONSE_PRIVATE_HPP
 ///////////////////////////////////////////////////////////////////////////////

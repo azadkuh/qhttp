@@ -1,3 +1,11 @@
+/** HTTP request which is received by the server.
+ * https://github.com/azadkuh/qhttp
+ *
+ * @author amir zamani
+ * @version 2.0.0
+ * @date 2014-07-11
+  */
+
 #ifndef QHTTPSERVER_REQUEST_HPP
 #define QHTTPSERVER_REQUEST_HPP
 ///////////////////////////////////////////////////////////////////////////////

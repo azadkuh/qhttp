@@ -1,3 +1,11 @@
+/** HTTP client class.
+ * https://github.com/azadkuh/qhttp
+ *
+ * @author amir zamani
+ * @version 2.0.0
+ * @date 2014-07-11
+  */
+
 #ifndef QHTTPCLIENT_HPP
 #define QHTTPCLIENT_HPP
 
@@ -11,7 +19,7 @@ namespace qhttp {
 namespace client {
 ///////////////////////////////////////////////////////////////////////////////
 
-/** a simple HTTP client class which sends a request to an HTTP server and parses the
+/** a simple and async HTTP client class which sends a request to an HTTP server and parses the
  *  corresponding response.
  * This class internally handles the memory management and life cycle of QHttpRequest and
  *  QHttpResponse instances. you do not have to manually delete or keep their pointers.
