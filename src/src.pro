@@ -1,7 +1,7 @@
 QT       += core network
 QT       -= gui
 
-TARGET    = qhttpserver
+TARGET    = qhttp
 TEMPLATE  = lib
 CONFIG   += staticlib
 CONFIG   += c++11

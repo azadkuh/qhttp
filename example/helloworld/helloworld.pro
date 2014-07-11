@@ -14,4 +14,4 @@ HEADERS   +=
 SOURCES   += main.cpp
 
 
-LIBS      += $$PRJDIR/xbin/libqhttpserver.a
+LIBS      += $$PRJDIR/xbin/libqhttp.a
