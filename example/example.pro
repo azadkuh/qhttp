@@ -6,3 +6,4 @@ SUBDIRS += httpclient
 SUBDIRS += httpclient-qt
 SUBDIRS += httpclient-raw
 SUBDIRS += httpjsonserver
+SUBDIRS += benchmark
