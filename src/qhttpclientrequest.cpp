@@ -62,8 +62,12 @@ QHttpRequestPrivate::ensureWritingHeaders() {
     QByteArray title;
     title.reserve(512);
     title.append(qhttp::Stringify::toString(imethod))
-            .append(" ")
-            .append(iurl.path(QUrl::FullyEncoded).toLatin1());
+            .append(" ");
+
+    QByteArray path = iurl.path(QUrl::FullyEncoded).toLatin1();
+    if ( path.size() == 0 )
+        path = "/";
+    title.append(path);
 
     if ( iurl.hasQuery() )
         title.append("?").append(iurl.query(QUrl::FullyEncoded).toLatin1());
@@ -75,8 +79,6 @@ QHttpRequestPrivate::ensureWritingHeaders() {
 
     writeRaw(title);
     writeHeaders();
-    writeRaw("\r\n");
-    isocket->flush();
 
     iheaderWritten = true;
 }
@@ -92,17 +94,24 @@ QHttpRequestPrivate::writeHeaders() {
         iheaders.insert("connection", "close");
 
     if ( !iheaders.contains("host") ) {
+        quint16 port = iurl.port();
+        if ( port == 0 )
+            port = 80;
+
         iheaders.insert("host",
-                        QString("%1:%2").arg(iurl.host()).arg(iurl.port()).toLatin1()
+                        QString("%1:%2").arg(iurl.host()).arg(port).toLatin1()
                         );
     }
 
-    for ( THeaderHash::const_iterator cit = iheaders.begin(); cit != iheaders.end(); cit++ ) {
+    for ( auto cit = iheaders.constBegin(); cit != iheaders.constEnd(); cit++ ) {
         const QByteArray& field = cit.key();
         const QByteArray& value = cit.value();
 
         writeHeader(field, value);
     }
+
+    writeRaw("\r\n");
+    isocket->flush();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
