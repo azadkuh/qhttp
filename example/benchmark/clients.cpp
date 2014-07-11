@@ -126,6 +126,13 @@ protected:
 
         QHttpClient* client = new QHttpClient(this);
 
+        QUrl url;
+        url.setHost(iaddress);
+        url.setPort(iport);
+
+        if ( !client->request(qhttp::EHTTP_POST, url) )
+            client->deleteLater();
+
         QObject::connect(client, &QHttpClient::disconnected, [this](){
             start();
         });
@@ -135,15 +142,6 @@ protected:
         QObject::connect(client, &QHttpClient::newResponse, [this](QHttpResponse* res){
             onResponse(res);
         });
-
-
-        QUrl url;
-        url.setScheme("http");
-        url.setHost(iaddress);
-        url.setPort(iport);
-        url.setPath("/aPath");
-
-        client->request(qhttp::EHTTP_POST, url);
     }
 
 };
