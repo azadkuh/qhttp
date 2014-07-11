@@ -29,13 +29,14 @@ public:
 
     virtual    ~QHttpClient();
 
-    /** connects to a server.
-     *  if the connection has been made, creates and emits a QHttpRequest instance
-     *   by @sa connected(QHttpRequest*)
+    /** tries to connect to a HTTP server.
+     *  when the connection is made, creates and emits a QHttpRequest instance
+     *   by @sa httpConnected(QHttpRequest*)
      * @param method an HTTP method, ex: GET, POST, ...
      * @param url specifies server's address, port and optional path and query strings.
+     * @return true if the url is valid or false (no connection will be made).
      */
-    void        request(THttpMethod method, QUrl url);
+    bool        request(THttpMethod method, QUrl url);
 
     /** checks if the connetion to the server is open. */
     bool        isOpen() const;

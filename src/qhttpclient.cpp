@@ -36,14 +36,18 @@ QHttpClient::isOpen() const {
     return QTcpSocket::isOpen()    &&    state() == QTcpSocket::ConnectedState;
 }
 
-void
+bool
 QHttpClient::request(THttpMethod method, QUrl url) {
     Q_D(QHttpClient);
+
+    if ( !url.isValid()    ||    url.isEmpty()    ||    url.host().isEmpty() )
+        return false;
 
     d->ilastMethod  = method;
     d->ilastUrl     = url;
 
     connectToHost(url.host(), url.port(80));
+    return true;
 }
 
 void
