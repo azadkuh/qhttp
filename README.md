@@ -5,6 +5,7 @@
 ## Table of contents
 - [About](#about)
 - [Features](#features)
+- [Sample codes](#sample-codes)
 - [Setup](#setup)
 - [Source tree](#source-tree)
 - [Examples](#examples)
@@ -23,7 +24,36 @@ QHttp is a lightweight, asynchronous and fast HTTP library, containing both serv
 * the objective of QHttp is being light weight with a simple API for Qt developers to implement RESTful web services in private (internal) zones. for a fast c++ Json parser / builder, have a look at [azadkuh/gason++](https://github.com/azadkuh/gason--)
 
 
-a HelloWorld HTTP server by QHttp looks like:
+
+## Features
+[TOC](#table-of-contents)
+
+* separate `namespace`s for server and client classes.
+
+* HTTP server classes: [QHttpServer](./src/qhttpserver.hpp), [QHttpConnection](./src/qhttpserverconnection.hpp), [QHttpRequest](./src/qhttpserverrequest.hpp) and [QHttpResponse](./src/qhttpserverresponse.hpp).
+
+* HTTP client classes: [QHttpClient](./src/qhttpclient.hpp), [QHttpRequest](./src/qhttpclientrequest.hpp) and [QHttpResponse](./src/qhttpclientresponse.hpp).
+
+* **automatic memory management** of objects. Instances of connections, requests and replies will be deleted automatically when socket drops or disconnected.
+
+* **PIMPL** (Private classes) to achieve better ABI compatibility and cleaner API.
+
+* API is quite similar to **Node.js** http module. have a look at [sample code](#sample-codes).
+
+
+* the only dependencies are: [Qt 5](http://qt-project.org/downloads), [c++11](http://en.wikipedia.org/wiki/C%2B%2B11) and [joyent/http-parser](https://github.com/joyent/http-parser)
+
+* **high throughput**, I have tried the QHttp and [gason++](https://github.com/azadkuh/gason--) to implement a REST/Json web service on an Ubuntu VPS (dual core + 512MB ram) with peak TPS > 5000 (stress test)
+
+* a simple benchmarking tool, implementing both a RESTful/Json server and client.
+
+* Tested under **Linux** (Ubuntu 12.04 LTS, 14.04 LTS) and **OS X** (10.9). Easily portable where ever Qt 5 works. I have no **Windows** machine (or time or interest), but this lib should work just fine under Windows, although I've not tried by myself.
+
+
+## Sample codes
+[TOC](#table-of-contents)
+
+a HelloWorld **HTTP server** by QHttp looks like:
 ``` cpp
 int main(int argc, char** argv) {
 
@@ -58,30 +88,54 @@ int main(int argc, char** argv) {
 }
 ```
 
+to request weather information by **HTTP client**:
+```cpp
+int main(int argc, char** argv) {
+    QCoreApplication app(argc, argv);
+    using namespace qhttp::client;
 
+    QByteArray  buffer;
+    QHttpClient client(&app);
 
-## Features
-[TOC](#table-of-contents)
+    QObject::connect(&client, &QHttpClient::httpConnected, [](QHttpRequest* req){
+        // GET request has no body data, just optional headers
+        req->addHeader("connection", "close");
+        req->addHeader("cache-control", "no-cache");
+        req->end();
+    });
 
-* separate `namespace`s for server and client classes.
+    QObject::connect(&client, &QHttpClient::newResponse, [&](QHttpResponse* res){
 
-* HTTP server classes: [QHttpServer](./src/qhttpserver.hpp), [QHttpConnection](./src/qhttpserverconnection.hpp), [QHttpRequest](./src/qhttpserverrequest.hpp) and [QHttpResponse](./src/qhttpserverresponse.hpp).
+        // collecting body data of the reponse in chunks
+        QObject::connect(res, &QHttpResponse::data, [&buffer](const QByteArray& chunk){
+            buffer.append(chunk);
+        });
 
-* HTTP client classes: [QHttpClient](./src/qhttpclient.hpp), [QHttpRequest](./src/qhttpclientrequest.hpp) and [QHttpResponse](./src/qhttpclientresponse.hpp).
+        // print the XML body of the response 
+        QObject::connect(res, &QHttpResponse::end, [&buffer](){
+            puts("\n[incoming response:]");
+            puts(buffer.constData());
+            puts("\n\n");
 
-* **automatic memory management** of objects. Instances of connections, requests and replies will be deleted automatically when socket drops or disconnected.
+            QCoreApplication::instance()->quit();
+        });
 
-* **PIMPL** (Private classes) to achieve better ABI compatibility and cleaner API.
+        // just for fun
+        puts("\n[Headers:]");
+        for ( auto cit = res->headers().constBegin(); cit != res->headers().constEnd(); cit++) {
+            printf("%s : %s\n",
+                   cit.key().constData(),
+                   cit.value().constData());
+        }
+    });
 
-* API is quite similar to **Node.js** http module.
+    // calling a web service by Url
+    QUrl url("http://api.openweathermap.org/data/2.5/weather?q=tehran,ir&units=metric&mode=xml");
+    client.request(qhttp::EHTTP_GET, url);
 
-* the only dependencies are: [Qt 5](http://qt-project.org/downloads), [c++11](http://en.wikipedia.org/wiki/C%2B%2B11) and [joyent/http-parser](https://github.com/joyent/http-parser)
-
-* **high throughput**, I have tried the QHttp and [gason++](https://github.com/azadkuh/gason--) to implement a REST/Json web service on an Ubuntu VPS (dual core + 512MB ram) with peak TPS > 5000 (stress test)
-
-* a simple benchmarking tool, implementing both a RESTful/Json server and client.
-
-* Tested under **Linux** (Ubuntu 12.04 LTS, 14.04 LTS) and **OS X** (10.9). Easily portable where ever Qt 5 works. I have no **Windows** machine (or time or interest), but this lib should work just fine under Windows, although I've not tried by myself.
+    return app.exec();
+}
+```
 
 ## Setup
 [TOC](#table-of-contents)
@@ -116,7 +170,11 @@ $> make -j 8
 [TOC](#table-of-contents)
 
 * Implementing a lightweight and simple HTTP server/client in Qt is the main purpose of QHttp.
+
 * There are lots of features in a full blown HTTP server which are out of scope of this small library, although those can be added on top of QHttp.
+
+* The client classes are by no mean presented as a `QNetworkAccessManager` replacement. `QHttpClient` is simpler and lighter, for serious requests just use `QNetworkAccessManager`.
+
 * I'm a busy person.
 
 ## License
