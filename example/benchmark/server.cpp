@@ -137,7 +137,7 @@ Server::Server(QObject *parent) : QHttpServer(parent), d_ptr(new ServerPrivate(t
     Q_D(Server);
 
 
-    printf("\nDataTime,AveTps,miliSecond,Count,TotalCount\n");
+    printf("\nDateTime,AveTps,miliSecond,Count,TotalCount\n");
     d->itimer.start(10000, Qt::CoarseTimer, this);
     d->ielapsed.start();
 }
