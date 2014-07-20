@@ -1,8 +1,7 @@
 # QHttp
-*this doc is under construction.*
 
 
-## Table of contents
+### Table of contents
 - [About](#about)
 - [Features](#features)
 - [Sample codes](#sample-codes)
@@ -145,7 +144,7 @@ int main(int argc, char** argv) {
 
 instructions:
 ```bash
-# first clone the this repository:
+# first clone this repository:
 $> git clone --depth=1 https://github.com/azadkuh/qhttp.git
 $> cd qhttp
 
@@ -167,23 +166,23 @@ this directory is created by setup. see also: [setup](#setup).
 
 * **`example/`**:
 contains some sample applications representing the `QHttp` usage:
-    * **`helloworld`**:
+    * **`helloworld/`**:
     the HelloWorld example of `QHttp`, both server + client are represented.
     see: [README@helloworld](./example/helloworld/README.md)
 
-    * **`basic-server`**:
+    * **`basic-server/`**:
     a basic HTTP server shows how to collect the request body, and respond to the clients.
     see: [README@basic-server](./example/basic-server/README.md)
     
 
-    * **`benchmark`**:
+    * **`benchmark/`**:
     a simple utility to measure the throughput (requests per second) of `QHttp` as a REST/Json server. this app provides both the server and attacking clinets.
     see: [README@benchmark](./example/benchmark/README.md)
     
 
 * **`src/`**:
 holds the source code of `QHttp`. server classes are prefixed by `qhttpserver*` and client classes by `qhttpclient*`.
-    * **`private`**:
+    * **`private/`**:
     Private classes of the library. see: [d-pointers](https://qt-project.org/wiki/Dpointer).
 
 * **`tmp/`**:
