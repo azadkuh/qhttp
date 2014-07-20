@@ -8,20 +8,19 @@
 - [Sample codes](#sample-codes)
 - [Setup](#setup)
 - [Source tree](#source-tree)
-- [Examples](#examples)
 - [Disclaimer](#disclaimer)
 - [License](#license)
 
 ## About
 [TOC](#table-of-contents)
 
-QHttp is a lightweight, asynchronous and fast HTTP library, containing both server and client side classes for managing connections, parsing and building HTTP requests and responses.
+`QHttp` is a lightweight, asynchronous and fast HTTP library, containing both server and client side classes for managing connections, parsing and building HTTP requests and responses.
 
-* this project is inspired by [nikhilm/qhttpserver](https://github.com/nikhilm/qhttpserver) effort to implement a Qt HTTP server. QHttp pushes the idea further by implementing client classes and better memory management, c++11, lambda connections, clean API, ...
+* this project is inspired by [nikhilm/qhttpserver](https://github.com/nikhilm/qhttpserver) effort to implement a Qt HTTP server. `QHttp` pushes the idea further by implementing client classes and better memory management, c++11, lambda connections, clean API, ...
 
 * the fantastic [joyent/http-parser](https://github.com/joyent/http-parser) is the core parser of HTTP requests (server mode) and responses (client mode). I have tried to keep the API similar to the [Node.js](http://nodejs.org/api/http.html)' http module.
 
-* the objective of QHttp is being light weight with a simple API for Qt developers to implement RESTful web services in private (internal) zones. for a fast c++ Json parser / builder, have a look at [azadkuh/gason++](https://github.com/azadkuh/gason--)
+* the objective of `QHttp` is being light weight with a simple API for Qt developers to implement RESTful web services in private (internal) zones. for a fast c++ Json parser / builder, have a look at [azadkuh/gason++](https://github.com/azadkuh/gason--)
 
 
 
@@ -43,7 +42,7 @@ QHttp is a lightweight, asynchronous and fast HTTP library, containing both serv
 
 * the only dependencies are: [Qt 5](http://qt-project.org/downloads), [c++11](http://en.wikipedia.org/wiki/C%2B%2B11) and [joyent/http-parser](https://github.com/joyent/http-parser)
 
-* **high throughput**, I have tried the QHttp and [gason++](https://github.com/azadkuh/gason--) to implement a REST/Json web service on an Ubuntu VPS (dual core + 512MB ram) with peak TPS > 5000 (stress test)
+* **high throughput**, I have tried the `QHttp` and [gason++](https://github.com/azadkuh/gason--) to implement a REST/Json web service on an Ubuntu VPS (dual core + 512MB ram) with peak TPS > 5000 (stress test)
 
 * a simple benchmarking tool, implementing both a RESTful/Json server and client.
 
@@ -53,7 +52,7 @@ QHttp is a lightweight, asynchronous and fast HTTP library, containing both serv
 ## Sample codes
 [TOC](#table-of-contents)
 
-a HelloWorld **HTTP server** by QHttp looks like:
+a HelloWorld **HTTP server** by `QHttp` looks like:
 ``` cpp
 int main(int argc, char** argv) {
 
@@ -94,7 +93,7 @@ int main(int argc, char** argv) {
     QCoreApplication app(argc, argv);
     using namespace qhttp::client;
 
-    QByteArray  buffer;
+    QByteArray  httpBody;
     QHttpClient client(&app);
 
     QObject::connect(&client, &QHttpClient::httpConnected, [](QHttpRequest* req){
@@ -107,14 +106,15 @@ int main(int argc, char** argv) {
     QObject::connect(&client, &QHttpClient::newResponse, [&](QHttpResponse* res){
 
         // collecting body data of the reponse in chunks
-        QObject::connect(res, &QHttpResponse::data, [&buffer](const QByteArray& chunk){
-            buffer.append(chunk);
+        QObject::connect(res, &QHttpResponse::data,
+                        [&httpBody](const QByteArray& chunk){
+            httpBody.append(chunk);
         });
 
         // print the XML body of the response 
-        QObject::connect(res, &QHttpResponse::end, [&buffer](){
+        QObject::connect(res, &QHttpResponse::end, [&httpBody](){
             puts("\n[incoming response:]");
-            puts(buffer.constData());
+            puts(httpBody.constData());
             puts("\n\n");
 
             QCoreApplication::instance()->quit();
@@ -125,13 +125,16 @@ int main(int argc, char** argv) {
         for ( auto cit = res->headers().constBegin(); cit != res->headers().constEnd(); cit++) {
             printf("%s : %s\n",
                    cit.key().constData(),
-                   cit.value().constData());
+                   cit.value().constData()
+                   );
         }
     });
 
     // calling a web service by Url
-    QUrl url("http://api.openweathermap.org/data/2.5/weather?q=tehran,ir&units=metric&mode=xml");
-    client.request(qhttp::EHTTP_GET, url);
+    client.request(
+    qhttp::EHTTP_GET,
+    "http://api.openweathermap.org/data/2.5/weather?q=tehran,ir&units=metric&mode=xml"
+    );
 
     return app.exec();
 }
@@ -142,14 +145,12 @@ int main(int argc, char** argv) {
 
 instructions:
 ```bash
-# first clone the QHttp:
+# first clone the this repository:
 $> git clone --depth=1 https://github.com/azadkuh/qhttp.git
+$> cd qhttp
 
-# then clone the dependency:
-$> mkdir -p qhttp/3rdparty
-$> cd qhttp/3rdparty
-$> git clone --depth=1 https://github.com/joyent/http-parser.git
-$> cd ..
+# prepare dependencies:
+$> ./update-dependencies.sh
 
 # now build the library and the examples
 $> qmake qhttp.pro
@@ -160,29 +161,57 @@ $> make -j 8
 [TOC](#table-of-contents)
 
 
+* **`3rdparty/`**:
+will contain `http-parser` source tree as the only dependency.
+this directory is created by setup. see also: [setup](#setup).
 
-## examples
-[TOC](#table-of-contents)
+* **`example/`**:
+contains some sample applications representing the `QHttp` usage:
+    * **`helloworld`**:
+    the HelloWorld example of `QHttp`, both server + client are represented.
+    see: [README@helloworld](./example/helloworld/README.md)
+
+    * **`basic-server`**:
+    a basic HTTP server shows how to collect the request body, and respond to the clients.
+    see: [README@basic-server](./example/basic-server/README.md)
+    
+
+    * **`benchmark`**:
+    a simple utility to measure the throughput (requests per second) of `QHttp` as a REST/Json server. this app provides both the server and attacking clinets.
+    see: [README@benchmark](./example/benchmark/README.md)
+    
+
+* **`src/`**:
+holds the source code of `QHttp`. server classes are prefixed by `qhttpserver*` and client classes by `qhttpclient*`.
+    * **`private`**:
+    Private classes of the library. see: [d-pointers](https://qt-project.org/wiki/Dpointer).
+
+* **`tmp/`**:
+a temporary directory which is created while `make`ing the library and holds all the `.o`, `moc files`, etc.
+
+* **`xbin/`**:
+all the executable binaries will be placed on this folder by `make`.
+
 
 
 
 ## Disclaimer
 [TOC](#table-of-contents)
 
-* Implementing a lightweight and simple HTTP server/client in Qt is the main purpose of QHttp.
+* Implementing a lightweight and simple HTTP server/client in Qt is the main purpose of `QHttp`.
 
-* There are lots of features in a full blown HTTP server which are out of scope of this small library, although those can be added on top of QHttp.
+* There are lots of features in a full blown HTTP server which are out of scope of this small library, although those can be added on top of `QHttp`.
 
-* The client classes are by no mean presented as a `QNetworkAccessManager` replacement. `QHttpClient` is simpler and lighter, for serious requests just use `QNetworkAccessManager`.
+* The client classes are by no mean designed as a `QNetworkAccessManager` replacement. `QHttpClient` is simpler and lighter, for serious scenarios just use `QNetworkAccessManager`.
 
 * I'm a busy person.
+
+
+> If you have any ideas, critiques, suggestions or whatever you want to call it, please open an issue. I'll be happy to hear from you what you'd see in this lib. I think about all suggestions, and I try to add those that make sense.
+
 
 ## License
 [TOC](#table-of-contents)
 
 Distributed under the MIT license. Copyright (c) 2014, Amir Zamani.
 
-
-
-
-> If you have any ideas, critiques, suggestions or whatever you want to call it, please open an issue. I'll be happy to hear from you what you'd see in this lib. I think about all suggestions, and I try to add those that make sense.
