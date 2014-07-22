@@ -26,7 +26,6 @@ class QHttpRequestPrivate : public HttpRequestBase,
 public:
     explicit    QHttpRequestPrivate(QTcpSocket* sok, QHttpRequest* q)
         : HttpWriterBase(sok), q_ptr(q) {
-        ikeepAlive  = false;
         iversion    = "1.1";
 
         QHTTP_LINE_DEEPLOG
@@ -54,7 +53,7 @@ public:
     void        writeHeaders();
 
 public:
-    bool                 ikeepAlive;
+    bool                 ikeepAlive = false;
 
 protected:
     QHttpRequest* const  q_ptr;

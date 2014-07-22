@@ -24,8 +24,6 @@ class QHttpRequestPrivate : public HttpRequestBase
 
 public:
     explicit    QHttpRequestPrivate(QTcpSocket* sok, QHttpRequest* q) : q_ptr(q) {
-        isuccessful = false;
-        iremotePort = 0;
         isocket     = sok;
 
         QHTTP_LINE_DEEPLOG
@@ -43,8 +41,8 @@ public:
 
 public:
     QString     iremoteAddress;
-    quint16     iremotePort;
-    bool        isuccessful;
+    quint16     iremotePort = 0;
+    bool        isuccessful = false;
 
 protected:
     QTcpSocket*             isocket;

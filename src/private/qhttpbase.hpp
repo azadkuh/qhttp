@@ -43,12 +43,11 @@ class HttpResponseBase : public HttpBase
 {
 public:
     HttpResponseBase() {
-        istatus     = ESTATUS_BAD_REQUEST;
         iversion    = "1.1";
     }
 
 public:
-    TStatusCode         istatus;
+    TStatusCode         istatus = ESTATUS_BAD_REQUEST;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -57,7 +56,7 @@ template<class T>
 class HttpParserBase
 {
 public:
-    explicit     HttpParserBase(http_parser_type type) : isocket(nullptr) {
+    explicit     HttpParserBase(http_parser_type type) {
         // create http_parser object
         iparser.data  = static_cast<T*>(this);
         http_parser_init(&iparser, type);
@@ -123,7 +122,7 @@ public: // callback functions for http_parser_settings
     }
 
 public:
-    QTcpSocket*             isocket;
+    QTcpSocket*             isocket = nullptr;
 
     // The ones we are reading in from the parser
     QByteArray              itempHeaderField;

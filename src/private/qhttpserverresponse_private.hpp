@@ -30,9 +30,6 @@ class QHttpResponsePrivate : public HttpResponseBase,
 public:
     explicit    QHttpResponsePrivate(QTcpSocket* sok, QHttpResponse* q)
         : HttpWriterBase(sok), q_ptr(q) {
-
-        ikeepAlive                 = false;
-
         QHTTP_LINE_DEEPLOG
     }
 
@@ -63,7 +60,7 @@ public:
     void        writeHeaders();
 
 public:
-    bool        ikeepAlive;
+    bool        ikeepAlive = false;
 
 protected:
     QHttpResponse* const q_ptr;

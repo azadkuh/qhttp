@@ -20,10 +20,10 @@ namespace server {
 class QHttpServerPrivate
 {
 public:
-    quint32         itimeOut;
+    quint32         itimeOut = 0;
 
 public:
-    explicit    QHttpServerPrivate() : itimeOut(0) {
+    explicit    QHttpServerPrivate() {
         QHTTP_LINE_DEEPLOG
     }
 

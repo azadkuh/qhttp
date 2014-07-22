@@ -32,8 +32,8 @@ public:
     QByteArray              itempUrl;
 
     // Since there can only be one request at any time even with pipelining.
-    QHttpRequest*           irequest;      ///< latest request
-    QHttpResponse*          iresponse;     ///< latest response
+    QHttpRequest*           irequest  = nullptr;     ///< latest request
+    QHttpResponse*          iresponse = nullptr;     ///< latest response
 
     QBasicTimer             itimer;
 
@@ -44,8 +44,6 @@ public:
 public:
     explicit    QHttpConnectionPrivate(QHttpConnection* q)
         : HttpParserBase(HTTP_REQUEST), q_ptr(q) {
-        irequest       = nullptr;
-        iresponse      = nullptr;
         isocket        = q;
 
         QHTTP_LINE_DEEPLOG

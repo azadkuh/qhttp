@@ -22,8 +22,6 @@ class QHttpResponsePrivate : public HttpResponseBase
 public:
     explicit    QHttpResponsePrivate(QTcpSocket* sok, QHttpResponse* q)
         : isocket(sok), q_ptr(q) {
-        isuccessful = false;
-
         QHTTP_LINE_DEEPLOG
     }
 
@@ -38,7 +36,7 @@ public:
     }
 
 public:
-    bool                    isuccessful;
+    bool                    isuccessful = false;
     QString                 icustomeStatusMessage;
 
 protected:

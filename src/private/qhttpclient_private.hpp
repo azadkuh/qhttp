@@ -31,14 +31,11 @@ public:
     THttpMethod     ilastMethod;
     QUrl            ilastUrl;
 
-    quint32         itimeOut;
+    quint32         itimeOut = 0;
     QBasicTimer     itimer;
 
 public:
     explicit     QHttpClientPrivate(QHttpClient* q) : HttpParserBase(HTTP_RESPONSE), q_ptr(q) {
-        itimeOut        = 0;
-        isocket         = nullptr;
-
         QHTTP_LINE_DEEPLOG
     }
 
@@ -93,7 +90,7 @@ protected:
 protected:
     QHttpClient* const      q_ptr;
 
-    QHttpResponse*          ilastResponse;
+    QHttpResponse*          ilastResponse = nullptr;
 
 #   if QHTTP_MESSAGES_LOG > 0
     QByteArray              iinputBuffer;

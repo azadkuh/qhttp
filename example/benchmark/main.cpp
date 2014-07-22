@@ -15,9 +15,6 @@ class Application : public QCoreApplication
 
 public:
     explicit    Application(int& argc, char** argv) : QCoreApplication(argc, argv) {
-        iserver     = nullptr;
-        iclients    = nullptr;
-
         setApplicationName("benchmark");
         setApplicationVersion("1.0.0");
 
@@ -98,8 +95,8 @@ protected:
     size_t      iconnectionCount;
     QString     iaddress;
 
-    Server*     iserver;
-    Clients*    iclients;
+    Server*     iserver  = nullptr;
+    Clients*    iclients = nullptr;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
