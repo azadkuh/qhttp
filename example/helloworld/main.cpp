@@ -13,14 +13,8 @@ void    runServer(QCoreApplication& app) {
     using namespace qhttp::server;
 
     QHttpServer server(&app);
-    // port to listening on
-    if ( !server.listen(8080) ) {
-        fprintf(stderr, "failed. can not listen at port 8080!\n");
-        return;
-    }
-
-    QObject::connect(&server, &QHttpServer::newRequest,
-                     [](QHttpRequest* req, QHttpResponse* res) {
+    // listening on 0.0.0.0:8080
+    server.listen(QHostAddress::Any, 8080, [](QHttpRequest* req, QHttpResponse* res) {
 
         res->setStatusCode(qhttp::ESTATUS_OK);      // status 200
         res->addHeader("connection", "close");      // it's the default header, this line can be omitted.
@@ -29,6 +23,10 @@ void    runServer(QCoreApplication& app) {
         // when "connection: close", the req and res will be deleted automatically.
     });
 
+    if ( !server.isListening() ) {
+        fprintf(stderr, "failed. can not listen at port 8080!\n");
+        return;
+    }
 
     app.exec();                 // application's main event loop
 }

@@ -60,26 +60,21 @@ int main(int argc, char** argv) {
     using namespace qhttp::server;
 
     QHttpServer server(&app);
-    if ( !server.listen(8080) ) { // listening port
-        fprintf(stderr, "failed. some useful error message!\n");
-        return -1;
-    }
+    // listening on 0.0.0.0:8080
+    server.listen(QHostAddress::Any, 8080, [](QHttpRequest* req, QHttpResponse* res) {
 
-    QObject::connect(&server,  &QHttpServer::newRequest,
-                    [](QHttpRequest* req, QHttpResponse* res) {
-        // status 200
-        res->setStatusCode(qhttp::ESTATUS_OK);
-        
-        // it's the default header, this line can be omitted.
-        res->addHeader("connection", "close"); 
-        
-        // body data of the response
-        res->end("Hello World!\n");
+        res->setStatusCode(qhttp::ESTATUS_OK);      // status 200
+        res->addHeader("connection", "close");      // it's the default header, this line can be omitted.
+        res->end("Hello World!\n");                 // response body data
 
-        // when "connection: close" (default mode), the req and res instances
-        //  will be deleted automatically as soon as the socket `disconnected()`.
+        // when "connection: close", the req and res will be deleted automatically.
     });
 
+
+    if ( !server.isListening() ) {
+        fprintf(stderr, "failed. can not listen at port 8080!\n");
+        return -1;
+    }
 
     // application's main event loop
     return app.exec();
