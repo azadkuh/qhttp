@@ -41,20 +41,42 @@ public:
     virtual    ~QHttpClient();
 
     /** tries to connect to a HTTP server.
-     *  when the connection is made, creates and emits a QHttpRequest instance
-     *   by @sa httpConnected(QHttpRequest*)
+     *  when the connection is made, the reqHandler will be called
+     *   and when the response is ready, resHandler will be called.
+     * @note httpConnected() and newResponse() won't be emitted.
+     *
      * @param method an HTTP method, ex: GET, POST, ...
      * @param url specifies server's address, port and optional path and query strings.
+     * @param resHandler response handler (a lambda, std::function object, ...)
      * @return true if the url is valid or false (no connection will be made).
      */
     bool        request(THttpMethod method, QUrl url,
                         const TRequstHandler& reqHandler,
                         const TResponseHandler& resHandler);
 
+    /** tries to connect to a HTTP server.
+     *  when the connection is made, a default request handler is called automatically (
+     *  simply calls req->end()) and when the response is ready, resHandler will be called.
+     * @note httpConnected() and newResponse() won't be emitted.
+     *
+     * @param method an HTTP method, ex: GET, POST, ...
+     * @param url specifies server's address, port and optional path and query strings.
+     * @param resHandler response handler (a lambda, std::function object, ...)
+     * @return true if the url is valid or false (no connection will be made).
+     */
     inline bool request(THttpMethod method, QUrl url, const TResponseHandler& resHandler) {
         return request(method, url, nullptr, resHandler);
     }
 
+    /** tries to connect to a HTTP server.
+     *  when the connection is made, creates and emits a QHttpRequest instance
+     *   by @sa httpConnected(QHttpRequest*).
+     * @note both httpConnected() and newResponse() may be emitted.
+     *
+     * @param method an HTTP method, ex: GET, POST, ...
+     * @param url specifies server's address, port and optional path and query strings.
+     * @return true if the url is valid or false (no connection will be made).
+     */
     inline bool request(THttpMethod method, QUrl url) {
         return request(method, url, nullptr, nullptr);
     }
