@@ -17,13 +17,13 @@ public:
     explicit        ClientHandler(quint64 id, QHttpRequest* req, QHttpResponse* res)
         : QObject(res), iconnectionId(id) {
         // append chunks of data into uniform body.
-        QObject::connect(req, &QHttpRequest::data, [this](const QByteArray& chunk){
+        req->onData([this](const QByteArray& chunk) {
             ibody.append(chunk);
         });
 
         // when all the incoming data are gathered, send some response to client.
-        QObject::connect(req, &QHttpRequest::end, [this, req, res](){
-            printf("connection (#%llu): request from %s:%d\nurl: %s\n",
+        req->onEnd([this, req, res](){
+            printf("connection (#%llu ): request from %s:%d\nurl: %s\n",
                    iconnectionId,
                    req->remoteAddress().toUtf8().constData(),
                    req->remotePort(),

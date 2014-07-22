@@ -35,3 +35,8 @@ Hello World
     time = 2014-07-20 14:06:23
 ```
 
+to close the server by a client, send a "command: quit" header as:
+```bash
+$> curl --data 'I want to finish you!' localhost:8080/dummyPath/id -H "command: quit"
+```
+
