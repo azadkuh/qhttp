@@ -29,19 +29,19 @@ public:
 
 public: // QHttpAbstractOutput methods:
     /** @see QHttpAbstractOutput::setVersion(). */
-    void            setVersion(const QString& versionString);
+    void            setVersion(const QString& versionString) override;
 
     /** @see QHttpAbstractOutput::addHeader(). */
-    void            addHeader(const QByteArray& field, const QByteArray& value);
+    void            addHeader(const QByteArray& field, const QByteArray& value) override;
 
     /** @see QHttpAbstractOutput::headers(). */
-    THeaderHash&    headers();
+    THeaderHash&    headers() override;
 
     /** @see QHttpAbstractOutput::write(). */
-    void            write(const QByteArray &data);
+    void            write(const QByteArray &data) override;
 
     /** @see QHttpAbstractOutput::end(). */
-    void            end(const QByteArray &data = QByteArray());
+    void            end(const QByteArray &data = QByteArray()) override;
 
 public:
     /** returns parent QHttpClient object. */

@@ -84,8 +84,8 @@ public:
     int          messageComplete(http_parser* parser);
 
 protected:
-    void        onConnected();
-    void        onReadyRead();
+    void         onConnected();
+    void         onReadyRead();
 
 protected:
     QHttpClient* const      q_ptr;

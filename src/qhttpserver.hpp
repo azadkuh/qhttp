@@ -69,7 +69,7 @@ protected:
 
 private:
     explicit    QHttpServer(QHttpServerPrivate&, QObject *parent);
-    virtual void incomingConnection(qintptr handle);
+    virtual void incomingConnection(qintptr handle) override;
 
     Q_DECLARE_PRIVATE(QHttpServer)
     Q_DISABLE_COPY(QHttpServer)

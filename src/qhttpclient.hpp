@@ -94,7 +94,7 @@ protected:
 protected:
     explicit    QHttpClient(QHttpClientPrivate&, QObject*);
 
-    void        timerEvent(QTimerEvent*);
+    void        timerEvent(QTimerEvent*) override;
 
     Q_DECLARE_PRIVATE(QHttpClient)
     Q_DISABLE_COPY(QHttpClient)

@@ -44,7 +44,7 @@ signals:
 protected:
     explicit        QHttpConnection(QObject *parent);
     explicit        QHttpConnection(QHttpConnectionPrivate&, QObject *);
-    void            timerEvent(QTimerEvent*);
+    void            timerEvent(QTimerEvent*) override;
 
     Q_DISABLE_COPY(QHttpConnection)
     Q_DECLARE_PRIVATE(QHttpConnection)
