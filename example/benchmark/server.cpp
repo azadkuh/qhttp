@@ -17,71 +17,78 @@
 using namespace qhttp::server;
 ///////////////////////////////////////////////////////////////////////////////
 
-class ClientHandler : public QObject
+class ClientHandler : public QHttpConnection
 {
 public:
-    explicit        ClientHandler(QHttpRequest*  req, QHttpResponse* res) : QObject(req->connection()) {
-
-        req->onData([this, req](const QByteArray& chunk) {
-            // data attack!
-            if ( ibody.size() > 1024 )
-                req->connection()->close();
-            else
-                ibody.append(chunk);
-        });
-
-        req->onEnd([this, req, res](){
-            res->addHeader("connection", "close");
-
-            // gason++ writes lots of \0 into source buffer. so we have to make a writeable copy.
-            char buffer[4907] = {0};
-            strncpy(buffer, ibody.constData(), 4096);
-
-            gason::JsonAllocator    allocator;
-            gason::JsonValue        root;
-
-            bool  clientStatus = false;
-
-            if ( gason::jsonParse(buffer, root, allocator) == gason::JSON_PARSE_OK ) {
-                gason::JsonValue command   = root("command");
-                gason::JsonValue clientId  = root("clientId");
-                gason::JsonValue requestId = root("requestId");
-
-                bool ok = false;
-                if ( strncmp(command.toString(&ok), "request", 7) == 0  &&
-                     clientId.isNumber()    &&    requestId.isNumber() ) {
-
-                    memset(buffer, 0, 4096);
-                    gason::JSonBuilder doc(buffer, 4096);
-                    doc.startObject()
-                            .addValue("command", "response")
-                            .addValue("clientId", clientId.toInt(&ok))
-                            .addValue("requestId", requestId.toInt(&ok) + 1)
-                            .endObject();
-
-                    res->addHeader("content-length", QByteArray::number((int)strlen(buffer)));
-
-                    clientStatus = true;
-                }
-            }
-
-            if ( clientStatus ) {
-                res->setStatusCode(qhttp::ESTATUS_OK);
-                res->end(QByteArray(buffer));
-
-            } else {
-                res->setStatusCode(qhttp::ESTATUS_BAD_REQUEST);
-                res->end("bad request: the json value is not present or invalid!\n");
-            }
-
-            if ( req->headers().keyHasValue("command", "quit" ) ) {
-                puts("a quit header is received!");
-
-                QCoreApplication::instance()->quit();
-            }
-        });
+    explicit    ClientHandler(QObject* parent) : QHttpConnection(parent) {
 
         ibody.reserve(1024);
+
+        onHandler([this](QHttpRequest*  req, QHttpResponse* res) {
+
+            req->onData([this, req](const QByteArray& chunk) {
+                // data attack!
+                if ( ibody.size() > 1024 )
+                    req->connection()->close();
+                else
+                    ibody.append(chunk);
+            });
+
+            req->onEnd([this, req, res](){
+                res->addHeader("connection", "close");
+
+                // gason++ writes lots of \0 into source buffer. so we have to make a writeable copy.
+                char buffer[4907] = {0};
+                strncpy(buffer, ibody.constData(), 4096);
+
+                gason::JsonAllocator    allocator;
+                gason::JsonValue        root;
+
+                bool  clientStatus = false;
+
+                if ( gason::jsonParse(buffer, root, allocator) == gason::JSON_PARSE_OK ) {
+                    gason::JsonValue command   = root("command");
+                    gason::JsonValue clientId  = root("clientId");
+                    gason::JsonValue requestId = root("requestId");
+
+                    bool ok = false;
+                    if ( strncmp(command.toString(&ok), "request", 7) == 0  &&
+                         clientId.isNumber()    &&    requestId.isNumber() ) {
+
+                        memset(buffer, 0, 4096);
+                        gason::JSonBuilder doc(buffer, 4096);
+                        doc.startObject()
+                                .addValue("command", "response")
+                                .addValue("clientId", clientId.toInt(&ok))
+                                .addValue("requestId", requestId.toInt(&ok) + 1)
+                                .endObject();
+
+                        res->addHeader("content-length", QByteArray::number((int)strlen(buffer)));
+
+                        clientStatus = true;
+                    }
+                }
+
+                if ( clientStatus ) {
+                    res->setStatusCode(qhttp::ESTATUS_OK);
+                    res->end(QByteArray(buffer));
+
+                } else {
+                    res->setStatusCode(qhttp::ESTATUS_BAD_REQUEST);
+                    res->end("bad request: the json value is not present or invalid!\n");
+                }
+
+                if ( req->headers().keyHasValue("command", "quit" ) ) {
+                    puts("a quit header is received!");
+
+                    QCoreApplication::instance()->quit();
+                }
+            });
+
+        });
+    }
+
+    virtual    ~ClientHandler() {
     }
 
 protected:
@@ -108,6 +115,11 @@ public:
         itempHandled    = 0;
     }
 
+    void        start() {
+        printf("\nDateTime,AveTps,miliSecond,Count,TotalCount\n");
+        itimer.start(10000, Qt::CoarseTimer, q_ptr);
+        ielapsed.start();
+    }
 
     void        log() {
         itotalHandled   += itempHandled;
@@ -128,34 +140,26 @@ public:
         itempHandled = 0;
         ielapsed.start();
     }
-
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
 Server::Server(QObject *parent) : QHttpServer(parent), d_ptr(new ServerPrivate(this)) {
-    Q_D(Server);
-
-
-    printf("\nDateTime,AveTps,miliSecond,Count,TotalCount\n");
-    d->itimer.start(10000, Qt::CoarseTimer, this);
-    d->ielapsed.start();
+    d_func()->start();
 }
 
 Server::~Server() {
 }
 
 void
-Server::incomingConnection(QHttpConnection *connection) {
-    QObject::connect(connection, &QHttpConnection::newRequest,
-                     [this](QHttpRequest* req, QHttpResponse* res){
-        new ClientHandler(req, res);
-    });
+Server::incomingConnection(qintptr handle) {
 
-    QObject::connect(connection, &QHttpConnection::disconnected, [this](){
-        Q_D(Server);
+    ClientHandler* cli   = new ClientHandler(this);
+    cli->setSocketDescriptor(handle);
+    cli->setTimeOut(timeOut());
 
-        d->itempHandled++;
+    QObject::connect(cli, &QHttpConnection::disconnected, [this](){
+        d_func()->itempHandled++;
     });
 }
 

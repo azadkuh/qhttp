@@ -13,8 +13,8 @@ public:
     virtual    ~Server();
 
 protected:
-    void        incomingConnection(qhttp::server::QHttpConnection*);
-    void        timerEvent(QTimerEvent *);
+    void        incomingConnection(qintptr handle) override;
+    void        timerEvent(QTimerEvent *) override;
 
     Q_DECLARE_PRIVATE(Server)
     Q_DISABLE_COPY(Server)
