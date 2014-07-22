@@ -23,7 +23,7 @@ public:
 
 protected:
     const quint32   iid;
-    quint32         irequestId;
+    quint32         irequestId = 0;
 
     QBasicTimer     itimer;
 
@@ -32,7 +32,6 @@ protected:
 
 public:
     explicit    Client(quint32 id, Clients* parent) : QObject(parent), iid(id) {
-        irequestId = 0;
         ibuffer.reserve(1024);
     }
 
@@ -130,14 +129,21 @@ protected:
         url.setHost(iaddress);
         url.setPort(iport);
 
-        if ( !client->request(qhttp::EHTTP_POST, url,
-                              [this](QHttpRequest* req) { onRequest(req);},
-                              [this](QHttpResponse* res) { onResponse(res);} ) )
+        bool canRequest =  client->request(
+                               qhttp::EHTTP_POST,
+                               url,
+                               [this](QHttpRequest* req) { onRequest(req);},
+                               [this](QHttpResponse* res) { onResponse(res);});
+
+        if ( canRequest ) {
+
+            QObject::connect(client, &QHttpClient::disconnected, [this](){
+                start();
+            });
+
+        } else
             client->deleteLater();
 
-        QObject::connect(client, &QHttpClient::disconnected, [this](){
-            start();
-        });
     }
 
 };
