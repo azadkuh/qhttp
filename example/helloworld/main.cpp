@@ -36,39 +36,37 @@ void    runServer(QCoreApplication& app) {
 void    runClient(QCoreApplication& app) {
     using namespace qhttp::client;
 
-    QByteArray  buffer;
-    QHttpClient client(&app);
+    QHttpClient  client(&app);
+    QByteArray   httpBody;
 
-    QObject::connect(&client, &QHttpClient::httpConnected, [](QHttpRequest* req){
-        req->addHeader("connection", "close");
-        req->addHeader("cache-control", "no-cache");
-        req->end();
-    });
+    QUrl weatherUrl("http://api.openweathermap.org/data/2.5/weather?q=tehran,ir&units=metric&mode=xml");
 
-    QObject::connect(&client, &QHttpClient::newResponse, [&](QHttpResponse* res){
+    client.request(qhttp::EHTTP_GET, weatherUrl, [&httpBody](QHttpResponse* res) {
+        // response handler, called when the HTTP headers of the response are ready
 
-        QObject::connect(res, &QHttpResponse::data, [&buffer](const QByteArray& chunk){
-            buffer.append(chunk);
+        // gather HTTP response data
+        res->onData([&httpBody](const QByteArray& chunk) {
+            httpBody.append(chunk);
         });
 
-        QObject::connect(res, &QHttpResponse::end, [&buffer](){
+        // called when all data in HTTP response have been read.
+        res->onEnd([&httpBody]() {
+            // print the XML body of the response
             puts("\n[incoming response:]");
-            puts(buffer.constData());
+            puts(httpBody.constData());
             puts("\n\n");
 
             QCoreApplication::instance()->quit();
         });
 
+        // just for fun! print headers:
         puts("\n[Headers:]");
-        for ( auto cit = res->headers().constBegin(); cit != res->headers().constEnd(); cit++) {
-            printf("%s : %s\n",
-                   cit.key().constData(),
-                   cit.value().constData());
+        const qhttp::THeaderHash& hs = res->headers();
+        for ( auto cit = hs.constBegin(); cit != hs.constEnd(); cit++) {
+            printf("%s : %s\n", cit.key().constData(), cit.value().constData());
         }
     });
 
-    QUrl url("http://api.openweathermap.org/data/2.5/weather?q=tehran,ir&units=metric&mode=xml");
-    client.request(qhttp::EHTTP_GET, url);
 
     app.exec();
 }

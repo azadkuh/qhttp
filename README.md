@@ -92,26 +92,22 @@ int main(int argc, char** argv) {
     QCoreApplication app(argc, argv);
     using namespace qhttp::client;
 
-    QByteArray  httpBody;
-    QHttpClient client(&app);
+    QHttpClient  client(&app);
+    QByteArray   httpBody;
 
-    QObject::connect(&client, &QHttpClient::httpConnected, [](QHttpRequest* req){
-        // GET request has no body data, just optional headers
-        req->addHeader("connection", "close");
-        req->addHeader("cache-control", "no-cache");
-        req->end();
-    });
+    QUrl weatherUrl("http://api.openweathermap.org/data/2.5/weather?q=tehran,ir&units=metric&mode=xml");
 
-    QObject::connect(&client, &QHttpClient::newResponse, [&](QHttpResponse* res){
+    client.request(qhttp::EHTTP_GET, weatherUrl, [&httpBody](QHttpResponse* res) {
+        // response handler, called when the HTTP headers of the response are ready
 
-        // collecting body data of the reponse in chunks
-        QObject::connect(res, &QHttpResponse::data,
-                        [&httpBody](const QByteArray& chunk){
+        // gather HTTP response data
+        res->onData([&httpBody](const QByteArray& chunk) {
             httpBody.append(chunk);
         });
 
-        // print the XML body of the response 
-        QObject::connect(res, &QHttpResponse::end, [&httpBody](){
+        // called when all data in HTTP response have been read.
+        res->onEnd([&httpBody]() {
+            // print the XML body of the response
             puts("\n[incoming response:]");
             puts(httpBody.constData());
             puts("\n\n");
@@ -119,21 +115,14 @@ int main(int argc, char** argv) {
             QCoreApplication::instance()->quit();
         });
 
-        // just for fun
+        // just for fun! print headers:
         puts("\n[Headers:]");
-        for ( auto cit = res->headers().constBegin(); cit != res->headers().constEnd(); cit++) {
-            printf("%s : %s\n",
-                   cit.key().constData(),
-                   cit.value().constData()
-                   );
+        const qhttp::THeaderHash& hs = res->headers();
+        for ( auto cit = hs.constBegin(); cit != hs.constEnd(); cit++) {
+            printf("%s : %s\n", cit.key().constData(), cit.value().constData());
         }
     });
 
-    // calling a web service by Url
-    client.request(
-    qhttp::EHTTP_GET,
-    "http://api.openweathermap.org/data/2.5/weather?q=tehran,ir&units=metric&mode=xml"
-    );
 
     return app.exec();
 }
