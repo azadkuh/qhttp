@@ -22,7 +22,7 @@ class ClientHandler : public QObject
 public:
     explicit        ClientHandler(QHttpRequest*  req, QHttpResponse* res) : QObject(req->connection()) {
 
-        QObject::connect(req, &QHttpRequest::data, [this, req](const QByteArray& chunk) {
+        req->onData([this, req](const QByteArray& chunk) {
             // data attack!
             if ( ibody.size() > 1024 )
                 req->connection()->close();
@@ -30,7 +30,7 @@ public:
                 ibody.append(chunk);
         });
 
-        QObject::connect(req, &QHttpRequest::end, [this, req, res](){
+        req->onEnd([this, req, res](){
             res->addHeader("connection", "close");
 
             // gason++ writes lots of \0 into source buffer. so we have to make a writeable copy.

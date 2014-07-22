@@ -64,11 +64,11 @@ public:
     void        onResponse(QHttpResponse* res) {
         ibuffer.clear();
 
-        QObject::connect(res, &QHttpResponse::data, [this](const QByteArray& chunk){
+        res->onData([this](const QByteArray& chunk){
             ibuffer.append(chunk);
         });
 
-        QObject::connect(res, &QHttpResponse::end, [this, res](){
+        res->onEnd([this, res](){
             onBody();
 
             res->connection()->close();
@@ -130,17 +130,13 @@ protected:
         url.setHost(iaddress);
         url.setPort(iport);
 
-        if ( !client->request(qhttp::EHTTP_POST, url) )
+        if ( !client->request(qhttp::EHTTP_POST, url,
+                              [this](QHttpRequest* req) { onRequest(req);},
+                              [this](QHttpResponse* res) { onResponse(res);} ) )
             client->deleteLater();
 
         QObject::connect(client, &QHttpClient::disconnected, [this](){
             start();
-        });
-        QObject::connect(client, &QHttpClient::httpConnected, [this](QHttpRequest* req){
-            onRequest(req);
-        });
-        QObject::connect(client, &QHttpClient::newResponse, [this](QHttpResponse* res){
-            onResponse(res);
         });
     }
 
