@@ -75,6 +75,14 @@ protected:
      * @param connection New incoming connection. */
     virtual void incomingConnection(QHttpConnection* connection);
 
+    /** overrides QTcpServer::incomingConnection() to make a new QHttpConnection.
+     * override this function if you like to create your derived QHttpConnection instances.
+     *
+     * @note if you override this method, incomingConnection(QHttpConnection*) or
+     *  newRequest(QHttpRequest *, QHttpResponse *) signal won't be called.
+     *
+     * @see example/benchmark/server.cpp to see how to override.
+     */
     virtual void incomingConnection(qintptr handle) override;
 
 private:
