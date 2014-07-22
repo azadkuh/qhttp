@@ -147,7 +147,11 @@ int
 QHttpConnectionPrivate::body(http_parser*, const char* at, size_t length) {
     Q_ASSERT(irequest);
 
-    emit irequest->data(QByteArray(at, length));
+    if ( irequest->idataHandler )
+        irequest->idataHandler(QByteArray(at, length));
+    else
+        emit irequest->data(QByteArray(at, length));
+
     return 0;
 }
 
@@ -156,7 +160,12 @@ QHttpConnectionPrivate::messageComplete(http_parser*) {
     Q_ASSERT(irequest);
 
     irequest->d_func()->isuccessful = true;
-    emit irequest->end();
+
+    if ( irequest->iendHandler )
+        irequest->iendHandler();
+    else
+        emit irequest->end();
+
     return 0;
 }
 
