@@ -56,7 +56,7 @@ public:
     void        initialize() {
 
         QObject::connect(isocket, &QTcpSocket::readyRead, [this](){
-            while (isocket->bytesAvailable()) {
+            while ( isocket->bytesAvailable() ) {
                 char buffer[4096] = {0};
                 size_t readLength = isocket->read(buffer, 4095);
 
@@ -78,6 +78,9 @@ public:
                 f.flush();
             }
 #           endif
+
+            irequest  = nullptr;
+            iresponse = nullptr;
             q_ptr->deleteLater();
         });
     }
