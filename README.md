@@ -15,9 +15,11 @@
 
 `QHttp` is a lightweight, asynchronous and fast HTTP library, containing both server and client side classes for managing connections, parsing and building HTTP requests and responses.
 
-* this project is inspired by [nikhilm/qhttpserver](https://github.com/nikhilm/qhttpserver) effort to implement a Qt HTTP server. `QHttp` pushes the idea further by implementing client classes and better memory management, c++11, lambda connections, clean API, ...
+* this project is inspired by [nikhilm/qhttpserver](https://github.com/nikhilm/qhttpserver) effort to implement a Qt HTTP server. `QHttp` pushes the idea further by implementing client classes and better memory management, a lot more Node.js-like API, ...
 
-* the fantastic [joyent/http-parser](https://github.com/joyent/http-parser) is the core parser of HTTP requests (server mode) and responses (client mode). I have tried to keep the API similar to the [Node.js](http://nodejs.org/api/http.html)' http module.
+* the fantastic [joyent/http-parser](https://github.com/joyent/http-parser) is the core parser of HTTP requests (server mode) and responses (client mode). 
+
+* By using `std::function` and `c++11 lambda`, the API is intentionally similar to the [Node.js' http module](http://nodejs.org/api/http.html). Asynchronous and non-blocking HTTP programming is quite easy with `QHttp`. have a look at [sample codes](#sample-codes).
 
 * the objective of `QHttp` is being light weight with a simple API for Qt developers to implement RESTful web services in private (internal) zones. for a fast c++ Json parser / builder, have a look at [azadkuh/gason++](https://github.com/azadkuh/gason--)
 
@@ -36,8 +38,7 @@
 
 * **PIMPL** (Private classes) to achieve better ABI compatibility and cleaner API.
 
-* API is quite similar to **Node.js** http module. have a look at [sample code](#sample-codes).
-
+* Asynchronous and non-blocking. You can handle thousands of concurrent HTTP connections efficiently by a single thread.
 
 * the only dependencies are: [Qt 5](http://qt-project.org/downloads), [c++11](http://en.wikipedia.org/wiki/C%2B%2B11) and [joyent/http-parser](https://github.com/joyent/http-parser)
 
@@ -173,7 +174,7 @@ holds the source code of `QHttp`. server classes are prefixed by `qhttpserver*` 
 a temporary directory which is created while `make`ing the library and holds all the `.o`, `moc files`, etc.
 
 * **`xbin/`**:
-all the executable binaries will be placed on this folder by `make`.
+all the executable and binaries will be placed on this folder by `make`.
 
 
 
@@ -181,7 +182,7 @@ all the executable binaries will be placed on this folder by `make`.
 ## Disclaimer
 [TOC](#table-of-contents)
 
-* Implementing a lightweight and simple HTTP server/client in Qt is the main purpose of `QHttp`.
+* Implementing a lightweight and simple HTTP server/client in Qt with Node.js like API, is the main purpose of `QHttp`.
 
 * There are lots of features in a full blown HTTP server which are out of scope of this small library, although those can be added on top of `QHttp`.
 

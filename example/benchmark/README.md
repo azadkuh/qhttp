@@ -59,8 +59,8 @@ $> ./benchmark server -p 8080 -t 0
 
 to setup attacking client(s):
 ```bash
-$> benchmark client --count 100 --timeout 5 --port 8080
-# so in theory 100 * (1000 / 5) = 2,000 requests are made per second
+$> benchmark client --count 10 --timeout 5 --port 8080
+# so in theory 10 * (1000 / 5) = 2,000 requests are made per second
 ```
 
 
