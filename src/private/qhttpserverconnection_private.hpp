@@ -37,6 +37,8 @@ public:
 
     QBasicTimer             itimer;
 
+    TServerHandler          ihandler = nullptr;
+
 #   if QHTTP_MESSAGES_LOG > 0
     QByteArray              iinputBuffer;
 #   endif

@@ -12,6 +12,8 @@
 #include <QHash>
 #include <QString>
 #include <QtGlobal>
+
+#include <functional>
 ///////////////////////////////////////////////////////////////////////////////
 // Qt
 class QTcpServer;
@@ -138,6 +140,9 @@ class QHttpServerPrivate;
 class QHttpConnectionPrivate;
 class QHttpRequestPrivate;
 class QHttpResponsePrivate;
+
+typedef std::function<void (QHttpRequest*, QHttpResponse*)>     TServerHandler;
+
 ///////////////////////////////////////////////////////////////////////////////
 } // namespace server
 ///////////////////////////////////////////////////////////////////////////////

@@ -34,6 +34,11 @@ public:
     /** forcefully kills (closes) a connection. */
     void            killConnection();
 
+    /** optionally set a handler for connection class.
+     * @note if you set this handler, the newRequest() signal won't be emitted.
+     */
+    void            onHandler(const TServerHandler& handler);
+
 signals:
     /** emitted when a pair of HTTP request and response are ready to interact.
      * @param req incoming request by the client.

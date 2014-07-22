@@ -14,12 +14,10 @@
 
 #include <QTcpServer>
 #include <QHostAddress>
-#include <functional>
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
-typedef std::function<void (QHttpRequest*, QHttpResponse*)>     TServerHandler;
 
 /** The QHttpServer class is a fast, async (non-blocking) HTTP server. */
 class QHttpServer : public QTcpServer

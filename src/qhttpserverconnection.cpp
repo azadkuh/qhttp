@@ -32,6 +32,11 @@ QHttpConnection::killConnection() {
 }
 
 void
+QHttpConnection::onHandler(const TServerHandler &handler) {
+    d_func()->ihandler = handler;
+}
+
+void
 QHttpConnection::timerEvent(QTimerEvent *) {
     disconnectFromHost();
 }
@@ -139,7 +144,11 @@ QHttpConnectionPrivate::headersComplete(http_parser* parser) {
     }
 
     // we are good to go!
-    emit q_ptr->newRequest(irequest, iresponse);
+    if ( ihandler )
+        ihandler(irequest, iresponse);
+    else
+        emit q_ptr->newRequest(irequest, iresponse);
+
     return 0;
 }
 
