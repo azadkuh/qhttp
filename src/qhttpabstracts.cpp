@@ -109,14 +109,9 @@ Stringify::toString(THttpMethod method) {
 QHttpAbstractInput::QHttpAbstractInput(QObject* parent) : QObject(parent) {
 }
 
-QHttpAbstractInput::~QHttpAbstractInput() {
-}
-
 QHttpAbstractOutput::QHttpAbstractOutput(QObject *parent) : QObject(parent) {
 }
 
-QHttpAbstractOutput::~QHttpAbstractOutput() {
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 } // namespace qhttp

@@ -13,6 +13,7 @@
 #include "qhttpfwd.hpp"
 
 #include <QObject>
+#include <functional>
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
 ///////////////////////////////////////////////////////////////////////////////
@@ -30,6 +31,10 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 
+typedef std::function<void (const QByteArray&)>     TDataHandler;
+typedef std::function<void (void)>                  TEndHandler;
+
+///////////////////////////////////////////////////////////////////////////////
 /** an interface for input (incoming) HTTP packets.
  * server::QHttpRequest or client::QHttpResponse inherit from this class. */
 class QHttpAbstractInput : public QObject
@@ -56,18 +61,43 @@ public:
 
 signals:
     /** Emitted when new body data has been received.
+     * @param data Received data.
      * @note This may be emitted zero or more times depending on the transfer type.
-     * @param data Received data. */
+     * @see onData();
+     */
     void                        data(const QByteArray &data);
 
     /** Emitted when the incomming packet has been fully received.
-     * @note The no more data() signals will be emitted after this. */
+     * @note The no more data() signals will be emitted after this.
+     * @see onEnd();
+     */
     void                        end();
 
 public:
-    virtual                    ~QHttpAbstractInput();
+    /** optionally set a handler for data() signal.
+     * @param dataHandler a std::function or lambda handler to receive incoming data.
+     * @note if you set this handler, the data() signal won't be emitted anymore.
+     */
+    void                        onData(const TDataHandler& dataHandler) {
+        idataHandler = dataHandler;
+    }
+
+    /** optionally set a handler for end() signal.
+     * @param endHandler a std::function or lambda handler to receive end notification.
+     * @note if you set this handler, the end() signal won't be emitted anymore.
+     */
+    void                        onEnd(const TEndHandler& endHandler) {
+        iendHandler  = endHandler;
+    }
+
+
+public:
+    virtual                    ~QHttpAbstractInput() = default;
 
 protected:
+    TDataHandler                idataHandler = nullptr;
+    TEndHandler                 iendHandler  = nullptr;
+
     explicit                    QHttpAbstractInput(QObject* parent);
 
     Q_DISABLE_COPY(QHttpAbstractInput)
@@ -116,7 +146,7 @@ signals:
     void                    done(bool wasTheLastPacket);
 
 public:
-    virtual                ~QHttpAbstractOutput();
+    virtual                ~QHttpAbstractOutput() = default;
 
 protected:
     explicit                QHttpAbstractOutput(QObject* parent);
