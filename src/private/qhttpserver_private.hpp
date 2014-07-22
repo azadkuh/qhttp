@@ -11,6 +11,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "qhttpserver.hpp"
+#include "qhttpserverconnection.hpp"
+#include "qhttpserverrequest.hpp"
+#include "qhttpserverresponse.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
@@ -21,6 +24,7 @@ class QHttpServerPrivate
 {
 public:
     quint32         itimeOut = 0;
+    TServerHandler  ihandler = nullptr;
 
 public:
     explicit    QHttpServerPrivate() {

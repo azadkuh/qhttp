@@ -1,7 +1,4 @@
 #include "private/qhttpserver_private.hpp"
-#include "qhttpserverconnection.hpp"
-#include "qhttpserverrequest.hpp"
-#include "qhttpserverresponse.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
@@ -20,7 +17,8 @@ QHttpServer::~QHttpServer() {
 }
 
 bool
-QHttpServer::listen(const QHostAddress& address, quint16 port) {
+QHttpServer::listen(const QHostAddress& address, quint16 port, const qhttp::server::TServerHandler& handler) {
+    d_func()->ihandler = handler;
     return QTcpServer::listen(address, port);
 }
 
@@ -40,7 +38,11 @@ QHttpServer::incomingConnection(qintptr handle) {
     conn->setSocketDescriptor(handle);
     conn->setTimeOut(d_func()->itimeOut);
 
-    incomingConnection(conn);
+    Q_D(QHttpServer);
+    if ( d->ihandler )
+        QObject::connect(conn, &QHttpConnection::newRequest, d->ihandler);
+    else
+        incomingConnection(conn);
 }
 
 void

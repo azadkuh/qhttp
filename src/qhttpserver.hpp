@@ -14,11 +14,12 @@
 
 #include <QTcpServer>
 #include <QHostAddress>
-
+#include <functional>
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
+typedef std::function<void (QHttpRequest*, QHttpResponse*)>     TServerHandler;
 
 /** The QHttpServer class is a fast, async (non-blocking) HTTP server. */
 class QHttpServer : public QTcpServer
@@ -34,7 +35,16 @@ public:
     virtual    ~QHttpServer();
 
     /** starts the server on @c port listening on all interfaces. */
-    bool        listen(const QHostAddress& address, quint16 port);
+    /** starts the server on and address and port.
+     * if you provide a server handler, the newRequest() signal won't be emitted.
+     *
+     * @param address listening address as QHostAddress::Any
+     * @param port listening port
+     * @param handler optional server handler (a lambda, std::function, ...)
+     * @return
+     */
+    bool        listen(const QHostAddress& address, quint16 port,
+                       const TServerHandler& handler = nullptr);
 
     /** @overload listen() */
     bool        listen(quint16 port) {
@@ -67,9 +77,10 @@ protected:
      * @param connection New incoming connection. */
     virtual void incomingConnection(QHttpConnection* connection);
 
+    virtual void incomingConnection(qintptr handle) override;
+
 private:
     explicit    QHttpServer(QHttpServerPrivate&, QObject *parent);
-    virtual void incomingConnection(qintptr handle) override;
 
     Q_DECLARE_PRIVATE(QHttpServer)
     Q_DISABLE_COPY(QHttpServer)
