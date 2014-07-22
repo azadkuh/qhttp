@@ -37,8 +37,12 @@ QHttpClient::isOpen() const {
 }
 
 bool
-QHttpClient::request(THttpMethod method, QUrl url) {
+QHttpClient::request(THttpMethod method, QUrl url,
+                     const TRequstHandler &reqHandler, const TResponseHandler &resHandler) {
     Q_D(QHttpClient);
+
+    d->ireqHandler   = nullptr;
+    d->irespHandler  = nullptr;
 
     if ( !url.isValid()    ||    url.isEmpty()    ||    url.host().isEmpty() )
         return false;
@@ -47,7 +51,19 @@ QHttpClient::request(THttpMethod method, QUrl url) {
     d->ilastUrl     = url;
 
     connectToHost(url.host(), url.port(80));
+
+    // process handlers
+    if ( resHandler ) {
+        d->irespHandler = resHandler;
+
+        if ( reqHandler )
+            d->ireqHandler = reqHandler;
+        else
+            d->ireqHandler = [](QHttpRequest* req) ->void { req->end(); };
+    }
+
     return true;
+
 }
 
 void
@@ -85,7 +101,10 @@ QHttpClientPrivate::onConnected() {
     iinputBuffer.clear();
 #   endif
 
-    q_func()->onRequestReady(request);
+    if ( ireqHandler )
+        ireqHandler(request);
+    else
+        q_func()->onRequestReady(request);
 }
 
 void
@@ -166,7 +185,11 @@ QHttpClientPrivate::headersComplete(http_parser*) {
                 itempHeaderValue.toLower()
                 );
 
-    q_func()->onResponseReady(ilastResponse);
+    if ( irespHandler )
+        irespHandler(ilastResponse);
+    else
+        q_func()->onResponseReady(ilastResponse);
+
     return 0;
 }
 
@@ -174,7 +197,11 @@ int
 QHttpClientPrivate::body(http_parser*, const char* at, size_t length) {
     Q_ASSERT(ilastResponse);
 
-    emit ilastResponse->data(QByteArray(at, length));
+    if ( ilastResponse->idataHandler )
+        ilastResponse->idataHandler(QByteArray(at, length));
+    else
+        emit ilastResponse->data(QByteArray(at, length));
+
     return 0;
 }
 
@@ -183,7 +210,12 @@ QHttpClientPrivate::messageComplete(http_parser*) {
     Q_ASSERT(ilastResponse);
 
     ilastResponse->d_func()->isuccessful = true;
-    emit ilastResponse->end();
+
+    if ( ilastResponse->iendHandler )
+        ilastResponse->iendHandler();
+    else
+        emit ilastResponse->end();
+
     return 0;
 }
 

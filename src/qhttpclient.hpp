@@ -14,10 +14,13 @@
 
 #include <QTcpSocket>
 #include <QUrl>
+
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
 namespace client {
 ///////////////////////////////////////////////////////////////////////////////
+typedef std::function<void (QHttpRequest*)>     TRequstHandler;
+typedef std::function<void (QHttpResponse*)>    TResponseHandler;
 
 /** a simple and async HTTP client class which sends a request to an HTTP server and parses the
  *  corresponding response.
@@ -44,7 +47,17 @@ public:
      * @param url specifies server's address, port and optional path and query strings.
      * @return true if the url is valid or false (no connection will be made).
      */
-    bool        request(THttpMethod method, QUrl url);
+    bool        request(THttpMethod method, QUrl url,
+                        const TRequstHandler& reqHandler,
+                        const TResponseHandler& resHandler);
+
+    inline bool request(THttpMethod method, QUrl url, const TResponseHandler& resHandler) {
+        return request(method, url, nullptr, resHandler);
+    }
+
+    inline bool request(THttpMethod method, QUrl url) {
+        return request(method, url, nullptr, nullptr);
+    }
 
     /** checks if the connetion to the server is open. */
     bool        isOpen() const;

@@ -91,6 +91,8 @@ protected:
     QHttpClient* const      q_ptr;
 
     QHttpResponse*          ilastResponse = nullptr;
+    TRequstHandler          ireqHandler;
+    TResponseHandler        irespHandler;
 
 #   if QHTTP_MESSAGES_LOG > 0
     QByteArray              iinputBuffer;
