@@ -4,11 +4,11 @@
   <head>
     <meta charset='utf-8' />
     <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="QHttp : a light-weight and asynchronous HTTP library (both server &amp; client) in Qt5 and C++11 based on Node.js&#39; http parser." />
+    <meta name="description" content="QHttp (Qt HTTP server+client) : a light-weight and asynchronous (non-blocking) HTTP library (both server and client) in Qt 5 and c++11 which is based on Node.js&#39; http parser." />
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-    <title>QHttp</title>
+    <title>QHttp (Qt HTTP server+client)</title>
   </head>
 
   <body>
@@ -18,8 +18,8 @@
         <header class="inner">
           <a id="forkme_banner" href="https://github.com/azadkuh/qhttp">View on GitHub</a>
 
-          <h1 id="project_title">QHttp</h1>
-          <h2 id="project_tagline">a light-weight and asynchronous HTTP library (both server &amp; client) in Qt5 and C++11 based on Node.js&#39; http parser.</h2>
+          <h1 id="project_title">QHttp (Qt HTTP server+client)</h1>
+          <h2 id="project_tagline">a light-weight and asynchronous (non-blocking) HTTP library (both server and client) in Qt 5 and c++11 which is based on Node.js&#39; http parser.</h2>
 
             <section id="downloads">
               <a class="zip_download_link" href="https://github.com/azadkuh/qhttp/zipball/master">Download this project as a .zip file</a>
@@ -41,6 +41,7 @@
 <li><a href="#about">About</a></li>
 <li><a href="#features">Features</a></li>
 <li><a href="#sample-codes">Sample codes</a></li>
+<li><a href="#disclaimer">Disclaimer</a></li>
 <li><a href="#license">License</a></li>
 </ul><h2>
 <a name="about" class="anchor" href="#about"><span class="octicon octicon-link"></span></a>About</h2>
@@ -50,8 +51,9 @@
 <p><code>QHttp</code> is a lightweight, asynchronous and fast HTTP library, containing both server and client side classes for managing connections, parsing and building HTTP requests and responses.</p>
 
 <ul>
-<li><p>this project is inspired by <a href="https://github.com/nikhilm/qhttpserver">nikhilm/qhttpserver</a> effort to implement a Qt HTTP server. <code>QHttp</code> pushes the idea further by implementing client classes and better memory management, c++11, lambda connections, clean API, ...</p></li>
-<li><p>the fantastic <a href="https://github.com/joyent/http-parser">joyent/http-parser</a> is the core parser of HTTP requests (server mode) and responses (client mode). I have tried to keep the API similar to the <a href="http://nodejs.org/api/http.html">Node.js</a>' http module.</p></li>
+<li><p>this project is inspired by <a href="https://github.com/nikhilm/qhttpserver">nikhilm/qhttpserver</a> effort to implement a Qt HTTP server. <code>QHttp</code> pushes the idea further by implementing client classes and better memory management, a lot more Node.js-like API, ...</p></li>
+<li><p>the fantastic <a href="https://github.com/joyent/http-parser">joyent/http-parser</a> is the core parser of HTTP requests (server mode) and responses (client mode). </p></li>
+<li><p>By using <code>std::function</code> and <code>c++11 lambda</code>, the API is intentionally similar to the <a href="http://nodejs.org/api/http.html">Node.js' http module</a>. Asynchronous and non-blocking HTTP programming is quite easy with <code>QHttp</code>. have a look at <a href="#sample-codes">sample codes</a>.</p></li>
 <li><p>the objective of <code>QHttp</code> is being light weight with a simple API for Qt developers to implement RESTful web services in private (internal) zones. for a fast c++ Json parser / builder, have a look at <a href="https://github.com/azadkuh/gason--">azadkuh/gason++</a></p></li>
 </ul><h2>
 <a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h2>
@@ -64,7 +66,7 @@
 <li><p>HTTP client classes: QHttpClient, QHttpRequest and QHttpResponse.</p></li>
 <li><p><strong>automatic memory management</strong> of objects. Instances of connections, requests and replies will be deleted automatically when socket drops or disconnected.</p></li>
 <li><p><strong>PIMPL</strong> (Private classes) to achieve better ABI compatibility and cleaner API.</p></li>
-<li><p>API is quite similar to <strong>Node.js</strong> http module. have a look at <a href="#sample-codes">sample code</a>.</p></li>
+<li><p>Asynchronous and non-blocking. You can handle thousands of concurrent HTTP connections efficiently by a single thread.</p></li>
 <li><p>the only dependencies are: <a href="http://qt-project.org/downloads">Qt 5</a>, <a href="http://en.wikipedia.org/wiki/C%2B%2B11">c++11</a> and <a href="https://github.com/joyent/http-parser">joyent/http-parser</a></p></li>
 <li><p><strong>high throughput</strong>, I have tried the <code>QHttp</code> and <a href="https://github.com/azadkuh/gason--">gason++</a> to implement a REST/Json web service on an Ubuntu VPS (dual core + 512MB ram) with peak TPS &gt; 5000 (stress test)</p></li>
 <li><p>a simple benchmarking tool, implementing both a RESTful/Json server and client.</p></li>
@@ -147,6 +149,20 @@
 </pre></div>
 
 <h2>
+<a name="disclaimer" class="anchor" href="#disclaimer"><span class="octicon octicon-link"></span></a>Disclaimer</h2>
+
+<p><a href="#table-of-contents">TOC</a></p>
+
+<ul>
+<li><p>Implementing a lightweight and simple HTTP server/client in Qt with Node.js like API, is the main purpose of <code>QHttp</code>.</p></li>
+<li><p>There are lots of features in a full blown HTTP server which are out of scope of this small library, although those can be added on top of <code>QHttp</code>.</p></li>
+<li><p>The client classes are by no mean designed as a <code>QNetworkAccessManager</code> replacement. <code>QHttpClient</code> is simpler and lighter, for serious scenarios just use <code>QNetworkAccessManager</code>.</p></li>
+<li><p>I'm a busy person.</p></li>
+</ul><blockquote>
+<p>If you have any ideas, critiques, suggestions or whatever you want to call it, please open an issue. I'll be happy to hear from you what you'd see in this lib. I think about all suggestions, and I try to add those that make sense.</p>
+</blockquote>
+
+<h2>
 <a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h2>
 
 <p><a href="#table-of-contents">TOC</a></p>
@@ -158,7 +174,7 @@
     <!-- FOOTER  -->
     <div id="footer_wrap" class="outer">
       <footer class="inner">
-        <p class="copyright">QHttp maintained by <a href="https://github.com/azadkuh">azadkuh</a></p>
+        <p class="copyright">QHttp (Qt HTTP server+client) maintained by <a href="https://github.com/azadkuh">azadkuh</a></p>
         <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
