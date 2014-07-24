@@ -160,7 +160,7 @@ class QHttpResponsePrivate;
 } // namespace client
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef Q_OS_WIN
-#   warning "this library has not beet tested under Windows!"
+#   warning "this library has not been tested under Windows!"
 #   if defined(QHTTP_EXPORT)
 #       define QHTTP_API __declspec(dllexport)
 #   else
