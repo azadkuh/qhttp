@@ -11,7 +11,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "qhttpfwd.hpp"
 
-#include <QTcpSocket>
+#include <QObject>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
@@ -21,7 +21,7 @@ namespace server {
  * this class controls the HTTP connetion and handles life cycle and the memory management
  *  of QHttpRequest and QHttpResponse instances autoamtically.
  */
-class QHttpConnection : public QTcpSocket
+class QHttpConnection : public QObject
 {
     Q_OBJECT
 
@@ -39,6 +39,15 @@ public:
      */
     void            onHandler(const TServerHandler& handler);
 
+    /** returns the backend type of the connection. */
+    TBackend        backendType() const;
+
+    /** returns connected socket if the backend() == ETcpSocket. */
+    QTcpSocket*     tcpSocket() const;
+
+    /** returns connected socket if the backend() == ELocalSocket. */
+    QLocalSocket*   localSocket() const;
+
 signals:
     /** emitted when a pair of HTTP request and response are ready to interact.
      * @param req incoming request by the client.
@@ -46,9 +55,14 @@ signals:
      */
     void            newRequest(QHttpRequest* req, QHttpResponse* res);
 
+    /** emitted when the tcp/local socket, disconnects. */
+    void            disconnected();
+
 protected:
     explicit        QHttpConnection(QObject *parent);
     explicit        QHttpConnection(QHttpConnectionPrivate&, QObject *);
+
+    void            setSocketDescriptor(qintptr sokDescriptor, TBackend backendType);
     void            timerEvent(QTimerEvent*) override;
 
     Q_DISABLE_COPY(QHttpConnection)

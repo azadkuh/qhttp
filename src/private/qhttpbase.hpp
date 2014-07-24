@@ -12,6 +12,7 @@
 #include "qhttpfwd.hpp"
 
 #include <QTcpSocket>
+#include <QLocalSocket>
 #include <QHostAddress>
 #include <QUrl>
 
@@ -122,7 +123,9 @@ public: // callback functions for http_parser_settings
     }
 
 public:
-    QTcpSocket*             isocket = nullptr;
+    TBackend                ibackendType = ETcpSocket;
+    QTcpSocket*             itcpSocket = nullptr;
+    QLocalSocket*           ilocalSocket = nullptr;
 
     // The ones we are reading in from the parser
     QByteArray              itempHeaderField;
@@ -139,7 +142,7 @@ template<class T>
 class HttpWriterBase
 {
 public:
-    explicit    HttpWriterBase(QTcpSocket* sok) : isocket(sok) {
+    explicit    HttpWriterBase() {
     }
 
     virtual    ~HttpWriterBase() {
@@ -148,9 +151,16 @@ public:
     void        initialize() {
         reset();
 
-        QObject::connect(isocket, &QTcpSocket::bytesWritten, [this](qint64 byteCount){
-            updateWriteCount(byteCount);
-        });
+        if ( itcpSocket ) {
+            QObject::connect(itcpSocket,  &QTcpSocket::bytesWritten, [this](qint64 byteCount){
+                updateWriteCount(byteCount);
+            });
+
+        } else if ( ilocalSocket ) {
+            QObject::connect(ilocalSocket, &QLocalSocket::bytesWritten, [this](qint64 byteCount){
+                updateWriteCount(byteCount);
+            });
+        }
     }
 
     void        reset() {
@@ -193,7 +203,11 @@ public:
         if ( !writeData(data) )
             return false;
 
-        isocket->flush();
+        if ( itcpSocket )
+            itcpSocket->flush();
+        else if ( ilocalSocket )
+            ilocalSocket->flush();
+
         ifinished = true;
         return true;
     }
@@ -213,11 +227,16 @@ protected:
 
     void        writeRaw(const QByteArray &data) {
         itransmitLen += data.size();
-        isocket->write(data);
+
+        if ( itcpSocket )
+            itcpSocket->write(data);
+        else if ( ilocalSocket )
+            ilocalSocket->write(data);
     }
 
 public:
-    QTcpSocket*         isocket;
+    QTcpSocket*         itcpSocket   = nullptr;
+    QLocalSocket*       ilocalSocket = nullptr;
 
     bool                iheaderWritten;
     bool                ifinished;

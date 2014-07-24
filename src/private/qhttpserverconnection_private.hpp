@@ -26,7 +26,9 @@ namespace server {
 ///////////////////////////////////////////////////////////////////////////////
 class QHttpConnectionPrivate  : public HttpParserBase<QHttpConnectionPrivate>
 {
+protected:
     Q_DECLARE_PUBLIC(QHttpConnection)
+    QHttpConnection* const q_ptr;
 
 public:
     QByteArray              itempUrl;
@@ -44,47 +46,68 @@ public:
 #   endif
 
 public:
-    explicit    QHttpConnectionPrivate(QHttpConnection* q)
+    explicit     QHttpConnectionPrivate(QHttpConnection* q)
         : HttpParserBase(HTTP_REQUEST), q_ptr(q) {
-        isocket        = q;
+
+        QObject::connect(q_func(), &QHttpConnection::disconnected, [this](){
+            irequest    = nullptr;
+            iresponse   = nullptr;
+
+            if ( itcpSocket )
+                itcpSocket->deleteLater();
+
+            if ( ilocalSocket )
+                ilocalSocket->deleteLater();
+
+            q_func()->deleteLater();
+        });
 
         QHTTP_LINE_DEEPLOG
     }
 
-    virtual    ~QHttpConnectionPrivate() {
+    virtual     ~QHttpConnectionPrivate() {
         QHTTP_LINE_DEEPLOG
     }
 
-    void        initialize() {
+    void         initialize(qintptr sokDesc, TBackend bend) {
+        Q_ASSERT(itcpSocket == nullptr    &&    ilocalSocket == nullptr);
 
-        QObject::connect(isocket, &QTcpSocket::readyRead, [this](){
-            while ( isocket->bytesAvailable() ) {
-                char buffer[4096] = {0};
-                size_t readLength = isocket->read(buffer, 4095);
+        ibackendType = bend;
+        if        ( ibackendType == ETcpSocket ) {
+            itcpSocket = new QTcpSocket( q_func() );
+            itcpSocket->setSocketDescriptor(sokDesc);
 
-#              if QHTTP_MESSAGES_LOG > 0
-                iinputBuffer.append(buffer);
-#              endif
+            QObject::connect(itcpSocket, &QTcpSocket::readyRead, [this](){
+                while ( itcpSocket->bytesAvailable() ) {
+                    char buffer[4096] = {0};
+                    size_t readLength = itcpSocket->read(buffer, 4095);
 
-                parse(buffer, readLength);
-            }
-        });
+                    parse(buffer, readLength);
+                }
+            });
 
-        QObject::connect(isocket, &QTcpSocket::disconnected, [this](){
+            QObject::connect(itcpSocket, &QTcpSocket::disconnected,
+                             q_func(),   &QHttpConnection::disconnected,
+                             Qt::QueuedConnection);
 
-#           if QHTTP_MESSAGES_LOG > 0
-            QFile f("/tmp/qhttpserver-incomming.log");
-            if ( f.open(QIODevice::Append | QIODevice::WriteOnly) ) {
-                f.write(iinputBuffer);
-                f.write("\n---------------------\n");
-                f.flush();
-            }
-#           endif
+        } else if ( ibackendType == ELocalSocket ) {
+            ilocalSocket = new QLocalSocket( q_func() );
+            ilocalSocket->setSocketDescriptor(sokDesc);
 
-            irequest  = nullptr;
-            iresponse = nullptr;
-            q_ptr->deleteLater();
-        });
+            QObject::connect(ilocalSocket, &QTcpSocket::readyRead, [this](){
+                while ( ilocalSocket->bytesAvailable() ) {
+                    char buffer[4096] = {0};
+                    size_t readLength = ilocalSocket->read(buffer, 4095);
+
+                    parse(buffer, readLength);
+                }
+            });
+
+            QObject::connect(ilocalSocket, &QLocalSocket::disconnected,
+                             q_func(),      &QHttpConnection::disconnected,
+                             Qt::QueuedConnection);
+        }
+
     }
 
 public:
@@ -104,8 +127,6 @@ public:
     static QUrl  createUrl(const char *urlData, const http_parser_url &urlInfo);
 #endif // USE_CUSTOM_URL_CREATOR
 
-protected:
-    QHttpConnection* const q_ptr;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
