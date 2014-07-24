@@ -6,20 +6,45 @@ namespace server {
 ///////////////////////////////////////////////////////////////////////////////
 
 QHttpServer::QHttpServer(QObject *parent)
-    : QTcpServer(parent), d_ptr(new QHttpServerPrivate) {
+    : QObject(parent), d_ptr(new QHttpServerPrivate) {
 }
 
 QHttpServer::QHttpServer(QHttpServerPrivate &dd, QObject *parent)
-    : QTcpServer(parent), d_ptr(&dd) {
+    : QObject(parent), d_ptr(&dd) {
 }
 
 QHttpServer::~QHttpServer() {
 }
 
 bool
+QHttpServer::listen(const QString &socket, const TServerHandler &handler) {
+    Q_D(QHttpServer);
+
+    d->initialize(ELocalSocket, this);
+    d->ihandler = handler;
+    return d->ilocalServer->listen(socket);
+}
+
+bool
 QHttpServer::listen(const QHostAddress& address, quint16 port, const qhttp::server::TServerHandler& handler) {
-    d_func()->ihandler = handler;
-    return QTcpServer::listen(address, port);
+    Q_D(QHttpServer);
+
+    d->initialize(ETcpSocket, this);
+    d->ihandler = handler;
+    return d->itcpServer->listen(address, port);
+}
+
+bool
+QHttpServer::isListening() const {
+    const Q_D(QHttpServer);
+
+    if ( d->ibackend == ETcpSocket    &&    d->itcpServer )
+        return d->itcpServer->isListening();
+
+    else if ( d->ibackend == ELocalSocket    &&    d->ilocalServer )
+        return d->ilocalServer->isListening();
+
+    return false;
 }
 
 quint32
@@ -30,6 +55,21 @@ QHttpServer::timeOut() const {
 void
 QHttpServer::setTimeOut(quint32 newValue) {
     d_func()->itimeOut = newValue;
+}
+
+TBackend
+QHttpServer::backendType() const {
+    return d_func()->ibackend;
+}
+
+QTcpServer*
+QHttpServer::tcpServer() const {
+    return d_func()->itcpServer.data();
+}
+
+QLocalServer*
+QHttpServer::localServer() const {
+    return d_func()->ilocalServer.data();
 }
 
 void

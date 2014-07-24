@@ -12,7 +12,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "qhttpfwd.hpp"
 
-#include <QTcpServer>
+#include <QObject>
 #include <QHostAddress>
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
@@ -20,7 +20,7 @@ namespace server {
 ///////////////////////////////////////////////////////////////////////////////
 
 /** The QHttpServer class is a fast, async (non-blocking) HTTP server. */
-class QHttpServer : public QTcpServer
+class QHttpServer : public QObject
 {
     Q_OBJECT
 
@@ -32,14 +32,23 @@ public:
 
     virtual    ~QHttpServer();
 
-    /** starts the server on @c port listening on all interfaces. */
-    /** starts the server on and address and port.
+    /** starts a Local server (unix domain socket) on specified socket name.
      * if you provide a server handler, the newRequest() signal won't be emitted.
      *
-     * @param address listening address as QHostAddress::Any
-     * @param port listening port
+     * @param socket unix socket name.
      * @param handler optional server handler (a lambda, std::function, ...)
-     * @return
+     * @return false if listening fails.
+     */
+    bool        listen(const QString& socket,
+                       const TServerHandler& handler = nullptr);
+
+    /** starts a TCP server on specified address and port.
+     * if you provide a server handler, the newRequest() signal won't be emitted.
+     *
+     * @param address listening address as QHostAddress::Any.
+     * @param port listening port.
+     * @param handler optional server handler (a lambda, std::function, ...)
+     * @return false if listening fails.
      */
     bool        listen(const QHostAddress& address, quint16 port,
                        const TServerHandler& handler = nullptr);
@@ -48,6 +57,9 @@ public:
     bool        listen(quint16 port) {
         return listen(QHostAddress::Any, port);
     }
+
+    /** returns true if server successfully listens. @sa listen() */
+    bool        isListening() const;
 
     /** returns timeout value [mSec] for open connections (sockets).
      *  @sa setTimeOut(). */
@@ -58,6 +70,9 @@ public:
      *  a zero (0) value disables timer for new connections. */
     void        setTimeOut(quint32);
 
+    /** returns the QHttpServer's backend type. */
+    TBackend    backendType() const;
+
 signals:
     /** emitted when a client makes a new request to the server if you do not override
      *  incomingConnection(QHttpConnection *connection);
@@ -65,6 +80,13 @@ signals:
     void        newRequest(QHttpRequest *request, QHttpResponse *response);
 
 protected:
+    /** returns the tcp server instance if the backend() == ETcpSocket. */
+    QTcpServer* tcpServer() const;
+
+    /** returns the local server instance if the backend() == ELocalSocket. */
+    QLocalServer* localServer() const;
+
+
     /** is called when server accepts a new connection.
      * you can override this function for using a thread-pool or ... some other reasons.
      *
@@ -83,7 +105,7 @@ protected:
      *
      * @see example/benchmark/server.cpp to see how to override.
      */
-    virtual void incomingConnection(qintptr handle) override;
+    virtual void incomingConnection(qintptr handle);
 
 private:
     explicit    QHttpServer(QHttpServerPrivate&, QObject *parent);

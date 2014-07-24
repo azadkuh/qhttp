@@ -18,6 +18,8 @@
 // Qt
 class QTcpServer;
 class QTcpSocket;
+class QLocalServer;
+class QLocalSocket;
 
 // http_parser
 struct http_parser_settings;
@@ -125,6 +127,13 @@ enum TStatusCode {
      ESTATUS_SERVICE_UNAVAILABLE                = 503,
      ESTATUS_GATEWAY_TIMEOUT                    = 504,
      ESTATUS_HTTP_VERSION_NOT_SUPPORTED         = 505
+};
+
+/** The backend of QHttp library. */
+enum TBackend {
+    ETcpSocket     = 0, ///< client / server work on top of TCP/IP stack. (default)
+    ESslSocket     = 1, ///< client / server work on SSL/TLS tcp stack.
+    ELocalSocket   = 2  ///< client / server work on local socket (unix socket).
 };
 
 ///////////////////////////////////////////////////////////////////////////////
