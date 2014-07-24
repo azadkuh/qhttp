@@ -43,6 +43,14 @@ QHttpConnection::timerEvent(QTimerEvent *) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// if user closes the connection, ends the response or by any other reason
+//  the socket be disconnected, then the irequest and iresponse instances may bhave been deleted.
+//  In these situations reading more http body or emitting end() for incoming request
+//  are not possible.
+#define CHECK_FOR_DISCONNECTED  if ( irequest == nullptr ) \
+    return 0;
+
+
 int
 QHttpConnectionPrivate::messageBegin(http_parser*) {
     itempUrl.clear();
@@ -64,7 +72,7 @@ QHttpConnectionPrivate::url(http_parser*, const char* at, size_t length) {
 
 int
 QHttpConnectionPrivate::headerField(http_parser*, const char* at, size_t length) {
-    Q_ASSERT(irequest);
+    CHECK_FOR_DISCONNECTED
 
     // insert the header we parsed previously
     // into the header map
@@ -87,7 +95,7 @@ QHttpConnectionPrivate::headerField(http_parser*, const char* at, size_t length)
 
 int
 QHttpConnectionPrivate::headerValue(http_parser*, const char* at, size_t length) {
-    Q_ASSERT(irequest);
+    CHECK_FOR_DISCONNECTED
 
     itempHeaderValue.append(at, length);
     return 0;
@@ -95,7 +103,7 @@ QHttpConnectionPrivate::headerValue(http_parser*, const char* at, size_t length)
 
 int
 QHttpConnectionPrivate::headersComplete(http_parser* parser) {
-    Q_ASSERT(irequest);
+    CHECK_FOR_DISCONNECTED
 
 #if defined(USE_CUSTOM_URL_CREATOR)
     // get parsed url
@@ -154,7 +162,7 @@ QHttpConnectionPrivate::headersComplete(http_parser* parser) {
 
 int
 QHttpConnectionPrivate::body(http_parser*, const char* at, size_t length) {
-    Q_ASSERT(irequest);
+    CHECK_FOR_DISCONNECTED
 
     if ( irequest->idataHandler )
         irequest->idataHandler(QByteArray(at, length));
@@ -166,7 +174,7 @@ QHttpConnectionPrivate::body(http_parser*, const char* at, size_t length) {
 
 int
 QHttpConnectionPrivate::messageComplete(http_parser*) {
-    Q_ASSERT(irequest);
+    CHECK_FOR_DISCONNECTED
 
     irequest->d_func()->isuccessful = true;
 
