@@ -28,8 +28,8 @@ class QHttpResponsePrivate : public HttpResponseBase,
     Q_DECLARE_PUBLIC(QHttpResponse)
 
 public:
-    explicit    QHttpResponsePrivate(QTcpSocket* sok, QHttpResponse* q)
-        : HttpWriterBase(sok), q_ptr(q) {
+    explicit    QHttpResponsePrivate(QHttpConnection* conn, QHttpResponse* q)
+        : HttpWriterBase(), q_ptr(q), iconnection(conn) {
         QHTTP_LINE_DEEPLOG
     }
 
@@ -38,16 +38,21 @@ public:
     }
 
     void        initialize() {
-        HttpWriterBase::initialize();
+        if ( iconnection->backendType() == ETcpSocket )
+            itcpSocket = iconnection->tcpSocket();
+        else if ( iconnection->backendType() == ELocalSocket )
+            ilocalSocket = iconnection->localSocket();
 
-        QObject::connect(isocket,      &QTcpSocket::disconnected, [this]() {
-            ifinished   = true;
-            q_func()->deleteLater();
-        });
+        HttpWriterBase::initialize();
 
         QObject::connect(q_func(),     &QHttpResponse::done, [this](bool wasTheLastResponse) {
             if ( wasTheLastResponse )
-                isocket->disconnectFromHost();
+                iconnection->killConnection();
+        });
+
+        QObject::connect(iconnection,  &QHttpConnection::disconnected, [this]() {
+            ifinished   = true;
+            q_func()->deleteLater();
         });
     }
 
@@ -63,7 +68,8 @@ public:
     bool        ikeepAlive = false;
 
 protected:
-    QHttpResponse* const q_ptr;
+    QHttpResponse* const    q_ptr;
+    QHttpConnection* const  iconnection;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

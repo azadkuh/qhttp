@@ -4,14 +4,14 @@
 namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
-QHttpResponse::QHttpResponse(QTcpSocket* socket)
-    : QHttpAbstractOutput(socket) , d_ptr(new QHttpResponsePrivate(socket, this)) {
+QHttpResponse::QHttpResponse(QHttpConnection* conn)
+    : QHttpAbstractOutput(conn) , d_ptr(new QHttpResponsePrivate(conn, this)) {
     d_ptr->initialize();
     QHTTP_LINE_LOG
 }
 
-QHttpResponse::QHttpResponse(QHttpResponsePrivate& dd, QTcpSocket* socket)
-    : QHttpAbstractOutput(socket) , d_ptr(&dd) {
+QHttpResponse::QHttpResponse(QHttpResponsePrivate& dd, QHttpConnection* conn)
+    : QHttpAbstractOutput(conn) , d_ptr(&dd) {
     d_ptr->initialize();
     QHTTP_LINE_LOG
 }
@@ -55,7 +55,7 @@ QHttpResponse::end(const QByteArray &data) {
 
 QHttpConnection*
 QHttpResponse::connection() const {
-    return static_cast<QHttpConnection*>(d_func()->isocket);
+    return d_func()->iconnection;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -72,7 +72,11 @@ QHttpResponsePrivate::ensureWritingHeaders() {
              );
     writeHeaders();
     writeRaw("\r\n");
-    isocket->flush();
+
+    if ( itcpSocket )
+        itcpSocket->flush();
+    else if ( ilocalSocket )
+        ilocalSocket->flush();
 
     iheaderWritten = true;
 }
