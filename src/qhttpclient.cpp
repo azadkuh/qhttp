@@ -123,6 +123,14 @@ QHttpClientPrivate::onReadyRead() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// if user closes the connection, ends the response or by any other reason
+//  the socket be disconnected, then the iresponse instance may has been deleted.
+//  In these situations reading more http body or emitting end() for incoming response
+//  is not possible.
+#define CHECK_FOR_DISCONNECTED  if ( ilastResponse == nullptr ) \
+    return 0;
+
+
 int
 QHttpClientPrivate::messageBegin(http_parser*) {
     itempHeaderField.clear();
@@ -133,6 +141,7 @@ QHttpClientPrivate::messageBegin(http_parser*) {
 
 int
 QHttpClientPrivate::status(http_parser* parser, const char* at, size_t length) {
+    CHECK_FOR_DISCONNECTED
 
     ilastResponse = new QHttpResponse(isocket);
     ilastResponse->d_func()->istatus  = static_cast<TStatusCode>(parser->status_code);
@@ -146,7 +155,7 @@ QHttpClientPrivate::status(http_parser* parser, const char* at, size_t length) {
 
 int
 QHttpClientPrivate::headerField(http_parser*, const char* at, size_t length) {
-    Q_ASSERT(ilastResponse);
+    CHECK_FOR_DISCONNECTED
 
     // insert the header we parsed previously
     // into the header map
@@ -169,7 +178,6 @@ QHttpClientPrivate::headerField(http_parser*, const char* at, size_t length) {
 
 int
 QHttpClientPrivate::headerValue(http_parser*, const char* at, size_t length) {
-    Q_ASSERT(ilastResponse);
 
     itempHeaderValue.append(at, length);
     return 0;
@@ -177,7 +185,7 @@ QHttpClientPrivate::headerValue(http_parser*, const char* at, size_t length) {
 
 int
 QHttpClientPrivate::headersComplete(http_parser*) {
-    Q_ASSERT(ilastResponse);
+    CHECK_FOR_DISCONNECTED
 
     // Insert last remaining header
     ilastResponse->d_func()->iheaders.insert(
@@ -195,7 +203,7 @@ QHttpClientPrivate::headersComplete(http_parser*) {
 
 int
 QHttpClientPrivate::body(http_parser*, const char* at, size_t length) {
-    Q_ASSERT(ilastResponse);
+    CHECK_FOR_DISCONNECTED
 
     if ( ilastResponse->idataHandler )
         ilastResponse->idataHandler(QByteArray(at, length));
@@ -207,7 +215,7 @@ QHttpClientPrivate::body(http_parser*, const char* at, size_t length) {
 
 int
 QHttpClientPrivate::messageComplete(http_parser*) {
-    Q_ASSERT(ilastResponse);
+    CHECK_FOR_DISCONNECTED
 
     ilastResponse->d_func()->isuccessful = true;
 
