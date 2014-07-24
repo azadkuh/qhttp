@@ -20,12 +20,12 @@ namespace server {
 ///////////////////////////////////////////////////////////////////////////////
 class QHttpRequestPrivate : public HttpRequestBase
 {
+protected:
     Q_DECLARE_PUBLIC(QHttpRequest)
+    QHttpRequest* const     q_ptr;
 
 public:
-    explicit    QHttpRequestPrivate(QTcpSocket* sok, QHttpRequest* q) : q_ptr(q) {
-        isocket     = sok;
-
+    explicit    QHttpRequestPrivate(QHttpConnection* conn, QHttpRequest* q) : q_ptr(q), iconnection(conn) {
         QHTTP_LINE_DEEPLOG
     }
 
@@ -34,7 +34,7 @@ public:
     }
 
     void        initialize() {
-        QObject::connect(isocket, &QTcpSocket::disconnected, [this](){
+        QObject::connect(iconnection, &QHttpConnection::disconnected, [this](){
             q_ptr->deleteLater();
         });
     }
@@ -44,9 +44,7 @@ public:
     quint16     iremotePort = 0;
     bool        isuccessful = false;
 
-protected:
-    QTcpSocket*             isocket;
-    QHttpRequest* const     q_ptr;
+    QHttpConnection* const  iconnection = nullptr;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

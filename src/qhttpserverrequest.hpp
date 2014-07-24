@@ -61,8 +61,8 @@ public:
     QHttpConnection*    connection() const;
 
 protected:
-    explicit            QHttpRequest(QTcpSocket*);
-    explicit            QHttpRequest(QHttpRequestPrivate&, QTcpSocket*);
+    explicit            QHttpRequest(QHttpConnection*);
+    explicit            QHttpRequest(QHttpRequestPrivate&, QHttpConnection*);
     friend class        QHttpConnectionPrivate;
 
     Q_DECLARE_PRIVATE(QHttpRequest)
