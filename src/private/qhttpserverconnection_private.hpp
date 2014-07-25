@@ -41,10 +41,6 @@ public:
 
     TServerHandler          ihandler = nullptr;
 
-#   if QHTTP_MESSAGES_LOG > 0
-    QByteArray              iinputBuffer;
-#   endif
-
 public:
     explicit     QHttpConnectionPrivate(QHttpConnection* q)
         : HttpParserBase(HTTP_REQUEST), q_ptr(q) {
