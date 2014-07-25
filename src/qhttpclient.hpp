@@ -29,7 +29,7 @@ typedef std::function<void (QHttpResponse*)>    TResponseHandler;
  * in fact the QHttpRequest and QHttpResponse object will be deleted when the internal socket
  *  disconnects.
  */
-class QHttpClient : public QTcpSocket
+class QHttpClient : public QObject
 {
     Q_OBJECT
 
@@ -47,6 +47,8 @@ public:
      *
      * @param method an HTTP method, ex: GET, POST, ...
      * @param url specifies server's address, port and optional path and query strings.
+     *  if url starts with socket:// the request will be made on QLocalSocket, otherwise
+     *  normal QTcpSocket will be used.
      * @param resHandler response handler (a lambda, std::function object, ...)
      * @return true if the url is valid or false (no connection will be made).
      */
@@ -84,6 +86,9 @@ public:
     /** checks if the connetion to the server is open. */
     bool        isOpen() const;
 
+    /** forcefully close the connection. */
+    void        killConnection();
+
 
     /** returns time-out value [mSec] for open connections (sockets).
      *  @sa setTimeOut(). */
@@ -93,6 +98,15 @@ public:
      * each connection will be forcefully closed after this timeout.
      *  a zero (0) value disables timer for new connections. */
     void        setTimeOut(quint32);
+
+    /** returns the backend type of this client. */
+    TBackend    backendType() const;
+
+    /** returns tcp socket of the connection if backend() == ETcpSocket. */
+    QTcpSocket* tcpSocket() const;
+
+    /** returns local socket of the connection if backend() == ELocalSocket. */
+    QLocalSocket* localSocket() const;
 
 signals:
     /** emitted when a new HTTP connection to the server is established.
@@ -108,6 +122,9 @@ signals:
      * @sa QHttpResponse
      */
     void        newResponse(QHttpResponse* res);
+
+    /** emitted when the HTTP connection drops or being disconnected. */
+    void        disconnected();
 
 
 protected:

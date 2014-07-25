@@ -6,14 +6,12 @@ namespace qhttp {
 namespace client {
 ///////////////////////////////////////////////////////////////////////////////
 QHttpClient::QHttpClient(QObject *parent)
-    : QTcpSocket(parent), d_ptr(new QHttpClientPrivate(this)) {
-    d_ptr->initialize();
+    : QObject(parent), d_ptr(new QHttpClientPrivate(this)) {
     QHTTP_LINE_LOG
 }
 
 QHttpClient::QHttpClient(QHttpClientPrivate &dd, QObject *parent)
-    : QTcpSocket(parent), d_ptr(&dd) {
-    d_ptr->initialize();
+    : QObject(parent), d_ptr(&dd) {
     QHTTP_LINE_LOG
 }
 
@@ -33,7 +31,41 @@ QHttpClient::setTimeOut(quint32 t) {
 
 bool
 QHttpClient::isOpen() const {
-    return QTcpSocket::isOpen()    &&    state() == QTcpSocket::ConnectedState;
+    const Q_D(QHttpClient);
+
+    if ( d->ibackendType == ETcpSocket    &&    d->itcpSocket ) {
+        return d->itcpSocket->isOpen()    &&    d->itcpSocket->state() == QTcpSocket::ConnectedState;
+
+    } else if ( d->ibackendType == ELocalSocket    &&    d->ilocalSocket ) {
+        return d->ilocalSocket->isOpen()    &&    d->ilocalSocket->state() == QLocalSocket::ConnectedState;
+    }
+
+    return false;
+}
+
+void
+QHttpClient::killConnection() {
+    Q_D(QHttpClient);
+
+    if ( d->itcpSocket )
+        d->itcpSocket->disconnectFromHost();
+    if ( d->ilocalSocket )
+        d->ilocalSocket->disconnectFromServer();
+}
+
+TBackend
+QHttpClient::backendType() const {
+    return d_func()->ibackendType;
+}
+
+QTcpSocket*
+QHttpClient::tcpSocket() const {
+    return d_func()->itcpSocket;
+}
+
+QLocalSocket*
+QHttpClient::localSocket() const {
+    return d_func()->ilocalSocket;
 }
 
 bool
@@ -50,7 +82,19 @@ QHttpClient::request(THttpMethod method, QUrl url,
     d->ilastMethod  = method;
     d->ilastUrl     = url;
 
-    connectToHost(url.host(), url.port(80));
+    // check for type
+    if ( url.scheme().toLower() == QLatin1String("socket") ) {
+        d->ibackendType = ELocalSocket;
+        d->initializeSocket();
+
+        d->ilocalSocket->connectToServer(url.host());
+
+    } else {
+        d->ibackendType = ETcpSocket;
+        d->initializeSocket();
+
+        d->itcpSocket->connectToHost(url.host(), url.port(80));
+    }
 
     // process handlers
     if ( resHandler ) {
@@ -63,7 +107,6 @@ QHttpClient::request(THttpMethod method, QUrl url,
     }
 
     return true;
-
 }
 
 void
@@ -71,7 +114,7 @@ QHttpClient::timerEvent(QTimerEvent *e) {
     Q_D(QHttpClient);
 
     if ( e->timerId() == d->itimer.timerId() ) {
-        close();
+        killConnection();
     }
 }
 
@@ -89,17 +132,13 @@ QHttpClient::onResponseReady(QHttpResponse *res) {
 
 void
 QHttpClientPrivate::onConnected() {
-    QHttpRequest *request = new QHttpRequest(isocket);
+    QHttpRequest *request = new QHttpRequest(q_func());
 
     request->d_func()->imethod  = ilastMethod;
     request->d_func()->iurl     = ilastUrl;
 
     if ( itimeOut > 0 )
         itimer.start(itimeOut, Qt::CoarseTimer, q_func());
-
-#   if QHTTP_MESSAGES_LOG > 0
-    iinputBuffer.clear();
-#   endif
 
     if ( ireqHandler )
         ireqHandler(request);
@@ -109,16 +148,23 @@ QHttpClientPrivate::onConnected() {
 
 void
 QHttpClientPrivate::onReadyRead() {
-    while ( isocket->bytesAvailable() > 0 ) {
-        char buffer[4097] = {0};
-        size_t readLength = isocket->read(buffer, 4096);
+    if ( itcpSocket ) {
+        while ( itcpSocket->bytesAvailable() > 0 ) {
+            char buffer[4097] = {0};
+            size_t readLength = itcpSocket->read(buffer, 4096);
 
-        parse(buffer, readLength);
+            parse(buffer, readLength);
+        }
 
-#       if QHTTP_MESSAGES_LOG > 0
-        iinputBuffer.append(buffer);
-#       endif
+    } else if ( ilocalSocket ) {
+        while ( ilocalSocket->bytesAvailable() > 0 ) {
+            char buffer[4097] = {0};
+            size_t readLength = ilocalSocket->read(buffer, 4096);
+
+            parse(buffer, readLength);
+        }
     }
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -143,7 +189,7 @@ int
 QHttpClientPrivate::status(http_parser* parser, const char* at, size_t length) {
     CHECK_FOR_DISCONNECTED
 
-    ilastResponse = new QHttpResponse(isocket);
+    ilastResponse = new QHttpResponse(q_func());
     ilastResponse->d_func()->istatus  = static_cast<TStatusCode>(parser->status_code);
     ilastResponse->d_func()->iversion = QString("%1.%2")
                                         .arg(parser->http_major)

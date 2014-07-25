@@ -36,6 +36,10 @@ public:
 
 public:
     explicit     QHttpClientPrivate(QHttpClient* q) : HttpParserBase(HTTP_RESPONSE), q_ptr(q) {
+        QObject::connect(q, &QHttpClient::disconnected, [this](){
+            ilastResponse = nullptr;
+            q_func()->deleteLater();
+        });
         QHTTP_LINE_DEEPLOG
     }
 
@@ -43,32 +47,31 @@ public:
         QHTTP_LINE_DEEPLOG
     }
 
-    void         initialize() {
-        isocket = static_cast<QTcpSocket*>(q_func());
+    void         initializeSocket() {
+        if ( q_func()->backendType() == ETcpSocket ) {
+            itcpSocket   = new QTcpSocket(q_func());
 
-        QObject::connect(isocket,  &QTcpSocket::connected, [this](){
-            onConnected();
-        });
-        QObject::connect(isocket,  &QTcpSocket::readyRead, [this](){
-            onReadyRead();
-        });
-        QObject::connect(isocket,  &QTcpSocket::disconnected, [this](){
-#           if QHTTP_MESSAGES_LOG > 0
-            QFile f("/tmp/qhttpclient-incomming.log");
-            if ( f.open(QIODevice::Append | QIODevice::WriteOnly) ) {
-                f.write(iinputBuffer);
-                f.write("\n---------------------\n");
-                f.flush();
-            }
-#           endif
+            QObject::connect(itcpSocket,  &QTcpSocket::connected, [this](){
+                onConnected();
+            });
+            QObject::connect(itcpSocket,  &QTcpSocket::readyRead, [this](){
+                onReadyRead();
+            });
+            QObject::connect(itcpSocket,  &QTcpSocket::disconnected,
+                             q_func(),    &QHttpClient::disconnected);
 
-            q_func()->deleteLater();
-        });
+        } else if ( q_func()->backendType() == ELocalSocket ) {
+            ilocalSocket = new QLocalSocket(q_func());
 
-
-#       if QHTTP_MESSAGES_LOG > 0
-        iinputBuffer.reserve(1024);
-#       endif
+            QObject::connect(ilocalSocket,  &QLocalSocket::connected, [this](){
+                onConnected();
+            });
+            QObject::connect(ilocalSocket,  &QLocalSocket::readyRead, [this](){
+                onReadyRead();
+            });
+            QObject::connect(ilocalSocket,  &QLocalSocket::disconnected,
+                             q_func(),      &QHttpClient::disconnected);
+        }
     }
 
 public:
@@ -93,10 +96,6 @@ protected:
     QHttpResponse*          ilastResponse = nullptr;
     TRequstHandler          ireqHandler;
     TResponseHandler        irespHandler;
-
-#   if QHTTP_MESSAGES_LOG > 0
-    QByteArray              iinputBuffer;
-#   endif
 };
 
 ///////////////////////////////////////////////////////////////////////////////
