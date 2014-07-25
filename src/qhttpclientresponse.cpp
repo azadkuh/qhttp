@@ -4,14 +4,14 @@
 namespace qhttp {
 namespace client {
 ///////////////////////////////////////////////////////////////////////////////
-QHttpResponse::QHttpResponse(QTcpSocket *socket)
-    : QHttpAbstractInput(socket), d_ptr(new QHttpResponsePrivate(socket, this)) {
+QHttpResponse::QHttpResponse(QHttpClient *cli)
+    : QHttpAbstractInput(cli), d_ptr(new QHttpResponsePrivate(cli, this)) {
     d_ptr->initialize();
     QHTTP_LINE_LOG
 }
 
-QHttpResponse::QHttpResponse(QHttpResponsePrivate &dd, QTcpSocket *socket)
-    : QHttpAbstractInput(socket), d_ptr(&dd) {
+QHttpResponse::QHttpResponse(QHttpResponsePrivate &dd, QHttpClient *cli)
+    : QHttpAbstractInput(cli), d_ptr(&dd) {
     d_ptr->initialize();
     QHTTP_LINE_LOG
 }
@@ -47,7 +47,7 @@ QHttpResponse::isSuccessful() const {
 
 QHttpClient*
 QHttpResponse::connection() const {
-    return static_cast<QHttpClient* const>(d_func()->isocket);
+    return d_func()->iclient;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -52,8 +52,8 @@ public:
     QHttpClient*        connection() const;
 
 protected:
-    explicit            QHttpResponse(QTcpSocket*);
-    explicit            QHttpResponse(QHttpResponsePrivate&, QTcpSocket*);
+    explicit            QHttpResponse(QHttpClient*);
+    explicit            QHttpResponse(QHttpResponsePrivate&, QHttpClient*);
     friend class        QHttpClientPrivate;
 
     Q_DECLARE_PRIVATE(QHttpResponse)

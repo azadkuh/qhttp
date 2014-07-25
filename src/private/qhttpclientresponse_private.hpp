@@ -11,6 +11,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "qhttpbase.hpp"
+#include "qhttpclient.hpp"
 #include "qhttpclientresponse.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -20,8 +21,8 @@ namespace client {
 class QHttpResponsePrivate : public HttpResponseBase
 {
 public:
-    explicit    QHttpResponsePrivate(QTcpSocket* sok, QHttpResponse* q)
-        : isocket(sok), q_ptr(q) {
+    explicit    QHttpResponsePrivate(QHttpClient* cli, QHttpResponse* q)
+        : iclient(cli), q_ptr(q) {
         QHTTP_LINE_DEEPLOG
     }
 
@@ -30,7 +31,7 @@ public:
     }
 
     void       initialize() {
-        QObject::connect(isocket, &QTcpSocket::disconnected, [this](){
+        QObject::connect(iclient, &QHttpClient::disconnected, [this](){
             q_ptr->deleteLater();
         });
     }
@@ -40,7 +41,7 @@ public:
     QString                 icustomeStatusMessage;
 
 protected:
-    QTcpSocket*             isocket;
+    QHttpClient* const      iclient;
     QHttpResponse* const    q_ptr;
     Q_DECLARE_PUBLIC(QHttpResponse)
 };
