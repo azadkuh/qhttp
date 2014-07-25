@@ -70,7 +70,7 @@ public:
         res->onEnd([this, res](){
             onBody();
 
-            res->connection()->close();
+            res->connection()->killConnection();
         });
     }
 

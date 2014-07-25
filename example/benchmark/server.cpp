@@ -20,7 +20,9 @@ using namespace qhttp::server;
 class ClientHandler : public QHttpConnection
 {
 public:
-    explicit    ClientHandler(QObject* parent) : QHttpConnection(parent) {
+    explicit    ClientHandler(QObject* parent, qintptr sokDesc, qhttp::TBackend backend)
+        : QHttpConnection(parent) {
+        setSocketDescriptor(sokDesc, backend);
 
         ibody.reserve(1024);
 
@@ -29,7 +31,7 @@ public:
             req->onData([this, req](const QByteArray& chunk) {
                 // data attack!
                 if ( ibody.size() > 1024 )
-                    req->connection()->close();
+                    req->connection()->killConnection();
                 else
                     ibody.append(chunk);
             });
@@ -154,8 +156,7 @@ Server::~Server() {
 void
 Server::incomingConnection(qintptr handle) {
 
-    ClientHandler* cli   = new ClientHandler(this);
-    cli->setSocketDescriptor(handle);
+    ClientHandler* cli   = new ClientHandler(this, handle, qhttp::ETcpSocket);
     cli->setTimeOut(timeOut());
 
     QObject::connect(cli, &QHttpConnection::disconnected, [this](){
