@@ -48,8 +48,8 @@ public:
     QHttpClient*    connection() const;
 
 protected:
-    explicit        QHttpRequest(QTcpSocket*);
-    explicit        QHttpRequest(QHttpRequestPrivate&, QTcpSocket*);
+    explicit        QHttpRequest(QHttpClient*);
+    explicit        QHttpRequest(QHttpRequestPrivate&, QHttpClient*);
     friend class    QHttpClientPrivate;
 
     Q_DECLARE_PRIVATE(QHttpRequest)

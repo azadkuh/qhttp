@@ -10,6 +10,7 @@
 #define QHTTPCLIENT_REQUEST_PRIVATE_HPP
 ///////////////////////////////////////////////////////////////////////////////
 #include "qhttpbase.hpp"
+#include "qhttpclient.hpp"
 #include "qhttpclientrequest.hpp"
 
 #include <QTcpSocket>
@@ -24,8 +25,8 @@ class QHttpRequestPrivate : public HttpRequestBase,
     Q_DECLARE_PUBLIC(QHttpRequest)
 
 public:
-    explicit    QHttpRequestPrivate(QTcpSocket* sok, QHttpRequest* q)
-        : HttpWriterBase(sok), q_ptr(q) {
+    explicit    QHttpRequestPrivate(QHttpClient* cli, QHttpRequest* q)
+        : HttpWriterBase(), q_ptr(q), iclient(cli) {
         iversion    = "1.1";
 
         QHTTP_LINE_DEEPLOG
@@ -36,9 +37,14 @@ public:
     }
 
     void        initialize() {
+        if ( iclient->backendType() == ETcpSocket )
+            itcpSocket   = iclient->tcpSocket();
+        else if ( iclient->backendType() == ELocalSocket )
+            ilocalSocket = iclient->localSocket();
+
         HttpWriterBase::initialize();
 
-        QObject::connect(isocket,      &QTcpSocket::disconnected, [this]() {
+        QObject::connect(iclient,      &QHttpClient::disconnected, [this]() {
             ifinished   = true;
             q_ptr->deleteLater();
         });
@@ -57,6 +63,7 @@ public:
 
 protected:
     QHttpRequest* const  q_ptr;
+    QHttpClient* const   iclient;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
