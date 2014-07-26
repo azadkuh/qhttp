@@ -52,7 +52,6 @@ public:
 
         QObject::connect(iconnection,  &QHttpConnection::disconnected, [this]() {
             ifinished   = true;
-            q_func()->deleteLater();
         });
     }
 

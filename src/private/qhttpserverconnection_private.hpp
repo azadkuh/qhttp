@@ -46,6 +46,9 @@ public:
         : HttpParserBase(HTTP_REQUEST), q_ptr(q) {
 
         QObject::connect(q_func(), &QHttpConnection::disconnected, [this](){
+            // if socket drops and http_parser can find messageComplete, calls it manually
+            messageComplete(nullptr);
+
             irequest    = nullptr;
             iresponse   = nullptr;
 

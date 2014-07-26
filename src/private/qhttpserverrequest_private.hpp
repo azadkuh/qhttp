@@ -34,9 +34,6 @@ public:
     }
 
     void        initialize() {
-        QObject::connect(iconnection, &QHttpConnection::disconnected, [this](){
-            q_ptr->deleteLater();
-        });
     }
 
 public:

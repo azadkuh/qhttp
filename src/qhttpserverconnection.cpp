@@ -202,6 +202,10 @@ int
 QHttpConnectionPrivate::messageComplete(http_parser*) {
     CHECK_FOR_DISCONNECTED
 
+    //prevents double messageComplete calls
+    if ( irequest->d_func()->isuccessful )
+        return 0;
+
     irequest->d_func()->isuccessful = true;
 
     if ( irequest->iendHandler )
