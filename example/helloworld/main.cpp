@@ -131,6 +131,7 @@ void    runLocalClient(QCoreApplication& app) {
         for ( auto cit = hs.constBegin(); cit != hs.constEnd(); cit++) {
             printf("%s : %s\n", cit.key().constData(), cit.value().constData());
         }
+        fflush(stdout);
     });
 
 
