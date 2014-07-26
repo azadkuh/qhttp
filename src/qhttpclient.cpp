@@ -82,6 +82,17 @@ QHttpClient::request(THttpMethod method, QUrl url,
     d->ilastMethod  = method;
     d->ilastUrl     = url;
 
+    // process handlers
+    if ( resHandler ) {
+        d->irespHandler = resHandler;
+
+        if ( reqHandler )
+            d->ireqHandler = reqHandler;
+        else
+            d->ireqHandler = [](QHttpRequest* req) ->void { req->end(); };
+    }
+
+    // connecting to host/server must be the last thing. (after all function handlers and ...)
     // check for type
     if ( url.scheme().toLower() == QLatin1String("socket") ) {
         d->ibackendType = ELocalSocket;
@@ -94,16 +105,6 @@ QHttpClient::request(THttpMethod method, QUrl url,
         d->initializeSocket();
 
         d->itcpSocket->connectToHost(url.host(), url.port(80));
-    }
-
-    // process handlers
-    if ( resHandler ) {
-        d->irespHandler = resHandler;
-
-        if ( reqHandler )
-            d->ireqHandler = reqHandler;
-        else
-            d->ireqHandler = [](QHttpRequest* req) ->void { req->end(); };
     }
 
     return true;
@@ -187,7 +188,6 @@ QHttpClientPrivate::messageBegin(http_parser*) {
 
 int
 QHttpClientPrivate::status(http_parser* parser, const char* at, size_t length) {
-    CHECK_FOR_DISCONNECTED
 
     ilastResponse = new QHttpResponse(q_func());
     ilastResponse->d_func()->istatus  = static_cast<TStatusCode>(parser->status_code);
@@ -262,6 +262,10 @@ QHttpClientPrivate::body(http_parser*, const char* at, size_t length) {
 int
 QHttpClientPrivate::messageComplete(http_parser*) {
     CHECK_FOR_DISCONNECTED
+
+    // prevents double messageComplete!
+    if ( ilastResponse->d_func()->isuccessful )
+        return 0;
 
     ilastResponse->d_func()->isuccessful = true;
 

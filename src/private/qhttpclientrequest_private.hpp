@@ -46,7 +46,6 @@ public:
 
         QObject::connect(iclient,      &QHttpClient::disconnected, [this]() {
             ifinished   = true;
-            q_ptr->deleteLater();
         });
     }
 

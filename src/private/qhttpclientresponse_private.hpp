@@ -31,9 +31,6 @@ public:
     }
 
     void       initialize() {
-        QObject::connect(iclient, &QHttpClient::disconnected, [this](){
-            q_ptr->deleteLater();
-        });
     }
 
 public:

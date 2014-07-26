@@ -36,10 +36,16 @@ public:
 
 public:
     explicit     QHttpClientPrivate(QHttpClient* q) : HttpParserBase(HTTP_RESPONSE), q_ptr(q) {
-        QObject::connect(q, &QHttpClient::disconnected, [this](){
-            ilastResponse = nullptr;
-            q_func()->deleteLater();
+        QObject::connect(q_func(),    &QHttpClient::disconnected,    [this](){
+            // if socket drops and http_parser can find messageComplete, calls it manually
+            messageComplete(nullptr);
+
+            if ( itcpSocket )
+                itcpSocket->deleteLater();
+            if ( ilocalSocket )
+                ilocalSocket->deleteLater();
         });
+
         QHTTP_LINE_DEEPLOG
     }
 
