@@ -1,15 +1,30 @@
 # helloworld
 
-this example shows the usage of `QHttp` as an HTTP server or a client.
+this example shows the usage of `QHttp` as an HTTP server or a client. you can try this by TCP socket or unix (local) sockets.
 
 ##usage
 
 ```bash
-$> ./helloworld [mode]
-# where mode is 'server' or 'client'.
+$> ./helloworld -h
 ```
 
-###server
+```text
+Usage: ./helloworld [options] mode
+a Hello World sample for http client and server.
+
+Options:
+  -h, --help            Displays this help.
+  -v, --version         Displays version information.
+  -b, --backend <type>  backend type of HTTP. could be 'tcp' or 'local',
+                        default: tcp
+
+Arguments:
+  mode                  working mode, client or server. default: server
+```
+
+##TCP sockets
+
+###tcp server
 to test `QHttp` server classes, start `helloworld` in server mode:
 ```bash
 $> ./helloworld server
@@ -24,7 +39,7 @@ $> curl localhost:8080
 you shall see the `Hello World!` message from the server.
 
 
-###client
+###tcp client
 the simple client mode tries to fetch the weather information from [openweathermap.org](openweathermap.org):
 ```bash
 $> ./helloworld client
@@ -65,4 +80,19 @@ and XML body as:
   <weather number="801" value="few clouds" icon="02d"/>
   <lastupdate value="2014-07-20T09:00:00"/>
 </current>
+```
+
+##Unix socket
+to test unix (local) sockets as backend, use `-b local` option.
+
+##local server
+do:
+```bash
+$> ./helloworld server -b local
+```
+
+###local client
+do:
+```bash
+$> ./helloworld client -b local
 ```
