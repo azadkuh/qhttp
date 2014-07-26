@@ -28,6 +28,8 @@
 ## Features
 [TOC](#table-of-contents)
 
+* both TCP and unix (local) sockets are supported as backend.
+
 * separate `namespace`s for server and client classes.
 
 * HTTP server classes: [QHttpServer](./src/qhttpserver.hpp), [QHttpConnection](./src/qhttpserverconnection.hpp), [QHttpRequest](./src/qhttpserverrequest.hpp) and [QHttpResponse](./src/qhttpserverresponse.hpp).
