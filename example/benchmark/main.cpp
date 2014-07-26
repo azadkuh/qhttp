@@ -28,7 +28,7 @@ public:
                                      "working mode, client or server. default: server");
 
         parser.addOption(QCommandLineOption(QStringList() << "b" << "backend",
-                                            "backend type of http connection. cant be tcp or local (local socket). default: tcp",
+                                            "backend type of http connection. could be tcp or local (unix socket). default: tcp",
                                             "type", "tcp"));
         parser.addOption(QCommandLineOption(QStringList() << "t" << "timeout",
                                             "maximum timeout for an open connection. default: 5000",

@@ -1,6 +1,6 @@
 # benchmark
 
-a utility to load testing of `QHttp` by simulating a *RESTful/Json* server and attacking clients.
+a utility to load testing of `QHttp` by simulating a *RESTful/Json* server and attacking clients. both TCP and unix (local) sockets are implemented.
 
 > for Json parser and builder, see [azadkuh/gason++](https://github.com/azadkuh/gason--)
 
@@ -20,9 +20,11 @@ by Amir Zamani.
 Options:
   -h, --help               Displays this help.
   -v, --version            Displays version information.
+  -b, --backend <type>     backend type of http connection. could be tcp or
+                           local (unix socket). default: tcp
   -t, --timeout <number>   maximum timeout for an open connection. default:
                            5000
-  -p, --port <portNumber>  server's port number. default: 8080
+  -p, --port <portNumber>  server's tcp port number. default: 8080
   -a, --address <ip>       server's address (url or ip[:port]), only in client
                            mode. default: localhost
   -c, --count <number>     number of sockets to be connected to the server,
@@ -59,8 +61,8 @@ $> ./benchmark server -p 8080 -t 0
 
 to setup attacking client(s):
 ```bash
-$> benchmark client --count 10 --timeout 5 --port 8080
-# so in theory 10 * (1000 / 5) = 2,000 requests are made per second
+$> benchmark client --count 100 --timeout 50 --port 8080
+# so in theory 100 * (1000 / 50) = 2,000 requests are made per second
 ```
 
 
@@ -113,3 +115,14 @@ where:
 * **`Count`**: amount of transactions in the last interval.
 
 * **`TotalCount`**: total transactions which have been successfully replied so far.
+
+## unix sockets
+if you wan't to run benchmark on Unix (local) sockets over TCP socket, simply use:
+```bash
+$> ./benchmark server -b local -t 0
+```
+as server and:
+```bash
+$> benchmark client --count 100 --timeout 100 -b local
+```
+for attacking clients.
