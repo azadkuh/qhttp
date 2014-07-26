@@ -2,6 +2,7 @@
 #define CLIENTS_HPP
 
 #include <QObject>
+#include "qhttpfwd.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -13,7 +14,9 @@ public:
     explicit    Clients(QObject *parent);
     virtual    ~Clients();
 
-    bool        setup(const QString& address, quint16 port, quint32 count, quint32 timeOut);
+    bool        setup(qhttp::TBackend backend,
+                      const QString& address, quint16 port,
+                      quint32 count, quint32 timeOut);
 
 protected:
     Q_DECLARE_PRIVATE(Clients)

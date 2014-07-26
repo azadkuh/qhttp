@@ -18,6 +18,8 @@ class Client : public QObject
 {
 public:
     quint32         itimeOut;
+
+    qhttp::TBackend ibackend;
     quint16         iport;
     QString         iaddress;
 
@@ -127,7 +129,13 @@ protected:
 
         QUrl url;
         url.setHost(iaddress);
-        url.setPort(iport);
+
+        if ( ibackend == qhttp::ELocalSocket ) {
+            url.setScheme("socket");
+        } else {
+            url.setScheme("http");
+            url.setPort(iport);
+        }
 
         bool canRequest =  client->request(
                                qhttp::EHTTP_POST,
@@ -137,7 +145,8 @@ protected:
 
         if ( canRequest ) {
 
-            QObject::connect(client, &QHttpClient::disconnected, [this](){
+            QObject::connect(client, &QHttpClient::disconnected, [this, client](){
+                client->deleteLater();
                 start();
             });
 
@@ -168,7 +177,9 @@ Clients::~Clients() {
 }
 
 bool
-Clients::setup(const QString &address, quint16 port, quint32 count, quint32 timeOut) {
+Clients::setup(qhttp::TBackend backend,
+               const QString &address, quint16 port,
+               quint32 count, quint32 timeOut) {
     if ( timeOut == 0 )
         timeOut = 10;
     else if ( timeOut > 10000 )
@@ -183,6 +194,7 @@ Clients::setup(const QString &address, quint16 port, quint32 count, quint32 time
     for ( size_t i = 0;    i < count;    i++ ) {
         Client* cli = new Client(i+1, this);
 
+        cli->ibackend   = backend;
         cli->iport      = port;
         cli->iaddress   = address;
         cli->itimeOut   = timeOut;
