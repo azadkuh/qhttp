@@ -61,6 +61,9 @@ public:
     /** returns true if server successfully listens. @sa listen() */
     bool        isListening() const;
 
+    /** closes the server and stops from listening. */
+    void        stopListening();
+
     /** returns timeout value [mSec] for open connections (sockets).
      *  @sa setTimeOut(). */
     quint32     timeOut()const;

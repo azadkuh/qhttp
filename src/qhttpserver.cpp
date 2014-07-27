@@ -47,6 +47,17 @@ QHttpServer::isListening() const {
     return false;
 }
 
+void
+QHttpServer::stopListening() {
+    Q_D(QHttpServer);
+
+    if ( d->itcpServer )
+        d->itcpServer->close();
+
+    if ( d->ilocalServer )
+        d->ilocalServer->close();
+}
+
 quint32
 QHttpServer::timeOut() const {
     return d_func()->itimeOut;
