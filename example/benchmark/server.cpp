@@ -6,6 +6,7 @@
 
 #include "../include/gason.hpp"
 #include "../include/jsonbuilder.hpp"
+#include "../include/threadlist.hxx"
 
 #include <QCoreApplication>
 #include <QTimerEvent>
@@ -13,23 +14,17 @@
 #include <QElapsedTimer>
 #include <QLocale>
 #include <QDateTime>
-#include <QThread>
+
 
 using namespace qhttp::server;
+QAtomicInt  gHandledConnections;
 ///////////////////////////////////////////////////////////////////////////////
 
-class ClientHandler : public QHttpConnection
+class ClientConnection : public QHttpConnection
 {
 public:
-    explicit    ClientHandler(QThread* thread, qintptr sokDesc, qhttp::TBackend backend)
+    explicit    ClientConnection(qintptr sokDesc, qhttp::TBackend backend)
         : QHttpConnection(nullptr) {
-        setSocketDescriptor(sokDesc, backend);
-
-        moveToThread(thread);
-        QObject::connect(thread, &QThread::finished, [this](){
-            killConnection();
-        });
-
         ibody.reserve(1024);
 
         onHandler([this](QHttpRequest*  req, QHttpResponse* res) {
@@ -94,13 +89,49 @@ public:
             });
 
         });
+
+        setSocketDescriptor(sokDesc, backend);
     }
 
-    virtual    ~ClientHandler() {
+    virtual    ~ClientConnection() {
     }
 
 protected:
-    QByteArray      ibody;
+    QByteArray        ibody;
+};
+
+class ClientHandler : public QObject
+{
+    Q_OBJECT
+
+    ClientConnection    *iconn   = nullptr;
+    qintptr             isokDecs = 0;
+    qhttp::TBackend     ibackend = qhttp::ETcpSocket;
+
+public:
+    explicit    ClientHandler(qintptr sokDesc, qhttp::TBackend backend)
+        : isokDecs(sokDesc), ibackend(backend) {
+    }
+
+    void        setup(QThread* th) {
+        moveToThread(th);
+
+        QObject::connect(th,    &QThread::finished,    [this](){
+            if ( iconn )
+                iconn->killConnection();
+
+            deleteLater();
+        });
+    }
+
+public slots:
+    void        start() {
+        iconn = new ClientConnection(isokDecs, ibackend);
+        QObject::connect(iconn,    &QHttpConnection::disconnected,    [this](){
+            gHandledConnections.ref();
+            deleteLater();
+        });
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -114,26 +145,15 @@ public:
     QBasicTimer     itimer;
     QElapsedTimer   ielapsed;
 
-    quint64         itotalHandled;      ///< total connections being handled.
-    quint32         itempHandled;       ///< connections handled in interval time
+    quint64         itotalHandled = 0;   ///< total connections being handled.
 
-    static const size_t KThreadCount = 4;
-    QThread             ithreads[KThreadCount];
+    ThreadList<2>   ithreads;
 
 public:
     explicit    ServerPrivate(Server* q) : q_ptr(q) {
-        itotalHandled   = 0;
-        itempHandled    = 0;
     }
 
     virtual    ~ServerPrivate() {
-        for ( size_t i = 0;    i < KThreadCount;    i++ ) {
-            ithreads[i].quit();
-        }
-
-        for ( size_t i = 0;    i < KThreadCount;    i++ ) {
-            ithreads[i].wait(10000);
-        }
     }
 
     void        start() {
@@ -141,16 +161,15 @@ public:
         itimer.start(10000, Qt::CoarseTimer, q_ptr);
         ielapsed.start();
 
-        for ( size_t i = 0;    i < KThreadCount;    i++ ) {
-            ithreads[i].start();
-        }
-
+        ithreads.startAll();
     }
 
     void        log() {
-        itotalHandled   += itempHandled;
+        quint32  tempHandled = gHandledConnections.load();
+
+        itotalHandled   += tempHandled;
         quint32 miliSec  = (quint32) ielapsed.elapsed();
-        float   aveTps   = float(itempHandled * 1000.0) / float(miliSec);
+        float   aveTps   = float(tempHandled * 1000.0) / float(miliSec);
         QString dateTime = QLocale::c().toString(
                                QDateTime::currentDateTime(),
                                "yyyy-MM-dd hh:mm:ss");
@@ -158,12 +177,12 @@ public:
         printf("%s,%.1f,%u,%u,%llu\n",
                qPrintable(dateTime),
                aveTps, miliSec,
-               itempHandled, itotalHandled
+               tempHandled, itotalHandled
                );
 
         fflush(stdout);
 
-        itempHandled = 0;
+        gHandledConnections.store(0);
         ielapsed.start();
     }
 };
@@ -175,21 +194,19 @@ Server::Server(QObject *parent) : QHttpServer(parent), d_ptr(new ServerPrivate(t
 }
 
 Server::~Server() {
+    stopListening();
 }
 
 void
 Server::incomingConnection(qintptr handle) {
     static quint64 counter = 0;
 
-    QThread* th  = &d_func()->ithreads[counter % ServerPrivate::KThreadCount];
-    counter++;
+    QThread* th  = d_func()->ithreads.at(counter++);
 
-    ClientHandler* cli   = new ClientHandler(th, handle, qhttp::ETcpSocket);
-    cli->setTimeOut(timeOut());
+    ClientHandler* cli   = new ClientHandler(handle, backendType());
+    cli->setup(th);
 
-    QObject::connect(cli, &QHttpConnection::disconnected, [this](){
-        d_func()->itempHandled++;
-    });
+    QMetaObject::invokeMethod(cli, "start", Qt::QueuedConnection);
 }
 
 void
@@ -203,6 +220,7 @@ Server::timerEvent(QTimerEvent *e) {
     QHttpServer::timerEvent(e);
 }
 
-///////////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////////////////////////////
+#include "server.moc"
 

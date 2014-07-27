@@ -21,7 +21,6 @@ HEADERS     += \
     ../include/gason.hpp \
     ../include/jsonbuilder.hpp \
     server.hpp \
-    client.hpp \
     clients.hpp
 
 LIBS        += $$PRJDIR/xbin/libqhttp.a
