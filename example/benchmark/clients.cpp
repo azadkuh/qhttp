@@ -1,171 +1,30 @@
 #include "clients.hpp"
-
-#include "qhttpclient.hpp"
-#include "qhttpclientrequest.hpp"
-#include "qhttpclientresponse.hpp"
-
-#include "../include/gason.hpp"
-#include "../include/jsonbuilder.hpp"
-
-#include <QCoreApplication>
-#include <QTimerEvent>
-#include <QBasicTimer>
+#include "client.hpp"
+#include <QThread>
 
 using namespace qhttp::client;
-///////////////////////////////////////////////////////////////////////////////
-
-class Client : public QObject
-{
-public:
-    quint32         itimeOut;
-
-    qhttp::TBackend ibackend;
-    quint16         iport;
-    QString         iaddress;
-
-protected:
-    const quint32   iid;
-    quint32         irequestId = 0;
-
-    QBasicTimer     itimer;
-
-    QByteArray      ibuffer;
-    gason::JsonAllocator ijsonAllocator;
-
-public:
-    explicit    Client(quint32 id, Clients* parent) : QObject(parent), iid(id) {
-        ibuffer.reserve(1024);
-    }
-
-    virtual    ~Client() {
-    }
-
-    void        start() {
-        itimer.start(itimeOut, Qt::CoarseTimer, this);
-    }
-
-    void        onRequest(QHttpRequest* req) {
-        char requestData[257] = {0};
-        gason::JSonBuilder json(requestData, 256);
-        json.startObject()
-                .addValue("clientId", (int)iid)
-                .addValue("requestId", (int)irequestId++)
-                .addValue("command", "request")
-            .endObject();
-
-        req->addHeader("connection", "close");
-        req->addHeader("content-length", QByteArray::number((int)strlen(requestData)));
-
-        req->end(requestData);
-
-        if ( irequestId >= 2000000000 )
-            irequestId = 0;
-    }
-
-    void        onResponse(QHttpResponse* res) {
-        ibuffer.clear();
-
-        res->onData([this](const QByteArray& chunk){
-            ibuffer.append(chunk);
-        });
-
-        res->onEnd([this, res](){
-            onBody();
-
-            res->connection()->killConnection();
-        });
-    }
-
-    bool        onBody() {
-        char buffer[1025] = {0};
-        strncpy(buffer, ibuffer.constData(), 1024);
-
-        gason::JsonValue root;
-
-        if ( gason::jsonParse(buffer, root, ijsonAllocator) != gason::JSON_PARSE_OK ) {
-            fprintf(stderr, "invalid json response, parsing failed. id=%u, request=%u\n",
-                    iid, irequestId);
-            return false;
-        }
-
-        gason::JsonValue jclientId   = root("clientId");
-        gason::JsonValue jreqId      = root("requestId");
-        gason::JsonValue jcommand    = root("command");
-
-        bool bok = false;
-
-        const char* command = jcommand.toString(&bok);
-        if ( bok == false    ||    strncmp("response", command, 8) != 0 ) {
-            fprintf(stderr, "    invalid command! id=%u, command=%s\n",
-                    iid, command);
-            return false;
-        }
-
-        quint32 cid = jclientId.toInt(&bok);
-        if ( bok == false    ||    cid != iid ) {
-            fprintf(stderr,"    invalid clientId!\n id=%u, incoming id=%d\n",
-                    iid, cid);
-            return false;
-        }
-
-        quint32 reqId = jreqId.toInt(&bok);
-        if ( bok == false    || reqId != irequestId  ) {
-            fprintf(stderr, "    invalid requestId!, id=%u, requestId=%u, incomming requestId=%u\n",
-                    iid, irequestId, reqId);
-            return false;
-        }
-
-        return true;
-    }
-
-protected:
-    void        timerEvent(QTimerEvent *e) {
-        if ( e->timerId() != itimer.timerId() )
-            return;
-
-        itimer.stop();
-
-        QHttpClient* client = new QHttpClient(this);
-
-        QUrl url;
-        url.setHost(iaddress);
-
-        if ( ibackend == qhttp::ELocalSocket ) {
-            url.setScheme("socket");
-        } else {
-            url.setScheme("http");
-            url.setPort(iport);
-        }
-
-        bool canRequest =  client->request(
-                               qhttp::EHTTP_POST,
-                               url,
-                               [this](QHttpRequest* req) { onRequest(req);},
-                               [this](QHttpResponse* res) { onResponse(res);});
-
-        if ( canRequest ) {
-
-            QObject::connect(client, &QHttpClient::disconnected, [this, client](){
-                client->deleteLater();
-                start();
-            });
-
-        } else
-            client->deleteLater();
-
-    }
-
-};
-
 ///////////////////////////////////////////////////////////////////////////////
 
 class ClientsPrivate
 {
     Q_DECLARE_PUBLIC(Clients)
-    Clients* const  q_ptr;
+    Clients* const      q_ptr;
+
+    static const size_t KThreadCount = 4;
+    QThread             ithreads[KThreadCount];
 
 public:
     explicit    ClientsPrivate(Clients* q) : q_ptr(q) {
+    }
+
+    virtual    ~ClientsPrivate() {
+        for ( size_t i = 0;    i < KThreadCount;    i++ ) {
+            ithreads[i].quit();
+        }
+
+        for ( size_t i = 0;    i < KThreadCount;    i++ ) {
+            ithreads[i].wait(10000);
+        }
     }
 };
 
@@ -192,15 +51,20 @@ Clients::setup(qhttp::TBackend backend,
 
 
     for ( size_t i = 0;    i < count;    i++ ) {
-        Client* cli = new Client(i+1, this);
+        QThread* th = &d_func()->ithreads[i % ClientsPrivate::KThreadCount];
+        Client* cli = new Client(i+1, 0);
+        cli->setup(th);
 
         cli->ibackend   = backend;
         cli->iport      = port;
         cli->iaddress   = address;
         cli->itimeOut   = timeOut;
 
-        cli->start();
+        //cli->start();
     }
+
+    for ( size_t i = 0;    i < ClientsPrivate::KThreadCount;    i++ )
+        d_func()->ithreads[i].start();
 
     return true;
 }

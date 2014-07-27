@@ -13,6 +13,7 @@
 #include <QElapsedTimer>
 #include <QLocale>
 #include <QDateTime>
+#include <QThread>
 
 using namespace qhttp::server;
 ///////////////////////////////////////////////////////////////////////////////
@@ -20,9 +21,14 @@ using namespace qhttp::server;
 class ClientHandler : public QHttpConnection
 {
 public:
-    explicit    ClientHandler(QObject* parent, qintptr sokDesc, qhttp::TBackend backend)
-        : QHttpConnection(parent) {
+    explicit    ClientHandler(QThread* thread, qintptr sokDesc, qhttp::TBackend backend)
+        : QHttpConnection(nullptr) {
         setSocketDescriptor(sokDesc, backend);
+
+        moveToThread(thread);
+        QObject::connect(thread, &QThread::finished, [this](){
+            killConnection();
+        });
 
         ibody.reserve(1024);
 
@@ -111,16 +117,34 @@ public:
     quint64         itotalHandled;      ///< total connections being handled.
     quint32         itempHandled;       ///< connections handled in interval time
 
+    static const size_t KThreadCount = 4;
+    QThread             ithreads[KThreadCount];
+
 public:
     explicit    ServerPrivate(Server* q) : q_ptr(q) {
         itotalHandled   = 0;
         itempHandled    = 0;
     }
 
+    virtual    ~ServerPrivate() {
+        for ( size_t i = 0;    i < KThreadCount;    i++ ) {
+            ithreads[i].quit();
+        }
+
+        for ( size_t i = 0;    i < KThreadCount;    i++ ) {
+            ithreads[i].wait(10000);
+        }
+    }
+
     void        start() {
         printf("\nDateTime,AveTps,miliSecond,Count,TotalCount\n");
         itimer.start(10000, Qt::CoarseTimer, q_ptr);
         ielapsed.start();
+
+        for ( size_t i = 0;    i < KThreadCount;    i++ ) {
+            ithreads[i].start();
+        }
+
     }
 
     void        log() {
@@ -155,8 +179,12 @@ Server::~Server() {
 
 void
 Server::incomingConnection(qintptr handle) {
+    static quint64 counter = 0;
 
-    ClientHandler* cli   = new ClientHandler(this, handle, qhttp::ETcpSocket);
+    QThread* th  = &d_func()->ithreads[counter % ServerPrivate::KThreadCount];
+    counter++;
+
+    ClientHandler* cli   = new ClientHandler(th, handle, qhttp::ETcpSocket);
     cli->setTimeOut(timeOut());
 
     QObject::connect(cli, &QHttpConnection::disconnected, [this](){
