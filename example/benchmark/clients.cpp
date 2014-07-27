@@ -179,7 +179,9 @@ class ClientsPrivate
     Q_DECLARE_PUBLIC(Clients)
     Clients* const      q_ptr;
 
-    ThreadList<2>       ithreads;
+#   if USETHREADS > 0
+    ThreadList<4>       ithreads;
+#   endif
 
 public:
     explicit    ClientsPrivate(Clients* q) : q_ptr(q) {

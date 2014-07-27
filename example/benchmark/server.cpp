@@ -140,9 +140,11 @@ public:
 
     quint64         itotalHandled = 0;   ///< total connections being handled.
 
-    static const size_t        KThreadCount = 2;
+#   if USETHREADS > 0
+    static const size_t        KThreadCount = 4;
     ThreadList<KThreadCount>   ithreads;
     ClientHandler              iclients[KThreadCount];
+#   endif
 
 public:
     explicit    ServerPrivate(Server* q) : q_ptr(q) {
@@ -165,6 +167,7 @@ public:
 #       endif
 
     }
+
 
     void        log() {
         quint32  tempHandled = gHandledConnections.load();
@@ -215,7 +218,7 @@ Server::incomingConnection(qintptr handle) {
 
 #   else
     ClientConnection* cli = new ClientConnection(handle, backendType(), this);
-    QObject::connect(cli,    &QHttpConnection::disconnected,    [&gHandledConnections](){
+    QObject::connect(cli,    &QHttpConnection::disconnected,    [](){
         gHandledConnections.ref();
     });
 
