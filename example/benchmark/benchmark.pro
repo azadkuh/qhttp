@@ -4,6 +4,8 @@ CONFIG      += console
 CONFIG      += c++11
 osx:CONFIG  -= app_bundle
 
+DEFINES     += USETHREADS=1
+
 TARGET       = benchmark
 TEMPLATE     = app
 PRJDIR       = ../..

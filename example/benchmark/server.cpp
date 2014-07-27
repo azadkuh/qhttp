@@ -23,8 +23,8 @@ QAtomicInt  gHandledConnections;
 class ClientConnection : public QHttpConnection
 {
 public:
-    explicit    ClientConnection(qintptr sokDesc, qhttp::TBackend backend)
-        : QHttpConnection(nullptr) {
+    explicit    ClientConnection(qintptr sokDesc, qhttp::TBackend backend, QObject* parent)
+        : QHttpConnection(parent) {
         ibody.reserve(1024);
 
         onHandler([this](QHttpRequest*  req, QHttpResponse* res) {
@@ -104,32 +104,25 @@ class ClientHandler : public QObject
 {
     Q_OBJECT
 
-    ClientConnection    *iconn   = nullptr;
-    qintptr             isokDecs = 0;
-    qhttp::TBackend     ibackend = qhttp::ETcpSocket;
-
 public:
-    explicit    ClientHandler(qintptr sokDesc, qhttp::TBackend backend)
-        : isokDecs(sokDesc), ibackend(backend) {
+    explicit    ClientHandler() {
     }
 
     void        setup(QThread* th) {
         moveToThread(th);
 
         QObject::connect(th,    &QThread::finished,    [this](){
-            if ( iconn )
-                iconn->killConnection();
-
             deleteLater();
         });
     }
 
 public slots:
-    void        start() {
-        iconn = new ClientConnection(isokDecs, ibackend);
-        QObject::connect(iconn,    &QHttpConnection::disconnected,    [this](){
+    void        start(int sokDesc, int bend) {
+        qhttp::TBackend backend = static_cast<qhttp::TBackend>(bend);
+        ClientConnection* cli = new ClientConnection((qintptr)sokDesc, backend, this);
+
+        QObject::connect(cli,    &QHttpConnection::disconnected,    [this](){
             gHandledConnections.ref();
-            deleteLater();
         });
     }
 };
@@ -147,7 +140,9 @@ public:
 
     quint64         itotalHandled = 0;   ///< total connections being handled.
 
-    ThreadList<2>   ithreads;
+    static const size_t        KThreadCount = 2;
+    ThreadList<KThreadCount>   ithreads;
+    ClientHandler              iclients[KThreadCount];
 
 public:
     explicit    ServerPrivate(Server* q) : q_ptr(q) {
@@ -161,7 +156,14 @@ public:
         itimer.start(10000, Qt::CoarseTimer, q_ptr);
         ielapsed.start();
 
+#       if USETHREADS > 0
+        for ( size_t i = 0;    i < KThreadCount;    i++ ) {
+            iclients[i].setup( ithreads.at(i) );
+        }
         ithreads.startAll();
+
+#       endif
+
     }
 
     void        log() {
@@ -188,7 +190,6 @@ public:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-
 Server::Server(QObject *parent) : QHttpServer(parent), d_ptr(new ServerPrivate(this)) {
     d_func()->start();
 }
@@ -199,14 +200,26 @@ Server::~Server() {
 
 void
 Server::incomingConnection(qintptr handle) {
+#   if USETHREADS > 0
     static quint64 counter = 0;
 
-    QThread* th  = d_func()->ithreads.at(counter++);
+    size_t index = counter % ServerPrivate::KThreadCount;
+    counter++;
 
-    ClientHandler* cli   = new ClientHandler(handle, backendType());
-    cli->setup(th);
+    QMetaObject::invokeMethod(&d_func()->iclients[index],
+                              "start",
+                              Qt::QueuedConnection,
+                              Q_ARG(int, handle),
+                              Q_ARG(int, backendType())
+                              );
 
-    QMetaObject::invokeMethod(cli, "start", Qt::QueuedConnection);
+#   else
+    ClientConnection* cli = new ClientConnection(handle, backendType(), this);
+    QObject::connect(cli,    &QHttpConnection::disconnected,    [&gHandledConnections](){
+        gHandledConnections.ref();
+    });
+
+#   endif
 }
 
 void
