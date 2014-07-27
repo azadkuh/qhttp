@@ -209,15 +209,15 @@ Clients::setup(qhttp::TBackend backend,
 
 
     for ( size_t i = 0;    i < count;    i++ ) {
-        QThread* th = d_func()->ithreads.at(i);
         Client* cli = new Client(i+1, nullptr);
-        cli->setup(th);
 
         cli->ibackend   = backend;
         cli->iport      = port;
         cli->iaddress   = address;
         cli->itimeOut   = timeOut;
 
+        QThread* th = d_func()->ithreads.at(i);
+        cli->setup(th);
     }
 
     d_func()->ithreads.startAll();
