@@ -45,6 +45,9 @@ public:
         parser.addOption(QCommandLineOption(QStringList() << "c" << "count",
                                             "number of sockets to be connected to the server, only in client mode. default: 10",
                                             "number", "10"));
+        parser.addOption(QCommandLineOption(QStringList() << "T" << "threads",
+                                            "number of worker threads (thread-pool) in server or client mode. default: 1",
+                                            "number", "1"));
 
         parser.process(*this);
 
@@ -53,10 +56,14 @@ public:
         if ( posList.size() >= 1    &&    posList.at(0) == "client" )
             imode = EClient;
 
+        ithreads         = parser.value("threads").toUInt();
         itimeOut         = parser.value("timeout").toUInt();
         iport            = parser.value("port").toUShort();
         QString address  = parser.value("address");
         iconnectionCount = parser.value("count").toUInt(); // only used in client mode
+
+        if ( ithreads < 1 )
+            ithreads = 1;
 
         if ( parser.value("backend") == "local" ) {
             ibackend  = qhttp::ELocalSocket;
@@ -64,12 +71,12 @@ public:
             iport     = 0;
 
             if ( imode == EClient )
-                printf("Client mode, attacking on local socket %s --count %lu --timeout %u\n\n",
+                printf("Client mode, attacking on local socket %s --count %lu --timeout %u --threads %lu\n\n",
                        iaddress.toUtf8().constData(),
-                       iconnectionCount, itimeOut);
+                       iconnectionCount, itimeOut, ithreads);
             else
-                printf("Server mode, local socket listening @ %s --timeout %u\n\n",
-                       qPrintable(iaddress), itimeOut);
+                printf("Server mode, local socket listening @ %s --timeout %u --threads %lu\n\n",
+                       qPrintable(iaddress), itimeOut, ithreads);
 
 
         } else {
@@ -82,13 +89,13 @@ public:
                 if ( items.size() >= 2 )
                     iport    = items.at(1).toUShort();
 
-                printf("Client mode, attacking on tcp socket %s:%d --count %lu --timeout %u\n\n",
+                printf("Client mode, attacking on tcp socket %s:%d --count %lu --timeout %u --threads %lu\n\n",
                        iaddress.toUtf8().constData(), iport,
-                       iconnectionCount, itimeOut);
+                       iconnectionCount, itimeOut, ithreads);
 
             } else
-                printf("Server mode, tcp listening @ %d --timeout %u\n\n",
-                       iport, itimeOut);
+                printf("Server mode, tcp listening @ %d --timeout %u --threads %lu\n\n",
+                       iport, itimeOut, ithreads);
         }
 
     }
@@ -100,7 +107,7 @@ public:
 
     bool        initialize() {
         if ( imode == EServer ) {
-            iserver = new Server(this);
+            iserver = new Server(ithreads, this);
             iserver->setTimeOut(itimeOut);
 
             return ( ibackend == qhttp::ETcpSocket ) ?
@@ -108,7 +115,7 @@ public:
                         iserver->listen(iaddress);
 
         } else {
-            iclients = new Clients(this);
+            iclients = new Clients(ithreads, this);
             return iclients->setup(ibackend,
                                    iaddress, iport,
                                    iconnectionCount, itimeOut);
@@ -125,6 +132,7 @@ protected:
     quint16         iport;
     QString         iaddress;
     qhttp::TBackend ibackend     = qhttp::ETcpSocket;
+    size_t          ithreads     = 1;
 
     Server*         iserver      = nullptr;
     Clients*        iclients     = nullptr;

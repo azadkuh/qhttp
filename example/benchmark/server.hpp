@@ -9,7 +9,7 @@ class ServerPrivate;
 class Server : public qhttp::server::QHttpServer
 {
 public:
-    explicit    Server(QObject* parent);
+    explicit    Server(size_t threads, QObject* parent);
     virtual    ~Server();
 
 protected:

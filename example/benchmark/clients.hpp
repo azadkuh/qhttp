@@ -11,7 +11,7 @@ class ClientsPrivate;
 class Clients : public QObject
 {
 public:
-    explicit    Clients(QObject *parent);
+    explicit    Clients(size_t threads, QObject *parent);
     virtual    ~Clients();
 
     bool        setup(qhttp::TBackend backend,

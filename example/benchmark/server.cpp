@@ -140,11 +140,8 @@ public:
 
     quint64         itotalHandled = 0;   ///< total connections being handled.
 
-#   if USETHREADS > 0
-    static const size_t        KThreadCount = 4;
-    ThreadList<KThreadCount>   ithreads;
-    ClientHandler              iclients[KThreadCount];
-#   endif
+    ThreadList               ithreads;
+    QVector<ClientHandler*>  iclients;
 
 public:
     explicit    ServerPrivate(Server* q) : q_ptr(q) {
@@ -153,18 +150,23 @@ public:
     virtual    ~ServerPrivate() {
     }
 
-    void        start() {
+    void        start(size_t threads) {
         printf("\nDateTime,AveTps,miliSecond,Count,TotalCount\n");
         itimer.start(10000, Qt::CoarseTimer, q_ptr);
         ielapsed.start();
 
-#       if USETHREADS > 0
-        for ( size_t i = 0;    i < KThreadCount;    i++ ) {
-            iclients[i].setup( ithreads.at(i) );
-        }
-        ithreads.startAll();
+        // create threads
+        if ( threads > 1 ) {
+            ithreads.create(threads);
 
-#       endif
+            for ( size_t i = 0;    i < threads;    i++ ) {
+                ClientHandler *ch = new ClientHandler();
+                ch->setup( ithreads.at(i) );
+                iclients.append( ch );
+            }
+
+            ithreads.startAll();
+        }
 
     }
 
@@ -193,8 +195,8 @@ public:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-Server::Server(QObject *parent) : QHttpServer(parent), d_ptr(new ServerPrivate(this)) {
-    d_func()->start();
+Server::Server(size_t threads, QObject *parent) : QHttpServer(parent), d_ptr(new ServerPrivate(this)) {
+    d_func()->start(threads);
 }
 
 Server::~Server() {
@@ -203,26 +205,27 @@ Server::~Server() {
 
 void
 Server::incomingConnection(qintptr handle) {
-#   if USETHREADS > 0
     static quint64 counter = 0;
 
-    size_t index = counter % ServerPrivate::KThreadCount;
-    counter++;
+    Q_D(Server);
 
-    QMetaObject::invokeMethod(&d_func()->iclients[index],
-                              "start",
-                              Qt::QueuedConnection,
-                              Q_ARG(int, handle),
-                              Q_ARG(int, backendType())
-                              );
+    if ( d->iclients.size() > 1 ) { //multi-thread
+        size_t index = counter % d->iclients.size();
+        counter++;
 
-#   else
-    ClientConnection* cli = new ClientConnection(handle, backendType(), this);
-    QObject::connect(cli,    &QHttpConnection::disconnected,    [](){
-        gHandledConnections.ref();
-    });
+        QMetaObject::invokeMethod(d_func()->iclients.at(index),
+                                  "start",
+                                  Qt::QueuedConnection,
+                                  Q_ARG(int, handle),
+                                  Q_ARG(int, backendType())
+                                  );
+    } else { // single-thread
+        ClientConnection* cli = new ClientConnection(handle, backendType(), this);
+        QObject::connect(cli,    &QHttpConnection::disconnected,    [](){
+            gHandledConnections.ref();
+        });
 
-#   endif
+    }
 }
 
 void

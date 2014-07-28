@@ -2,41 +2,63 @@
 #define THREADLIST_HXX
 
 #include <QThread>
+#include <QVector>
 ///////////////////////////////////////////////////////////////////////////////
-template<size_t KCount>
 class ThreadList
 {
-    QThread         ithreads[KCount];
+    QVector<QThread*>   ithreads;
 
 public:
     ~ThreadList() {
-        quitAll();
-        joinAll(5000);
+        deleteAll();
+    }
+
+    void       create(size_t count) {
+        deleteAll();
+        for ( size_t i = 0;    i < count;    i++ ) {
+            ithreads.append( new QThread() );
+        }
+    }
+
+    size_t      size()const {
+        return ithreads.size();
     }
 
     QThread*    at(size_t index) {
-        if ( index >= KCount )
-            index = index % KCount;
+        int size = ithreads.size();
+        if ( (int)index >= size )
+            index = index % size;
 
-        return &ithreads[index];
+        return ithreads.at(index);
     }
 
     void        startAll() {
-        for ( size_t i = 0;    i < KCount;    i++ ) {
-            ithreads[i].start();
+        foreach (QThread* th, ithreads) {
+            th->start();
         }
     }
 
     void        quitAll() {
-        for ( size_t i = 0;    i < KCount;    i++ ) {
-            ithreads[i].quit();
+        foreach (QThread* th, ithreads) {
+            th->quit();
         }
     }
 
     void        joinAll(unsigned long timeout = ULONG_MAX) {
-        for ( size_t i = 0;    i < KCount;    i++ ) {
-            ithreads[i].wait(timeout);
+        foreach (QThread* th, ithreads) {
+            th->wait(timeout);
         }
+    }
+
+    void        deleteAll() {
+        quitAll();
+        joinAll(5000);
+
+        foreach (QThread* th, ithreads) {
+            th->deleteLater();
+        }
+
+        ithreads.clear();
     }
 };
 

@@ -179,17 +179,23 @@ class ClientsPrivate
     Q_DECLARE_PUBLIC(Clients)
     Clients* const      q_ptr;
 
-#   if USETHREADS > 0
-    ThreadList<4>       ithreads;
-#   endif
+    ThreadList          ithreads;
 
 public:
     explicit    ClientsPrivate(Clients* q) : q_ptr(q) {
     }
+
+    void        setup(size_t threads) {
+        if ( threads > 1 ) {
+            ithreads.create(threads);
+        }
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-Clients::Clients(QObject *parent) : QObject(parent), d_ptr(new ClientsPrivate(this)) {
+Clients::Clients(size_t threads, QObject *parent) : QObject(parent),
+    d_ptr(new ClientsPrivate(this)) {
+    d_func()->setup(threads);
 }
 
 Clients::~Clients() {
@@ -199,6 +205,8 @@ bool
 Clients::setup(qhttp::TBackend backend,
                const QString &address, quint16 port,
                quint32 count, quint32 timeOut) {
+    Q_D(Clients);
+
     if ( timeOut == 0 )
         timeOut = 10;
     else if ( timeOut > 10000 )
@@ -211,32 +219,30 @@ Clients::setup(qhttp::TBackend backend,
 
 
     for ( size_t i = 0;    i < count;    i++ ) {
-#       if USETHREADS > 0
-        Client* cli = new Client(i+1, nullptr);
-        QThread* th = d_func()->ithreads.at(i);
-        cli->setup(th);
+        if ( d->ithreads.size() > 1 ) { // multi-thread
+            Client* cli = new Client(i+1, nullptr);
+            cli->ibackend   = backend;
+            cli->iport      = port;
+            cli->iaddress   = address;
+            cli->itimeOut   = timeOut;
 
-#       else
-        Client* cli = new Client(i+1, this);
+            QThread* th = d->ithreads.at(i);
+            cli->setup(th);
 
-#       endif
+        } else { // single-thread
+            Client* cli = new Client(i+1, this);
+            cli->ibackend   = backend;
+            cli->iport      = port;
+            cli->iaddress   = address;
+            cli->itimeOut   = timeOut;
 
-        cli->ibackend   = backend;
-        cli->iport      = port;
-        cli->iaddress   = address;
-        cli->itimeOut   = timeOut;
+            cli->start();
 
-#       if USETHREADS == 0
-        cli->start();
-#       endif
+        }
     }
 
-
-#   if USETHREADS > 0
-    d_func()->ithreads.startAll();
-
-#   endif
-
+    // in single thread mode, this line has no effect.
+    d->ithreads.startAll();
     return true;
 }
 ///////////////////////////////////////////////////////////////////////////////
