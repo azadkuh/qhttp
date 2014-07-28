@@ -6,6 +6,7 @@
 - [Features](#features)
 - [Sample codes](#sample-codes)
 - [Setup](#setup)
+- [Multi-threading](#multi-threading)
 - [Source tree](#source-tree)
 - [Disclaimer](#disclaimer)
 - [License](#license)
@@ -28,7 +29,9 @@
 ## Features
 [TOC](#table-of-contents)
 
-* both TCP and unix (local) sockets are supported as backend.
+* the only dependencies are: [Qt 5](http://qt-project.org/downloads), [c++11](http://en.wikipedia.org/wiki/C%2B%2B11) and [joyent/http-parser](https://github.com/joyent/http-parser)
+
+* both TCP and UNIX (local) sockets are supported as backend.
 
 * separate `namespace`s for server and client classes.
 
@@ -40,15 +43,11 @@
 
 * **PIMPL** (Private classes) to achieve better ABI compatibility and cleaner API.
 
-* Asynchronous and non-blocking. You can handle thousands of concurrent HTTP connections efficiently by a single thread.
+* **Asynchronous** and **non-blocking**. You can handle thousands of concurrent HTTP connections efficiently by a single thread, although a multi-threaded HTTP server is easy to implement.
 
-* the only dependencies are: [Qt 5](http://qt-project.org/downloads), [c++11](http://en.wikipedia.org/wiki/C%2B%2B11) and [joyent/http-parser](https://github.com/joyent/http-parser)
+* **high throughput**, I have tried the `QHttp` and [gason++](https://github.com/azadkuh/gason--) to implement a REST/Json web service on an Ubuntu VPS (dual core + 512MB ram) with more than **5000** connections per second (stress test). On a MacBook Pro (i5 quadcore + 8096MB ram), `QHttp` easily reaches to more than **8000** connections / second. see also [benchmark app](./example/benchmard/README.md).
 
-* **high throughput**, I have tried the `QHttp` and [gason++](https://github.com/azadkuh/gason--) to implement a REST/Json web service on an Ubuntu VPS (dual core + 512MB ram) with peak TPS > 5000 (stress test)
-
-* a simple benchmarking tool, implementing both a RESTful/Json server and client.
-
-* Tested under **Linux** (Ubuntu 12.04 LTS, 14.04 LTS) and **OS X** (10.9). Easily portable where ever Qt 5 works. I have no **Windows** machine (or time or interest), but this lib should work just fine under Windows, although I've not tried by myself.
+* Tested under **Linux** (Ubuntu 12.04 LTS, 14.04 LTS, gcc) and **OS X** (10.9, clang). Easily portable where ever Qt 5 works. I have no *Windows* machine (nor time, nor interest), but this lib should work just fine under *Windows*, although I've not tried by myself.
 
 
 ## Sample codes
@@ -132,7 +131,7 @@ int main(int argc, char** argv) {
 instructions:
 ```bash
 # first clone this repository:
-$> git clone --depth=1 https://github.com/azadkuh/qhttp.git
+$> git clone --depth=1 https://github.com/azadkuh/qhttp.git -b master
 $> cd qhttp
 
 # prepare dependencies:
@@ -142,6 +141,29 @@ $> ./update-dependencies.sh
 $> qmake qhttp.pro
 $> make -j 8
 ```
+
+## Multi-threading
+[TOC](#table-of-contents)
+
+As `QHttp` is **asynchrounous** and **non-bloking**, your app can handle thousands of concurrent HTTP connections by a single thread. 
+
+in some rare scenarios you may want to use multiple threads (which is highly unwelcomed):
+
+* there are some blocking APIs (QSql, system calls, ...) in your connection handler (although adopting asynchronous layer over the blocking API is a better approach).
+
+* the hardware has lots of free cores and you've measured the load on the main thread reaches to the highest limit. there you can spawn some other working threads.
+
+
+[benchmark example](./example/benchmark/README.md) shows how to implement a single or multi threaded HTTP app (server or client). This example uses worker `QThread` and `QObject::moveToThread()` for worker objects. see aslo: [Subclassing no longer recommended way of using QThread](http://qt-project.org/doc/note_revisions/5/8/view).
+
+**Note**:
+> moving objects between threads is an expensive job, more ever the locking/unlocking mechanism, creating or stopping threads, ... cost even more! so using multiple threads in an application is not guaranteed to get better performance, but it's guaranteed to add more complexity, nasty bugs and headache!
+
+see why other top performer networking libraries as ZeroMQ are concurrent but not multi-threaded by default:
+
+* [ZeroMQ : Multithreading Magic](http://zeromq.org/blog:multithreading-magic)
+* [Node.j : about](http://nodejs.org/about/)
+
 
 ## Source tree
 [TOC](#table-of-contents)

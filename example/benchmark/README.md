@@ -29,6 +29,8 @@ Options:
                            mode. default: localhost
   -c, --count <number>     number of sockets to be connected to the server,
                            only in client mode. default: 10
+  -T, --threads <number>   number of worker threads (thread-pool) in server or
+                           client mode. default: 1
 
 Arguments:
   mode                     working mode, client or server. default: server
@@ -48,6 +50,9 @@ you can pass `0` (zero) to disable the timeout.
 * **`count`**:
 the number of concurrent HTTP connections.
 As `Qt` and therefor `QHttp` are asynchronous, this app uses a single `thread` to open the all concurrent connections.
+
+* **`threads`**:
+the number of working threads (worker threads are persistence as in a thread-pool).
 
 
 <br/>
@@ -117,12 +122,14 @@ where:
 * **`TotalCount`**: total transactions which have been successfully replied so far.
 
 ## unix sockets
-if you wan't to run benchmark on Unix (local) sockets over TCP socket, simply use:
+if you wan't to run benchmark on Unix (local) sockets instead of TCP socket, simply use:
 ```bash
-$> ./benchmark server -b local -t 0
+$> ./benchmark server -b local -t 0 --threads 4
 ```
 as server and:
 ```bash
-$> benchmark client --count 100 --timeout 100 -b local
+$> benchmark client --count 100 --timeout 10 -b local
 ```
 for attacking clients.
+
+by using Unix socket the application reaches to the higher `AveTps` by avoiding TCP overheads. 
