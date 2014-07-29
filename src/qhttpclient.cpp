@@ -76,7 +76,8 @@ QHttpClient::request(THttpMethod method, QUrl url,
     d->ireqHandler   = nullptr;
     d->irespHandler  = nullptr;
 
-    if ( !url.isValid()    ||    url.isEmpty()    ||    url.host().isEmpty() )
+    // if url is a local file (UNIX socket) the host could be empty!
+    if ( !url.isValid()    ||    url.isEmpty()    /*||    url.host().isEmpty()*/ )
         return false;
 
     d->ilastMethod  = method;
@@ -94,11 +95,11 @@ QHttpClient::request(THttpMethod method, QUrl url,
 
     // connecting to host/server must be the last thing. (after all function handlers and ...)
     // check for type
-    if ( url.scheme().toLower() == QLatin1String("socket") ) {
+    if ( url.scheme().toLower() == QLatin1String("file") ) {
         d->ibackendType = ELocalSocket;
         d->initializeSocket();
 
-        d->ilocalSocket->connectToServer(url.host());
+        d->ilocalSocket->connectToServer(url.path());
 
     } else {
         d->ibackendType = ETcpSocket;

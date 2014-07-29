@@ -143,12 +143,12 @@ protected:
         QHttpClient* client = new QHttpClient(this);
 
         QUrl url;
-        url.setHost(iaddress);
 
         if ( ibackend == qhttp::ELocalSocket ) {
-            url.setScheme("socket");
+            url = QUrl::fromLocalFile(iaddress);
         } else {
             url.setScheme("http");
+            url.setHost(iaddress);
             url.setPort(iport);
         }
 

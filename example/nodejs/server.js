@@ -6,8 +6,9 @@ var http    = require('http');
 var printf  = require('printf');
 
 var defaultListeningPort = 8080;
+// tcp port numver or UNIX socket path
 if ( process.argv.length >= 3 )
-  defaultListeningPort = process.argv[2];
+    defaultListeningPort = process.argv[2];
 
 
 var totalConnections     = 0;
@@ -70,5 +71,5 @@ setInterval(function(){
     timeElapsed         = process.hrtime();
 }, 10000);
 
-server.listen(defaultListeningPort);
+server.listen(defaultListeningPort); // listen on TCP or UNIX socket
 console.log('\nDateTime,AveTps,miliSecond,Count,TotalCount\n');

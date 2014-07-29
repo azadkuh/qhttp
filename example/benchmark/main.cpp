@@ -67,7 +67,7 @@ public:
 
         if ( parser.value("backend") == "local" ) {
             ibackend  = qhttp::ELocalSocket;
-            iaddress  = "qhttp.benchmark"; // default value
+            iaddress  = "/tmp/qhttp.benchmark"; // default value
             iport     = 0;
 
             if ( imode == EClient )
