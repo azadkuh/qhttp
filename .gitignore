@@ -30,3 +30,6 @@ Makefile*
 *.vcxproj
 *.sln
 *.rc
+
+# node.js external modules
+node_modules

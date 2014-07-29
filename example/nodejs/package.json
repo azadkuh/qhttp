@@ -1,0 +1,9 @@
+{
+  "name": "qhttp-benchmark-nodejs",
+  "description": "QHttp benchmark app in Node.js",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+      "printf" : "x"
+  }
+}
