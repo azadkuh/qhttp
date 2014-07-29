@@ -147,14 +147,14 @@ $> make -j 8
 
 As `QHttp` is **asynchrounous** and **non-bloking**, your app can handle thousands of concurrent HTTP connections by a single thread. 
 
-in some rare scenarios you may want to use multiple threads (which is highly unwelcomed):
+in some rare scenarios you may want to use multiple handler threads (although it's not the best solution):
 
-* there are some blocking APIs (QSql, system calls, ...) in your connection handler (although adopting asynchronous layer over the blocking API is a better approach).
+* there are some blocking APIs (QSql, system calls, ...) in your connection handler (adopting asynchronous layer over the blocking API is a better approach).
 
-* the hardware has lots of free cores and you've measured the load on the main thread reaches to the highest limit. there you can spawn some other working threads.
+* the hardware has lots of free cores and the measurement shows that the load on the main `QHttp` thread is close to highest limit. There you can spawn some other handler threads.
 
 
-[benchmark example](./example/benchmark/README.md) shows how to implement a single or multi threaded HTTP app (server or client). This example uses worker `QThread` and `QObject::moveToThread()` for worker objects. see aslo: [Subclassing no longer recommended way of using QThread](http://qt-project.org/doc/note_revisions/5/8/view).
+[benchmark example](./example/benchmark/README.md) shows how to implement a single or multi threaded HTTP app (both server and client). This example uses worker `QThread` and `QObject::moveToThread()` for worker objects. see aslo: [Subclassing no longer recommended way of using QThread](http://qt-project.org/doc/note_revisions/5/8/view).
 
 **Note**:
 > moving objects between threads is an expensive job, more ever the locking/unlocking mechanism, creating or stopping threads, ... cost even more! so using multiple threads in an application is not guaranteed to get better performance, but it's guaranteed to add more complexity, nasty bugs and headache!
@@ -162,7 +162,7 @@ in some rare scenarios you may want to use multiple threads (which is highly unw
 see why other top performer networking libraries as ZeroMQ are concurrent but not multi-threaded by default:
 
 * [ZeroMQ : Multithreading Magic](http://zeromq.org/blog:multithreading-magic)
-* [Node.j : about](http://nodejs.org/about/)
+* [Node.js : about](http://nodejs.org/about/)
 
 
 ## Source tree

@@ -8,9 +8,9 @@ cd 3rdparty
 echo "--> joyent / http-parser"
 if [ -e http-parser ]; then
     cd http-parser
-    git pull https://github.com/joyent/http-parser.git
+    git pull origin master
 else
-    git clone --depth=1 https://github.com/joyent/http-parser.git
+    git clone --depth=1 https://github.com/joyent/http-parser.git -b master
 fi
 
 cd ..
