@@ -41,6 +41,9 @@ public:
     quint16     iremotePort = 0;
     bool        isuccessful = false;
 
+    int         icollectCapacity = 0;
+    QByteArray  icollectedData;
+
     QHttpConnection* const  iconnection = nullptr;
 };
 

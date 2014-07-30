@@ -38,6 +38,12 @@ public: // QHttpAbstractInput methods:
     /** @see QHttpAbstractInput::isSuccessful(). */
     bool                isSuccessful() const override;
 
+    /** @see QHttpAbstractInput::collectData(). */
+    void                collectData(int atMost = -1) override;
+
+    /** @see QHttpAbstractInput::collectedData(). */
+    const QByteArray&   collectedData()const override;
+
 
 public:
     /** The method used for the request. */

@@ -37,6 +37,9 @@ public:
     bool                    isuccessful = false;
     QString                 icustomeStatusMessage;
 
+    int                     icollectCapacity = 0;
+    QByteArray              icollectedData;
+
 protected:
     QHttpClient* const      iclient;
     QHttpResponse* const    q_ptr;

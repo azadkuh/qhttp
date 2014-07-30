@@ -31,8 +31,8 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-typedef std::function<void (const QByteArray&)>     TDataHandler;
-typedef std::function<void (void)>                  TEndHandler;
+typedef std::function<void (QByteArray)>     TDataHandler;
+typedef std::function<void (void)>           TEndHandler;
 
 ///////////////////////////////////////////////////////////////////////////////
 /** an interface for input (incoming) HTTP packets.
@@ -65,7 +65,7 @@ signals:
      * @note This may be emitted zero or more times depending on the transfer type.
      * @see onData();
      */
-    void                        data(const QByteArray &data);
+    void                        data(QByteArray data);
 
     /** Emitted when the incomming packet has been fully received.
      * @note The no more data() signals will be emitted after this.
@@ -89,6 +89,20 @@ public:
     void                        onEnd(const TEndHandler& endHandler) {
         iendHandler  = endHandler;
     }
+
+public:
+    /** tries to collect all the incoming data internally.
+     * @note if you call this method, data() signal won't be emitted and
+     *  onData() will have no effect.
+     *
+     * @param atMost maximum acceptable incoming data. if the incoming data
+     *  exceeds this value, the connection won't read any more data and
+     *  end() signal will be emitted. -1 means unlimited.
+     */
+    virtual void                collectData(int atMost = -1) =0;
+
+    /** returns the collected data requested by collectData(). */
+    virtual const QByteArray&   collectedData()const =0;
 
 
 public:

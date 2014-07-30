@@ -252,6 +252,16 @@ int
 QHttpClientPrivate::body(http_parser*, const char* at, size_t length) {
     CHECK_FOR_DISCONNECTED
 
+    if ( ilastResponse->d_func()->icollectCapacity != 0 ) {
+        int currentLength = ilastResponse->d_func()->icollectedData.length();
+        if ( (currentLength + (int)length) < ilastResponse->d_func()->icollectCapacity )
+            ilastResponse->d_func()->icollectedData.append(at, length);
+        else
+            messageComplete(nullptr); // no other data will be read.
+
+        return 0;
+    }
+
     if ( ilastResponse->idataHandler )
         ilastResponse->idataHandler(QByteArray(at, length));
     else

@@ -45,6 +45,16 @@ QHttpResponse::isSuccessful() const {
     return d_func()->isuccessful;
 }
 
+void
+QHttpResponse::collectData(int atMost) {
+    d_func()->icollectCapacity = atMost;
+}
+
+const QByteArray&
+QHttpResponse::collectedData() const {
+    return d_func()->icollectedData;
+}
+
 QHttpClient*
 QHttpResponse::connection() const {
     return d_func()->iclient;
