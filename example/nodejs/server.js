@@ -60,7 +60,12 @@ var server = http.createServer(function(req, res){
         intervalConnections++;
         res.setHeader('connection', 'close');
 
-        var jsonObj = JSON.parse(body);
+        var jsonObj = {};
+        try {
+            jsonObj = JSON.parse(body);
+        } catch(err){
+        }
+        
         if ( jsonObj != null ) {
             if ( jsonObj.command != null    &&
                 jsonObj.clientId != null    &&    jsonObj.requestId != null ) {
