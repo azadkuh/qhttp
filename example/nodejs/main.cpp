@@ -17,31 +17,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 using namespace qhttp::server;
 
-template<int KCapacity>
-class ByteArray
-{
-    char    buffer[KCapacity];
-public:
-    ByteArray() {
-        reset();
-    }
-
-    void reset() {
-        memset(buffer, 0, KCapacity);
-    }
-
-    void append(const QByteArray& arr) {
-        size_t srcLen = arr.size();
-        size_t desLen = strlen(buffer);
-        if ( (srcLen + desLen ) < KCapacity )
-            strncpy(buffer + desLen, arr.constData(), srcLen);
-    }
-
-    operator char*() {
-        return &buffer[0];
-    }
-};
-
 class Application : public QCoreApplication
 {
 public:
@@ -54,21 +29,16 @@ public:
             iportOrPath = arguments().at(1);
 
         iserver.listen(iportOrPath, [this](QHttpRequest* req, QHttpResponse* res){
-            ByteArray<512>  buffer;
-            //QByteArray body;
+            req->collectData(512);
 
-            req->onData([&](const QByteArray& chunk){
-                buffer.append(chunk);
-                //body.append(chunk);
-            });
-
-            req->onEnd([&](){
+            req->onEnd([this, req, res](){
                 iintervalConnections++;
                 res->addHeader("connection", "close");
 
                 // gason++ writes lots of \0 into source buffer. so we have to make a writeable copy.
-                //char buffer[1024] = {0};
-                //strncpy(buffer, body.constData(), std::min(1023, body.length()));
+                char buffer[512] = {0};
+                const QByteArray& body = req->collectedData();
+                strncpy(buffer, body.constData(), std::min(511, body.length()));
 
                 gason::JsonValue        root;
                 if ( gason::jsonParse(buffer, root, iallocator) == gason::JSON_PARSE_OK ) {
@@ -80,7 +50,7 @@ public:
                     if ( strncmp(command.toString(&ok), "request", 7) == 0  &&
                          clientId.isNumber()    &&    requestId.isNumber() ) {
 
-                        buffer.reset();
+                        memset(buffer, 0, 512);
                         gason::JSonBuilder doc(buffer, 511);
                         doc.startObject()
                                 .addValue("command", "response")
