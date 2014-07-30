@@ -14,15 +14,21 @@ QHttpServer::QHttpServer(QHttpServerPrivate &dd, QObject *parent)
 }
 
 QHttpServer::~QHttpServer() {
+    stopListening();
 }
 
 bool
-QHttpServer::listen(const QString &socket, const TServerHandler &handler) {
+QHttpServer::listen(const QString &socketOrPort, const TServerHandler &handler) {
     Q_D(QHttpServer);
+
+    bool isNumber   = false;
+    quint16 tcpPort = socketOrPort.toUShort(&isNumber);
+    if ( isNumber )
+        return listen(QHostAddress::Any, tcpPort, handler);
 
     d->initialize(ELocalSocket, this);
     d->ihandler = handler;
-    return d->ilocalServer->listen(socket);
+    return d->ilocalServer->listen(socketOrPort);
 }
 
 bool
@@ -54,8 +60,10 @@ QHttpServer::stopListening() {
     if ( d->itcpServer )
         d->itcpServer->close();
 
-    if ( d->ilocalServer )
+    if ( d->ilocalServer ) {
         d->ilocalServer->close();
+        QLocalServer::removeServer( d->ilocalServer->fullServerName() );
+    }
 }
 
 quint32
