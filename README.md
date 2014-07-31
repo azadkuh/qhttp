@@ -45,7 +45,7 @@
 
 * **Asynchronous** and **non-blocking**. You can handle thousands of concurrent HTTP connections efficiently by a single thread, although a multi-threaded HTTP server is easy to implement.
 
-* **high throughput**, I have tried the `QHttp` and [gason++](https://github.com/azadkuh/gason--) to implement a REST/Json web service on an Ubuntu VPS (dual core + 512MB ram) with more than **5000** connections per second (stress test). On the same machine `QHttp` is **350% ~ 400%** faster than `Node.js v0.10.26`. On a MacBook Pro (i5 quadcore + 8096MB ram), `QHttp` easily reaches to more than **8000** connections / second. see also [benchmark app](./example/benchmard/README.md).
+* **high throughput**, I have tried the `QHttp` and [gason++](https://github.com/azadkuh/gason--) to implement a REST/Json web service on an Ubuntu VPS (dual core + 512MB ram) with more than **5800** connections per second (stress test). On a MacBook Pro (i5 4258U 4cores with HT + 8096MB ram), `QHttp` easily reaches to more than **11700** connections / second. Generally `QHttp` is **1.5x ~ 3x** faster than `Node.js` depending on your machine / OS. check [benchmark app](./example/benchmard/README.md) to measure your system.
 
 * Tested under **Linux** (Ubuntu 12.04 LTS, 14.04 LTS, gcc) and **OS X** (10.9, clang). Easily portable where ever Qt 5 works. I have no *Windows* machine (nor time, nor interest), but this lib should work just fine under *Windows*, although I've not tried by myself.
 
@@ -189,7 +189,7 @@ contains some sample applications representing the `QHttp` usage:
     see: [README@benchmark](./example/benchmark/README.md)
     
     * **`nodejs/`**:
-    Node.js implementation of `benchmark/` in server mode. Provided for comparing `QHttp` with `Node.js` as a RESTFul server.
+    Node.js implementation of `benchmark/` in server mode. Provided for benchmarking `QHttp` with `Node.js` as a RESTFul service app.
     see: [README@nodejs](./example/nodejs/README.md)
     
 
