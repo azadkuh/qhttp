@@ -20,86 +20,6 @@ using namespace qhttp::server;
 QAtomicInt  gHandledConnections;
 ///////////////////////////////////////////////////////////////////////////////
 
-class ClientConnection : public QHttpConnection
-{
-public:
-    explicit    ClientConnection(qintptr sokDesc, qhttp::TBackend backend, QObject* parent)
-        : QHttpConnection(parent) {
-        ibody.reserve(1024);
-
-        onHandler([this](QHttpRequest*  req, QHttpResponse* res) {
-
-            req->onData([this, req](const QByteArray& chunk) {
-                // data attack!
-                if ( ibody.size() > 1024 )
-                    req->connection()->killConnection();
-                else
-                    ibody.append(chunk);
-            });
-
-            req->onEnd([this, req, res](){
-                res->addHeader("connection", "close");
-
-                // gason++ writes lots of \0 into source buffer. so we have to make a writeable copy.
-                char buffer[4907] = {0};
-                strncpy(buffer, ibody.constData(), 4096);
-
-                gason::JsonAllocator    allocator;
-                gason::JsonValue        root;
-
-                bool  clientStatus = false;
-
-                if ( gason::jsonParse(buffer, root, allocator) == gason::JSON_PARSE_OK ) {
-                    gason::JsonValue command   = root("command");
-                    gason::JsonValue clientId  = root("clientId");
-                    gason::JsonValue requestId = root("requestId");
-
-                    bool ok = false;
-                    if ( strncmp(command.toString(&ok), "request", 7) == 0  &&
-                         clientId.isNumber()    &&    requestId.isNumber() ) {
-
-                        memset(buffer, 0, 4096);
-                        gason::JSonBuilder doc(buffer, 4096);
-                        doc.startObject()
-                                .addValue("command", "response")
-                                .addValue("clientId", clientId.toInt(&ok))
-                                .addValue("requestId", requestId.toInt(&ok) + 1)
-                                .endObject();
-
-                        res->addHeader("content-length", QByteArray::number((int)strlen(buffer)));
-
-                        clientStatus = true;
-                    }
-                }
-
-                if ( clientStatus ) {
-                    res->setStatusCode(qhttp::ESTATUS_OK);
-                    res->end(QByteArray(buffer));
-
-                } else {
-                    res->setStatusCode(qhttp::ESTATUS_BAD_REQUEST);
-                    res->end("bad request: the json value is not present or invalid!\n");
-                }
-
-                if ( req->headers().keyHasValue("command", "quit" ) ) {
-                    puts("a quit header is received!");
-
-                    QCoreApplication::instance()->quit();
-                }
-            });
-
-        });
-
-        setSocketDescriptor(sokDesc, backend);
-    }
-
-    virtual    ~ClientConnection() {
-    }
-
-protected:
-    QByteArray        ibody;
-};
-
 class ClientHandler : public QObject
 {
     Q_OBJECT
@@ -116,15 +36,71 @@ public:
         });
     }
 
+signals:
+    void        disconnected();
+
 public slots:
     void        start(int sokDesc, int bend) {
         qhttp::TBackend backend = static_cast<qhttp::TBackend>(bend);
-        ClientConnection* cli = new ClientConnection((qintptr)sokDesc, backend, this);
+        QHttpConnection* conn   = QHttpConnection::create((qintptr)sokDesc,
+                                                          backend,
+                                                          this);
 
-        QObject::connect(cli,    &QHttpConnection::disconnected,    [this](){
-            gHandledConnections.ref();
+        QObject::connect(conn,    &QHttpConnection::disconnected,
+                         this,    &ClientHandler::disconnected);
+
+        conn->onHandler([this](QHttpRequest*  req, QHttpResponse* res) {
+
+            req->onEnd([this, req, res](){
+                gHandledConnections.ref();
+                res->addHeader("connection", "close");
+
+                const QByteArray& body = req->collectedData();
+                // gason++ writes lots of \0 into source buffer. so we have to make a writeable copy.
+                char buffer[512] = {0};
+                strncpy(buffer, body.constData(), std::min(511, body.size()));
+
+                gason::JsonValue        root;
+                if ( gason::jsonParse(buffer, root, iallocator) == gason::JSON_PARSE_OK ) {
+                    gason::JsonValue command   = root("command");
+                    gason::JsonValue clientId  = root("clientId");
+                    gason::JsonValue requestId = root("requestId");
+
+                    bool ok = false;
+                    if ( strncmp(command.toString(&ok), "request", 7) == 0  &&
+                         clientId.isNumber()    &&    requestId.isNumber() ) {
+
+                        memset(buffer, 0, 512);
+                        gason::JSonBuilder doc(buffer, 511);
+                        doc.startObject()
+                                .addValue("command", "response")
+                                .addValue("clientId", clientId.toInt(&ok))
+                                .addValue("requestId", requestId.toInt(&ok) + 1)
+                                .endObject();
+
+                        res->addHeader("content-length", QByteArray::number((int)strlen(buffer)));
+                        res->setStatusCode(qhttp::ESTATUS_OK);
+                        res->end(QByteArray(buffer));
+
+                        return;
+                    }
+                }
+
+                res->setStatusCode(qhttp::ESTATUS_BAD_REQUEST);
+                res->end("bad request: the json value is not present or invalid!\n");
+            });
+
+            req->collectData(512);
+            if ( req->headers().keyHasValue("command", "quit" ) ) {
+                puts("a quit header is received!");
+
+                QCoreApplication::instance()->quit();
+            }
         });
     }
+
+protected:
+    gason::JsonAllocator iallocator;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -169,7 +145,6 @@ public:
         }
 
     }
-
 
     void        log() {
         quint32  tempHandled = gHandledConnections.load();
@@ -220,11 +195,10 @@ Server::incomingConnection(qintptr handle) {
                                   Q_ARG(int, backendType())
                                   );
     } else { // single-thread
-        ClientConnection* cli = new ClientConnection(handle, backendType(), this);
-        QObject::connect(cli,    &QHttpConnection::disconnected,    [](){
-            gHandledConnections.ref();
-        });
-
+        ClientHandler* cli = new ClientHandler();
+        QObject::connect(cli,   &ClientHandler::disconnected,
+                         cli,   &ClientHandler::deleteLater);
+        cli->start((int)handle, (int)backendType());
     }
 }
 
