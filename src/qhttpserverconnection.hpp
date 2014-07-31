@@ -48,6 +48,14 @@ public:
     /** returns connected socket if the backend() == ELocalSocket. */
     QLocalSocket*   localSocket() const;
 
+    /** creates a new QHttpConnection based on arguments. */
+    static
+    QHttpConnection* create(qintptr sokDescriptor, TBackend backendType, QObject* parent) {
+        QHttpConnection* conn = new QHttpConnection(parent);
+        conn->setSocketDescriptor(sokDescriptor, backendType);
+        return conn;
+    }
+
 signals:
     /** emitted when a pair of HTTP request and response are ready to interact.
      * @param req incoming request by the client.
