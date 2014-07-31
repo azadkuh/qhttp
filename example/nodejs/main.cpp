@@ -3,14 +3,14 @@
 #include "qhttpserverrequest.hpp"
 #include "qhttpserverresponse.hpp"
 
-#include "../include/gason.hpp"
-#include "../include/jsonbuilder.hpp"
-
 #include <QCoreApplication>
 #include <QElapsedTimer>
 #include <QLocalServer>
 #include <QBasicTimer>
 #include <QDateTime>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
 
 #include <signal.h>
 #include <unistd.h>
@@ -35,34 +35,20 @@ public:
                 iintervalConnections++;
                 res->addHeader("connection", "close");
 
-                // gason++ writes lots of \0 into source buffer. so we have to make a writeable copy.
-                char buffer[512] = {0};
                 const QByteArray& body = req->collectedData();
-                strncpy(buffer, body.constData(), std::min(511, body.length()));
+                QJsonObject root       = QJsonDocument::fromJson(body).object();
+                if ( !root.isEmpty()  && root.contains("command")  &&
+                     root.contains("clientId")  && root.contains("requestId") ) {
 
-                gason::JsonValue        root;
-                if ( gason::jsonParse(buffer, root, iallocator) == gason::JSON_PARSE_OK ) {
-                    gason::JsonValue command   = root("command");
-                    gason::JsonValue clientId  = root("clientId");
-                    gason::JsonValue requestId = root("requestId");
+                    root["command"]     = "response";
+                    root["requestId"]   = root["requestId"].toInt() + 1;
+                    QByteArray doc      = QJsonDocument(root).toJson(QJsonDocument::Compact);
 
-                    bool ok = false;
-                    if ( strncmp(command.toString(&ok), "request", 7) == 0  &&
-                         clientId.isNumber()    &&    requestId.isNumber() ) {
+                    res->addHeader("content-length", QByteArray::number((int)strlen(doc)));
+                    res->setStatusCode(qhttp::ESTATUS_OK);
+                    res->end(doc);
+                    return;
 
-                        memset(buffer, 0, 512);
-                        gason::JSonBuilder doc(buffer, 511);
-                        doc.startObject()
-                                .addValue("command", "response")
-                                .addValue("clientId", clientId.toInt(&ok))
-                                .addValue("requestId", requestId.toInt(&ok) + 1)
-                                .endObject();
-
-                        res->addHeader("content-length", QByteArray::number((int)strlen(buffer)));
-                        res->setStatusCode(qhttp::ESTATUS_OK);
-                        res->end(QByteArray(buffer));
-                        return;
-                    }
                 }
 
                 res->setStatusCode(qhttp::ESTATUS_BAD_REQUEST);
@@ -115,9 +101,6 @@ protected:
     quint64         itotalConnections = 0;
     QElapsedTimer   ihrTimer;
     QBasicTimer     iintervalTimer;
-
-    gason::JsonAllocator iallocator;
-
 };
 
 ///////////////////////////////////////////////////////////////////////////////
