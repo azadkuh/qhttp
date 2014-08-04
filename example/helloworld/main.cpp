@@ -14,12 +14,12 @@
 #include <QLocalServer>
 ///////////////////////////////////////////////////////////////////////////////
 
-void    runServer(QCoreApplication& app) {
+void    runServer(QCoreApplication& app, quint16 port = 8080) {
     using namespace qhttp::server;
 
     QHttpServer server(&app);
     // listening on 0.0.0.0:8080
-    server.listen(QHostAddress::Any, 8080, [](QHttpRequest* req, QHttpResponse* res) {
+    server.listen(QHostAddress::Any, port, [](QHttpRequest* req, QHttpResponse* res) {
 
         res->setStatusCode(qhttp::ESTATUS_OK);      // status 200
         res->addHeader("connection", "close");      // it's the default header, this line can be omitted.
@@ -29,7 +29,7 @@ void    runServer(QCoreApplication& app) {
     });
 
     if ( !server.isListening() ) {
-        fprintf(stderr, "failed. can not listen at port 8080!\n");
+        fprintf(stderr, "failed. can not listen at port %d!\n", port);
         return;
     }
 
@@ -75,13 +75,14 @@ void    runClient(QCoreApplication& app) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+static const char KSocketPath[] = "/tmp/helloworld.socket";
 
 void    runLocalServer(QCoreApplication& app) {
     using namespace qhttp::server;
 
     QHttpServer server(&app);
     // listening on socket://helloworld
-    server.listen(QString("helloworld.socket"), [](QHttpRequest* req, QHttpResponse* res) {
+    server.listen(KSocketPath, [](QHttpRequest* req, QHttpResponse* res) {
 
         res->setStatusCode(qhttp::ESTATUS_OK);      // status 200
         res->addHeader("connection", "close");      // it's the default header, this line can be omitted.
@@ -103,23 +104,15 @@ void    runLocalClient(QCoreApplication& app) {
     using namespace qhttp::client;
 
     QHttpClient  client(&app);
-    QByteArray   httpBody;
 
-    QUrl weatherUrl("socket://helloworld.socket");
-
-    client.request(qhttp::EHTTP_GET, weatherUrl, [&httpBody](QHttpResponse* res) {
+    client.request(qhttp::EHTTP_GET, QUrl::fromLocalFile(KSocketPath), [](QHttpResponse* res) {
         // response handler, called when the HTTP headers of the response are ready
-
-        // gather HTTP response data
-        res->onData([&httpBody](const QByteArray& chunk) {
-            httpBody.append(chunk);
-        });
-
+        res->collectData(64);
         // called when all data in HTTP response have been read.
-        res->onEnd([&httpBody]() {
+        res->onEnd([res]() {
             // print the XML body of the response
             puts("\n[incoming response:]");
-            puts(httpBody.constData());
+            puts(res->collectedData().constData());
             puts("\n\n");
 
             QCoreApplication::instance()->quit();
@@ -155,6 +148,9 @@ int main(int argc, char ** argv) {
     parser.addOption(QCommandLineOption(QStringList() << "b" << "backend",
                                         "backend type of HTTP. could be \'tcp\' or \'local\', default: tcp",
                                         "type", "tcp"));
+    parser.addOption(QCommandLineOption(QStringList() << "p" << "port",
+                                        "tcp listening port, default: 8080",
+                                        "number", "8080"));
     parser.process(app);
 
     qhttp::TBackend backend = qhttp::ETcpSocket;
@@ -171,7 +167,7 @@ int main(int argc, char ** argv) {
 
     if ( backend == qhttp::ETcpSocket ) {
         if ( serverMode )
-            runServer(app);
+            runServer(app, parser.value("port").toUShort());
         else
             runClient(app);
 

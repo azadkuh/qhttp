@@ -17,6 +17,7 @@ Options:
   -v, --version         Displays version information.
   -b, --backend <type>  backend type of HTTP. could be 'tcp' or 'local',
                         default: tcp
+  -p, --port <number>   tcp listening port, default: 8080
 
 Arguments:
   mode                  working mode, client or server. default: server
@@ -27,14 +28,14 @@ Arguments:
 ###tcp server
 to test `QHttp` server classes, start `helloworld` in server mode:
 ```bash
-$> ./helloworld server
+$> ./helloworld server -p 7000
 ```
-now the server is listening on `address=QHostAddress::Any`, `port=8080` (press `ctrl+c` to stop the server).
+now the server is listening on `address=QHostAddress::Any`, `port=7000` (press `ctrl+c` to stop the server).
 
 <br/>
-then test the server by pointing your browser to [localhost:8080](localhost:8080) or try any other HTTP client app:
+then test the server by pointing your browser to [localhost:7000](localhost:7000) or try any other HTTP client app:
 ```bash
-$> curl localhost:8080
+$> curl localhost:7000
 ```
 you shall see the `Hello World!` message from the server.
 
@@ -90,9 +91,13 @@ do:
 ```bash
 $> ./helloworld server -b local
 ```
+now the HTTP server listens on `/tmp/helloworld.socket` and says `Hello World!` to connected clients as:
+
 
 ###local client
 do:
 ```bash
 $> ./helloworld client -b local
 ```
+
+now you shall see the server message and HTTP headers.
