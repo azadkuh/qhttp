@@ -40,7 +40,7 @@ public:
                 if ( !root.isEmpty()  && root.contains("command")  &&
                      root.contains("clientId")  && root.contains("requestId") ) {
 
-                    root["command"]     = "response";
+                    root["command"]     = QLatin1Literal("response");
                     root["requestId"]   = root["requestId"].toInt() + 1;
                     QByteArray doc      = QJsonDocument(root).toJson(QJsonDocument::Compact);
 
