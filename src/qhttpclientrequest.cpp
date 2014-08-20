@@ -56,10 +56,8 @@ QHttpRequest::connection() const {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void
-QHttpRequestPrivate::ensureWritingHeaders() {
-    if ( ifinished    ||    iheaderWritten )
-        return;
+QByteArray
+QHttpRequestPrivate::makeTitle() {
 
     QByteArray title;
     title.reserve(512);
@@ -79,10 +77,7 @@ QHttpRequestPrivate::ensureWritingHeaders() {
             .append(iversion.toLatin1())
             .append("\r\n");
 
-    writeRaw(title);
-    writeHeaders();
-
-    iheaderWritten = true;
+    return title;
 }
 
 void
@@ -112,12 +107,8 @@ QHttpRequestPrivate::writeHeaders() {
         writeHeader(field, value);
     }
 
-    writeRaw("\r\n");
-
-    if ( itcpSocket )
-        itcpSocket->flush();
-    else if ( ilocalSocket )
-        ilocalSocket->flush();
+    iconn.writeRaw("\r\n");
+    iconn.flush();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
