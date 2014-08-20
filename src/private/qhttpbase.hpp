@@ -15,11 +15,92 @@
 #include <QLocalSocket>
 #include <QHostAddress>
 #include <QUrl>
+#include <QBasicTimer>
 
 #include "http-parser/http_parser.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
+///////////////////////////////////////////////////////////////////////////////
+
+class QSocket
+{
+public:
+    void            close() {
+        if ( itcpSocket )
+            itcpSocket->disconnectFromHost();
+        if ( ilocalSocket )
+            ilocalSocket->disconnectFromServer();
+    }
+
+    void            release() {
+        if ( itcpSocket )
+            itcpSocket->deleteLater();
+        if ( ilocalSocket )
+            ilocalSocket->deleteLater();
+
+        itcpSocket   = nullptr;
+        ilocalSocket = nullptr;
+    }
+
+    void            flush() {
+        if ( itcpSocket )
+            itcpSocket->flush();
+        else if ( ilocalSocket )
+            ilocalSocket->flush();
+    }
+
+    bool            isOpen() const {
+        if ( ibackendType == ETcpSocket    &&    itcpSocket )
+            return itcpSocket->isOpen()    &&    itcpSocket->state() == QTcpSocket::ConnectedState;
+
+        else if ( ibackendType == ELocalSocket    &&    ilocalSocket )
+            return ilocalSocket->isOpen()    &&    ilocalSocket->state() == QLocalSocket::ConnectedState;
+
+        return false;
+    }
+
+    void            connectTo(const QUrl& url) {
+        if ( ilocalSocket )
+            ilocalSocket->connectToServer(url.path());
+    }
+
+    void            connectTo(const QString& host, quint16 port) {
+        if ( itcpSocket )
+            itcpSocket->connectToHost(host, port);
+    }
+
+    qint64          readRaw(char* buffer, int maxlen) {
+        if ( itcpSocket )
+            return itcpSocket->read(buffer, maxlen);
+        else if ( ilocalSocket )
+            return ilocalSocket->read(buffer, maxlen);
+
+        return 0;
+    }
+
+    void            writeRaw(const QByteArray& data) {
+        if ( itcpSocket )
+            itcpSocket->write(data);
+        else if ( ilocalSocket )
+            ilocalSocket->write(data);
+    }
+
+    qint64          bytesAvailable() {
+        if ( itcpSocket )
+            return itcpSocket->bytesAvailable();
+        else if ( ilocalSocket )
+            return ilocalSocket->bytesAvailable();
+
+        return 0;
+    }
+
+public:
+    TBackend        ibackendType = ETcpSocket;
+    QTcpSocket*     itcpSocket   = nullptr;
+    QLocalSocket*   ilocalSocket = nullptr;
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 
 class HttpBase
@@ -53,31 +134,21 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class QSocket
+// usage in client::QHttpResponse, server::QHttpRequest
+template<class TBase>
+class HttpReader : public TBase
 {
 public:
-    void             flush() {
-        if ( itcpSocket )
-            itcpSocket->flush();
-        else if ( ilocalSocket )
-            ilocalSocket->flush();
-    }
+    bool            isuccessful = false;
+    QString         icustomStatusMessage;
 
-    void             writeRaw(const QByteArray& data) {
-        if ( itcpSocket )
-            itcpSocket->write(data);
-        else if ( ilocalSocket )
-            ilocalSocket->write(data);
-    }
-
-public:
-    TBackend         ibackendType = ETcpSocket;
-    QTcpSocket*      itcpSocket   = nullptr;
-    QLocalSocket*    ilocalSocket = nullptr;
+    int             icollectCapacity = 0;
+    QByteArray      icollectedData;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// usage in client::QHttpRequest, server::QHttpResponse
 template<class TBase, class TImpl>
 class HttpWriter : public TBase
 {
@@ -99,7 +170,7 @@ public:
                             .append(value)
                             .append("\r\n");
 
-        iconn.writeRaw(buffer);
+        isocket.writeRaw(buffer);
         return true;
     }
 
@@ -108,7 +179,7 @@ public:
             return false;
 
         ensureWritingHeaders();
-        iconn.writeRaw(data);
+        isocket.writeRaw(data);
         return true;
     }
 
@@ -116,7 +187,7 @@ public:
         if ( !writeData(data) )
             return false;
 
-        iconn.flush();
+        isocket.flush();
         ifinished = true;
         return true;
     }
@@ -126,14 +197,38 @@ public:
             return;
 
         TImpl me = *static_cast<TImpl*>(this);
-        iconn.writeRaw(me.makeTitle());
-        me.writeHeaders();
+        isocket.writeRaw(me.makeTitle());
+        writeHeaders();
 
         iheaderWritten = true;
     }
 
+    void            writeHeaders() {
+        if ( ifinished    ||    iheaderWritten )
+            return;
+
+        if ( TBase::iheaders.keyHasValue("connection", "keep-alive") )
+            ikeepAlive = true;
+        else
+            TBase::iheaders.insert("connection", "close");
+
+        TImpl me = *static_cast<TImpl*>(this);
+        me.prepareHeadersToWrite();
+
+
+        for ( auto cit = TBase::iheaders.constBegin(); cit != TBase::iheaders.constEnd(); cit++ ) {
+            const QByteArray& field = cit.key();
+            const QByteArray& value = cit.value();
+
+            writeHeader(field, value);
+        }
+
+        isocket.writeRaw("\r\n");
+        isocket.flush();
+    }
+
 public:
-    QSocket         iconn;
+    QSocket         isocket;
 
     bool            ifinished = false;
     bool            iheaderWritten = false;
@@ -142,8 +237,9 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template<class TBase, class TImpl>
-class HttpParser : public TBase
+// usage in client::QHttpClient, server::QHttpConnection
+template<class TImpl>
+class HttpParser
 {
 public:
     explicit     HttpParser(http_parser_type type) {
@@ -211,10 +307,19 @@ public: // callback functions for http_parser_settings
     }
 
 
-public:
+protected:
     // The ones we are reading in from the parser
     QByteArray              itempHeaderField;
     QByteArray              itempHeaderValue;
+    // if connection has a timeout, these fields will be used
+    quint32                 itimeOut = 0;
+    QBasicTimer             itimer;
+    // uniform socket object
+    QSocket                 isocket;
+    // if connection should persist
+    bool                    ikeepAlive = false;
+
+
 
 private:
     http_parser             iparser;
