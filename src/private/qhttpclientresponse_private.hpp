@@ -18,7 +18,7 @@
 namespace qhttp {
 namespace client {
 ///////////////////////////////////////////////////////////////////////////////
-class QHttpResponsePrivate : public HttpResponseBase
+class QHttpResponsePrivate : public HttpReader<HttpResponseBase>
 {
 public:
     explicit    QHttpResponsePrivate(QHttpClient* cli, QHttpResponse* q)
@@ -34,11 +34,6 @@ public:
     }
 
 public:
-    bool                    isuccessful = false;
-    QString                 icustomeStatusMessage;
-
-    int                     icollectCapacity = 0;
-    QByteArray              icollectedData;
 
 protected:
     QHttpClient* const      iclient;
