@@ -15,17 +15,15 @@
 
 #include "../include/ticktock.hxx"
 ///////////////////////////////////////////////////////////////////////////////
-static const char KSocketPath[] = "/tmp/client-ka.socket";
 using namespace qhttp::client;
-
 ///////////////////////////////////////////////////////////////////////////////
 
 class Client
 {
 public:
-    void            start(int count, quint16 ) {
+    void            start(const QUrl& url, int count) {
+        iurl   = url;
         icount = count;
-        iurl = QUrl("http://localhost:10022/");
 
         itick.tick();
         send();
@@ -71,9 +69,9 @@ public:
         if ( root.value("stan").toInt() != istan ) {
             qDebug("invalid stan number, %d != %d\n", istan, root.value("stan").toInt());
         }
-        qDebug("stan #%d is received.\n", istan);
+        //qDebug("stan #%d is received.\n", istan);
 
-        if ( istan > icount )
+        if ( istan >= icount )
             finalize();
         else
             send();
@@ -124,13 +122,20 @@ int main(int argc, char ** argv) {
     qhttp::TBackend backend = qhttp::ELocalSocket;
 
     QStringList posList = parser.positionalArguments();
-    if ( posList.size() >= 1    &&    posList.at(0).toLower() == "tcp" )
+
+    QUrl url;
+    if ( posList.size() >= 1    &&    posList.at(0).toLower() == "tcp" ){
         backend = qhttp::ETcpSocket;
+        url.setScheme("http");
+        url.setHost("localhost");
+        url.setPort(parser.value("port").toInt());
+
+    } else {
+        url = QUrl::fromLocalFile("/tmp/client-ka.socket");
+    }
 
     Client  client;
-    client.start(parser.value("count").toUInt(),
-                 parser.value("port").toUShort()
-                 );
+    client.start(url, parser.value("count").toUInt());
 
     return app.exec();
 }
