@@ -45,7 +45,9 @@ QHttpRequest::end(const QByteArray &data) {
     Q_D(QHttpRequest);
 
     if ( d->endPacket(data) )
-        emit done(false);   // should wait for response packet
+        emit done(!d->ikeepAlive);
+
+    deleteLater();
 }
 
 QHttpClient*

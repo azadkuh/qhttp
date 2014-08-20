@@ -124,7 +124,7 @@ public: // callback functions for http_parser_settings
 
 public:
     TBackend                ibackendType = ETcpSocket;
-    QTcpSocket*             itcpSocket = nullptr;
+    QTcpSocket*             itcpSocket   = nullptr;
     QLocalSocket*           ilocalSocket = nullptr;
 
     // The ones we are reading in from the parser
@@ -152,13 +152,22 @@ public:
         reset();
 
         if ( itcpSocket ) {
-            QObject::connect(itcpSocket,  &QTcpSocket::bytesWritten, [this](qint64 byteCount){
-                updateWriteCount(byteCount);
+            // first disconnects previous dangling lambdas
+            QObject::disconnect(itcpSocket, &QTcpSocket::bytesWritten, 0, 0);
+
+            QObject::connect(itcpSocket,  &QTcpSocket::bytesWritten, [this](qint64 ){
+                if ( itcpSocket->bytesToWrite() == 0 )
+                    static_cast<T*>(this)->allBytesWritten();
+
             });
 
         } else if ( ilocalSocket ) {
-            QObject::connect(ilocalSocket, &QLocalSocket::bytesWritten, [this](qint64 byteCount){
-                updateWriteCount(byteCount);
+            // first disconnects previous dangling lambdas
+            QObject::disconnect(ilocalSocket, &QLocalSocket::bytesWritten, 0, 0);
+
+            QObject::connect(ilocalSocket, &QLocalSocket::bytesWritten, [this](qint64 ){
+                if ( ilocalSocket->bytesToWrite() == 0 )
+                    static_cast<T*>(this)->allBytesWritten();
             });
         }
     }
@@ -166,7 +175,6 @@ public:
     void        reset() {
         iheaderWritten   = false;
         ifinished        = false;
-        itransmitLen     = itransmitPos    = 0;
     }
 
 public:
@@ -213,21 +221,7 @@ public:
     }
 
 protected:
-    void        updateWriteCount(qint64 count) {
-        Q_ASSERT(itransmitPos + count <= itransmitLen);
-
-        itransmitPos += count;
-
-        if ( itransmitPos == itransmitLen ) {
-            itransmitLen = 0;
-            itransmitPos = 0;
-            static_cast<T*>(this)->allBytesWritten();
-        }
-    }
-
     void        writeRaw(const QByteArray &data) {
-        itransmitLen += data.size();
-
         if ( itcpSocket )
             itcpSocket->write(data);
         else if ( ilocalSocket )
@@ -240,10 +234,6 @@ public:
 
     bool                iheaderWritten;
     bool                ifinished;
-
-    // Keep track of transmit buffer status
-    qint64              itransmitLen;
-    qint64              itransmitPos;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

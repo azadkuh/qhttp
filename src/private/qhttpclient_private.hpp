@@ -44,6 +44,9 @@ public:
                 itcpSocket->deleteLater();
             if ( ilocalSocket )
                 ilocalSocket->deleteLater();
+
+            itcpSocket   = nullptr;
+            ilocalSocket = nullptr;
         });
 
         QHTTP_LINE_DEEPLOG
@@ -55,6 +58,11 @@ public:
 
     void         initializeSocket() {
         if ( q_func()->backendType() == ETcpSocket ) {
+            if ( ikeepAlive   &&   itcpSocket   &&   itcpSocket->isOpen() )
+                return;
+            if ( itcpSocket   &&   itcpSocket->isOpen() )
+                itcpSocket->close();
+
             itcpSocket   = new QTcpSocket(q_func());
 
             QObject::connect(itcpSocket,  &QTcpSocket::connected, [this](){
@@ -67,6 +75,11 @@ public:
                              q_func(),    &QHttpClient::disconnected);
 
         } else if ( q_func()->backendType() == ELocalSocket ) {
+            if ( ikeepAlive   &&   ilocalSocket   &&   ilocalSocket->isOpen() )
+                return;
+            if ( ilocalSocket   &&   ilocalSocket->isOpen() )
+                ilocalSocket->close();
+
             ilocalSocket = new QLocalSocket(q_func());
 
             QObject::connect(ilocalSocket,  &QLocalSocket::connected, [this](){
@@ -99,6 +112,7 @@ protected:
 protected:
     QHttpClient* const      q_ptr;
 
+    bool                    ikeepAlive = false;
     QHttpResponse*          ilastResponse = nullptr;
     TRequstHandler          ireqHandler;
     TResponseHandler        irespHandler;

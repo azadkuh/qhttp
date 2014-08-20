@@ -99,13 +99,19 @@ QHttpClient::request(THttpMethod method, QUrl url,
         d->ibackendType = ELocalSocket;
         d->initializeSocket();
 
-        d->ilocalSocket->connectToServer(url.path());
+        if ( d->ilocalSocket->isOpen() )
+            d->onConnected();
+        else
+            d->ilocalSocket->connectToServer(url.path());
 
     } else {
         d->ibackendType = ETcpSocket;
         d->initializeSocket();
 
-        d->itcpSocket->connectToHost(url.host(), url.port(80));
+        if ( d->itcpSocket->isOpen() )
+            d->onConnected();
+        else
+            d->itcpSocket->connectToHost(url.host(), url.port(80));
     }
 
     return true;
@@ -135,6 +141,9 @@ QHttpClient::onResponseReady(QHttpResponse *res) {
 void
 QHttpClientPrivate::onConnected() {
     QHttpRequest *request = new QHttpRequest(q_func());
+    QObject::connect(request, &QHttpRequest::done, [this](bool wasTheLastPacket){
+        ikeepAlive = !wasTheLastPacket;
+    });
 
     request->d_func()->imethod  = ilastMethod;
     request->d_func()->iurl     = ilastUrl;
@@ -189,6 +198,8 @@ QHttpClientPrivate::messageBegin(http_parser*) {
 
 int
 QHttpClientPrivate::status(http_parser* parser, const char* at, size_t length) {
+    if ( ilastResponse )
+        ilastResponse->deleteLater();
 
     ilastResponse = new QHttpResponse(q_func());
     ilastResponse->d_func()->istatus  = static_cast<TStatusCode>(parser->status_code);
