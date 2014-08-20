@@ -53,13 +53,102 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template<class T>
-class HttpParserBase
+class QSocket
 {
 public:
-    explicit     HttpParserBase(http_parser_type type) {
+    void             flush() {
+        if ( itcpSocket )
+            itcpSocket->flush();
+        else if ( ilocalSocket )
+            ilocalSocket->flush();
+    }
+
+    void             writeRaw(const QByteArray& data) {
+        if ( itcpSocket )
+            itcpSocket->write(data);
+        else if ( ilocalSocket )
+            ilocalSocket->write(data);
+    }
+
+public:
+    TBackend         ibackendType = ETcpSocket;
+    QTcpSocket*      itcpSocket   = nullptr;
+    QLocalSocket*    ilocalSocket = nullptr;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<class TBase, class TImpl>
+class HttpWriter : public TBase
+{
+public:
+    bool            addHeader(const QByteArray &field, const QByteArray &value) {
+        if ( ifinished )
+            return false;
+
+        TBase::iheaders.insert(field.toLower(), value);
+        return true;
+    }
+
+    bool            writeHeader(const QByteArray& field, const QByteArray& value) {
+        if ( ifinished )
+            return false;
+
+        QByteArray buffer = QByteArray(field)
+                            .append(": ")
+                            .append(value)
+                            .append("\r\n");
+
+        iconn.writeRaw(buffer);
+        return true;
+    }
+
+    bool            writeData(const QByteArray& data) {
+        if ( ifinished )
+            return false;
+
+        ensureWritingHeaders();
+        iconn.writeRaw(data);
+        return true;
+    }
+
+    bool            endPacket(const QByteArray& data) {
+        if ( !writeData(data) )
+            return false;
+
+        iconn.flush();
+        ifinished = true;
+        return true;
+    }
+
+    void            ensureWritingHeaders() {
+        if ( ifinished    ||    iheaderWritten )
+            return;
+
+        TImpl me = *static_cast<TImpl*>(this);
+        iconn.writeRaw(me.makeTitle());
+        me.writeHeaders();
+
+        iheaderWritten = true;
+    }
+
+public:
+    QSocket         iconn;
+
+    bool            ifinished = false;
+    bool            iheaderWritten = false;
+    bool            ikeepAlive = false;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<class TBase, class TImpl>
+class HttpParser : public TBase
+{
+public:
+    explicit     HttpParser(http_parser_type type) {
         // create http_parser object
-        iparser.data  = static_cast<T*>(this);
+        iparser.data  = static_cast<TImpl*>(this);
         http_parser_init(&iparser, type);
 
         memset(&iparserSettings, 0, sizeof(http_parser_settings));
@@ -73,60 +162,56 @@ public:
         iparserSettings.on_message_complete = onMessageComplete;
     }
 
-    virtual     ~HttpParserBase() {
-    }
-
     void         parse(const char* data, size_t length) {
-        http_parser_execute(&iparser, &iparserSettings,
-                            data, length);
+        http_parser_execute(&iparser,
+                            &iparserSettings,
+                            data,
+                            length);
     }
 
 public: // callback functions for http_parser_settings
     static int   onMessageBegin(http_parser* parser) {
-        T *me = static_cast<T*>(parser->data);
+        TImpl *me = static_cast<TImpl*>(parser->data);
         return me->messageBegin(parser);
     }
 
     static int   onUrl(http_parser* parser, const char* at, size_t length) {
-        T *me = static_cast<T*>(parser->data);
+        TImpl *me = static_cast<TImpl*>(parser->data);
         return me->url(parser, at, length);
     }
 
     static int   onStatus(http_parser* parser, const char* at, size_t length) {
-        T *me = static_cast<T*>(parser->data);
+        TImpl *me = static_cast<TImpl*>(parser->data);
         return me->status(parser, at, length);
     }
 
     static int   onHeaderField(http_parser* parser, const char* at, size_t length) {
-        T *me = static_cast<T*>(parser->data);
+        TImpl *me = static_cast<TImpl*>(parser->data);
         return me->headerField(parser, at, length);
     }
 
     static int   onHeaderValue(http_parser* parser, const char* at, size_t length) {
-        T *me = static_cast<T*>(parser->data);
+        TImpl *me = static_cast<TImpl*>(parser->data);
         return me->headerValue(parser, at, length);
     }
 
     static int   onHeadersComplete(http_parser* parser) {
-        T *me = static_cast<T*>(parser->data);
+        TImpl *me = static_cast<TImpl*>(parser->data);
         return me->headersComplete(parser);
     }
 
     static int   onBody(http_parser* parser, const char* at, size_t length) {
-        T *me = static_cast<T*>(parser->data);
+        TImpl *me = static_cast<TImpl*>(parser->data);
         return me->body(parser, at, length);
     }
 
     static int   onMessageComplete(http_parser* parser) {
-        T *me = static_cast<T*>(parser->data);
+        TImpl *me = static_cast<TImpl*>(parser->data);
         return me->messageComplete(parser);
     }
 
-public:
-    TBackend                ibackendType = ETcpSocket;
-    QTcpSocket*             itcpSocket   = nullptr;
-    QLocalSocket*           ilocalSocket = nullptr;
 
+public:
     // The ones we are reading in from the parser
     QByteArray              itempHeaderField;
     QByteArray              itempHeaderValue;
@@ -137,7 +222,7 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-
+#if 0
 template<class T>
 class HttpWriterBase
 {
@@ -235,7 +320,7 @@ public:
     bool                iheaderWritten;
     bool                ifinished;
 };
-
+#endif
 ///////////////////////////////////////////////////////////////////////////////
 } // namespace qhttp
 ///////////////////////////////////////////////////////////////////////////////
