@@ -50,7 +50,7 @@ public:
 protected:
     explicit        QHttpRequest(QHttpClient*);
     explicit        QHttpRequest(QHttpRequestPrivate&, QHttpClient*);
-    friend class    QHttpClientPrivate;
+    friend class    QHttpClient;
 
     Q_DECLARE_PRIVATE(QHttpRequest)
     QScopedPointer<QHttpRequestPrivate> d_ptr;

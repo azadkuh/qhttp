@@ -46,8 +46,6 @@ QHttpRequest::end(const QByteArray &data) {
 
     if ( d->endPacket(data) )
         emit done(!d->ikeepAlive);
-
-    deleteLater();
 }
 
 QHttpClient*
@@ -81,14 +79,7 @@ QHttpRequestPrivate::makeTitle() {
 }
 
 void
-QHttpRequestPrivate::writeHeaders() {
-    if ( ifinished    ||    iheaderWritten )
-        return;
-
-    if ( iheaders.keyHasValue("connection", "keep-alive") )
-        ikeepAlive = true;
-    else
-        iheaders.insert("connection", "close");
+QHttpRequestPrivate::prepareHeadersToWrite() {
 
     if ( !iheaders.contains("host") ) {
         quint16 port = iurl.port();
@@ -99,16 +90,6 @@ QHttpRequestPrivate::writeHeaders() {
                         QString("%1:%2").arg(iurl.host()).arg(port).toLatin1()
                         );
     }
-
-    for ( auto cit = iheaders.constBegin(); cit != iheaders.constEnd(); cit++ ) {
-        const QByteArray& field = cit.key();
-        const QByteArray& value = cit.value();
-
-        writeHeader(field, value);
-    }
-
-    iconn.writeRaw("\r\n");
-    iconn.flush();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
