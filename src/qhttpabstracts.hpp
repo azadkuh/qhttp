@@ -130,6 +130,10 @@ public:
      * version is "1.1" set by default. */
     virtual void            setVersion(const QString& versionString)=0;
 
+    /** helper function. @sa addHeader */
+    template<typename T>
+    void                    addHeaderValue(const QByteArray &field, T value);
+
     /** adds an HTTP header to the packet.
      * @note this method does not actually write anything to socket, just prepares the headers(). */
     virtual void            addHeader(const QByteArray& field, const QByteArray& value)=0;
@@ -167,6 +171,21 @@ protected:
 
     Q_DISABLE_COPY(QHttpAbstractOutput)
 };
+
+template<> inline void
+QHttpAbstractOutput::addHeaderValue<int>(const QByteArray &field, int value) {
+    addHeader(field, QString::number(value).toLatin1());
+}
+
+template<> inline void
+QHttpAbstractOutput::addHeaderValue<size_t>(const QByteArray &field, size_t value) {
+    addHeader(field, QString::number(value).toLatin1());
+}
+
+template<> inline void
+QHttpAbstractOutput::addHeaderValue<QString>(const QByteArray &field, QString value) {
+    addHeader(field, value.toUtf8());
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 } // namespace qhttp
