@@ -62,11 +62,7 @@ QHttpRequest::isSuccessful() const {
 
 void
 QHttpRequest::collectData(int atMost) {
-    Q_D(QHttpRequest);
-
-    d->icollectCapacity = atMost;
-    d->icollectedData.clear();
-    d->icollectedData.reserve(atMost);
+    d_func()->collectData(atMost);
 }
 
 const QByteArray&

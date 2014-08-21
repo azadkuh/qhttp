@@ -18,7 +18,7 @@
 namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
-class QHttpRequestPrivate : public HttpRequestBase
+class QHttpRequestPrivate : public HttpReader<HttpRequestBase>
 {
 protected:
     Q_DECLARE_PUBLIC(QHttpRequest)
@@ -39,10 +39,6 @@ public:
 public:
     QString     iremoteAddress;
     quint16     iremotePort = 0;
-    bool        isuccessful = false;
-
-    int         icollectCapacity = 0;
-    QByteArray  icollectedData;
 
     QHttpConnection* const  iconnection = nullptr;
 };
