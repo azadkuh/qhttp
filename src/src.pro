@@ -3,7 +3,7 @@ QT       -= gui
 
 TARGET    = qhttp
 TEMPLATE  = lib
-CONFIG   += staticlib
+#CONFIG   += staticlib
 CONFIG   += c++11
 
 PRJDIR    = ..
