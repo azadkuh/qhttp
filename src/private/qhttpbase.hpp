@@ -28,12 +28,13 @@ class QSocket
 public:
     void            close() {
         if ( itcpSocket )
-            itcpSocket->disconnectFromHost();
+            itcpSocket->close();
         if ( ilocalSocket )
-            ilocalSocket->disconnectFromServer();
+            ilocalSocket->close();
     }
 
     void            release() {
+        close();
         if ( itcpSocket )
             itcpSocket->deleteLater();
         if ( ilocalSocket )
@@ -93,6 +94,13 @@ public:
             return ilocalSocket->bytesAvailable();
 
         return 0;
+    }
+
+    void            disconnectAllQtConnections() {
+        if ( itcpSocket )
+            QObject::disconnect(itcpSocket, 0, 0, 0);
+        if ( ilocalSocket )
+            QObject::disconnect(ilocalSocket, 0, 0, 0);
     }
 
 public:
@@ -265,11 +273,11 @@ public:
         iparserSettings.on_message_complete = onMessageComplete;
     }
 
-    void         parse(const char* data, size_t length) {
-        http_parser_execute(&iparser,
-                            &iparserSettings,
-                            data,
-                            length);
+    size_t       parse(const char* data, size_t length) {
+        return http_parser_execute(&iparser,
+                                   &iparserSettings,
+                                   data,
+                                   length);
     }
 
 public: // callback functions for http_parser_settings
@@ -328,7 +336,7 @@ protected:
 
 
 
-private:
+protected:
     http_parser             iparser;
     http_parser_settings    iparserSettings;
 };
