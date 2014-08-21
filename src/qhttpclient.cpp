@@ -281,6 +281,10 @@ QHttpClientPrivate::messageComplete(http_parser*) {
     else
         emit ilastResponse->end();
 
+    // close the socket if it was the connection: close
+    if ( !ikeepAlive )
+        isocket.close();
+
     return 0;
 }
 
