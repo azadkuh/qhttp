@@ -15,7 +15,7 @@ MOC_DIR         = $$TEMPDIR
 OBJECTS_DIR     = $$TEMPDIR
 RCC_DIR         = $$TEMPDIR
 UI_DIR          = $$TEMPDIR/Ui
-DEPENDPATH      += $$PRJDIR/xbin
+LIBS           += -L$$PRJDIR/xbin
 
 INCLUDEPATH     +=  . $$PRJDIR/src $$PRJDIR/3rdparty
 

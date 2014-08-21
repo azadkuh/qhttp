@@ -23,5 +23,4 @@ HEADERS     += \
     server.hpp \
     clients.hpp
 
-#LIBS      += $$PRJDIR/xbin/libqhttp.a
-LIBS      += -L$$PRJDIR/xbin -lqhttp
+LIBS      += -lqhttp
