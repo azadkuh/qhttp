@@ -16,7 +16,7 @@ QHttpConnection::QHttpConnection(QHttpConnectionPrivate& dd, QObject* parent)
 
 void
 QHttpConnection::setSocketDescriptor(qintptr sokDescriptor, TBackend backendType) {
-    d_ptr->initialize(sokDescriptor, backendType);
+    d_ptr->createSocket(sokDescriptor, backendType);
 }
 
 QHttpConnection::~QHttpConnection() {
@@ -25,33 +25,30 @@ QHttpConnection::~QHttpConnection() {
 
 void
 QHttpConnection::setTimeOut(quint32 miliSeconds) {
-    if ( miliSeconds != 0 )
+    if ( miliSeconds != 0 ) {
+        d_func()->itimeOut = miliSeconds;
         d_func()->itimer.start(miliSeconds, Qt::CoarseTimer, this);
+    }
 }
 
 void
 QHttpConnection::killConnection() {
-    Q_D(QHttpConnection);
-
-    if ( d->ibackendType == ETcpSocket )
-        d->itcpSocket->disconnectFromHost();
-    else if ( d->ibackendType == ELocalSocket )
-        d->ilocalSocket->disconnectFromServer();
+    d_func()->isocket.close();
 }
 
 TBackend
 QHttpConnection::backendType() const {
-    return d_func()->ibackendType;
+    return d_func()->isocket.ibackendType;
 }
 
 QTcpSocket*
 QHttpConnection::tcpSocket() const {
-    return d_func()->itcpSocket;
+    return d_func()->isocket.itcpSocket;
 }
 
 QLocalSocket*
 QHttpConnection::localSocket() const {
-    return d_func()->ilocalSocket;
+    return d_func()->isocket.ilocalSocket;
 }
 
 void
@@ -70,7 +67,7 @@ QHttpConnection::timerEvent(QTimerEvent *) {
 //  the socket be disconnected, then the irequest and iresponse instances may bhave been deleted.
 //  In these situations reading more http body or emitting end() for incoming request
 //  are not possible.
-#define CHECK_FOR_DISCONNECTED  if ( irequest == nullptr ) \
+#define CHECK_FOR_DISCONNECTED  if ( ilastRequest == nullptr ) \
     return 0;
 
 
@@ -79,15 +76,16 @@ QHttpConnectionPrivate::messageBegin(http_parser*) {
     itempUrl.clear();
     itempUrl.reserve(128);
 
-    Q_ASSERT( irequest == nullptr );
-    irequest = new QHttpRequest(q_func());
+    if ( ilastRequest )
+        ilastRequest->deleteLater();
 
+    ilastRequest = new QHttpRequest(q_func());
     return 0;
 }
 
 int
 QHttpConnectionPrivate::url(http_parser*, const char* at, size_t length) {
-    Q_ASSERT(irequest);
+    Q_ASSERT(ilastRequest);
 
     itempUrl.append(at, length);
     return 0;
@@ -101,7 +99,7 @@ QHttpConnectionPrivate::headerField(http_parser*, const char* at, size_t length)
     // into the header map
     if ( !itempHeaderField.isEmpty() && !itempHeaderValue.isEmpty() ) {
         // header names are always lower-cased
-        irequest->d_func()->iheaders.insert(
+        ilastRequest->d_func()->iheaders.insert(
                     itempHeaderField.toLower(),
                     itempHeaderValue.toLower()
                     );
@@ -138,50 +136,60 @@ QHttpConnectionPrivate::headersComplete(http_parser* parser) {
     Q_ASSERT(r == 0);
     Q_UNUSED(r);
 
-    irequest->d_func()->iurl = createUrl(
-                                 itempUrl.constData(),
-                                 urlInfo
-                                 );
+    ilastRequest->d_func()->iurl = createUrl(
+                                       itempUrl.constData(),
+                                       urlInfo
+                                       );
 #else
-    irequest->d_func()->iurl = QUrl(itempUrl);
+    ilastRequest->d_func()->iurl = QUrl(itempUrl);
 #endif // defined(USE_CUSTOM_URL_CREATOR)
 
     // set method
-    irequest->d_func()->imethod =
+    ilastRequest->d_func()->imethod =
             static_cast<THttpMethod>(parser->method);
 
     // set version
-    irequest->d_func()->iversion = QString("%1.%2")
-                                 .arg(parser->http_major)
-                                 .arg(parser->http_minor);
+    ilastRequest->d_func()->iversion = QString("%1.%2")
+                                       .arg(parser->http_major)
+                                       .arg(parser->http_minor);
 
     // Insert last remaining header
-    irequest->d_func()->iheaders.insert(
+    ilastRequest->d_func()->iheaders.insert(
                 itempHeaderField.toLower(),
                 itempHeaderValue.toLower()
                 );
 
     // set client information
-    if ( ibackendType == ETcpSocket ) {
-        irequest->d_func()->iremoteAddress = itcpSocket->peerAddress().toString();
-        irequest->d_func()->iremotePort    = itcpSocket->peerPort();
+    if ( isocket.ibackendType == ETcpSocket ) {
+        ilastRequest->d_func()->iremoteAddress = isocket.itcpSocket->peerAddress().toString();
+        ilastRequest->d_func()->iremotePort    = isocket.itcpSocket->peerPort();
 
-    } else if ( ibackendType == ELocalSocket ) {
-        irequest->d_func()->iremoteAddress = ilocalSocket->fullServerName();
-        irequest->d_func()->iremotePort    = 0; // not used in local sockets
+    } else if ( isocket.ibackendType == ELocalSocket ) {
+        ilastRequest->d_func()->iremoteAddress = isocket.ilocalSocket->fullServerName();
+        ilastRequest->d_func()->iremotePort    = 0; // not used in local sockets
     }
 
-    Q_ASSERT( iresponse == nullptr );
-    iresponse  = new QHttpResponse(q_func());
+    if ( ilastResponse )
+        ilastResponse->deleteLater();
+    ilastResponse  = new QHttpResponse(q_func());
 
     if ( parser->http_major < 1 || parser->http_minor < 1  )
-        iresponse->d_func()->ikeepAlive = false;
+        ilastResponse->d_func()->ikeepAlive = false;
+
+    // close the connection if response was the last packet
+    QObject::connect(ilastResponse, &QHttpResponse::done, [this](bool wasTheLastPacket){
+        ikeepAlive = !wasTheLastPacket;
+        if ( wasTheLastPacket ) {
+            isocket.flush();
+            isocket.close();
+        }
+    });
 
     // we are good to go!
     if ( ihandler )
-        ihandler(irequest, iresponse);
+        ihandler(ilastRequest, ilastResponse);
     else
-        emit q_ptr->newRequest(irequest, iresponse);
+        emit q_ptr->newRequest(ilastRequest, ilastResponse);
 
     return 0;
 }
@@ -190,20 +198,20 @@ int
 QHttpConnectionPrivate::body(http_parser*, const char* at, size_t length) {
     CHECK_FOR_DISCONNECTED
 
-    if ( irequest->d_func()->icollectCapacity != 0 ) {
-        int currentLength = irequest->d_func()->icollectedData.length();
-        if ( (currentLength + (int)length) < irequest->d_func()->icollectCapacity )
-            irequest->d_func()->icollectedData.append(at, length);
+    if ( ilastRequest->d_func()->icollectCapacity != 0 ) {
+        int currentLength = ilastRequest->d_func()->icollectedData.length();
+        if ( (currentLength + (int)length) < ilastRequest->d_func()->icollectCapacity )
+            ilastRequest->d_func()->icollectedData.append(at, length);
         else
             messageComplete(nullptr); // no other data will be read.
 
         return 0;
     }
 
-    if ( irequest->idataHandler )
-        irequest->idataHandler(QByteArray(at, length));
+    if ( ilastRequest->idataHandler )
+        ilastRequest->idataHandler(QByteArray(at, length));
     else
-        emit irequest->data(QByteArray(at, length));
+        emit ilastRequest->data(QByteArray(at, length));
 
     return 0;
 }
@@ -213,15 +221,15 @@ QHttpConnectionPrivate::messageComplete(http_parser*) {
     CHECK_FOR_DISCONNECTED
 
     //prevents double messageComplete calls
-    if ( irequest->d_func()->isuccessful )
+    if ( ilastRequest->d_func()->isuccessful )
         return 0;
 
-    irequest->d_func()->isuccessful = true;
+    ilastRequest->d_func()->isuccessful = true;
 
-    if ( irequest->iendHandler )
-        irequest->iendHandler();
+    if ( ilastRequest->iendHandler )
+        ilastRequest->iendHandler();
     else
-        emit irequest->end();
+        emit ilastRequest->end();
 
     return 0;
 }

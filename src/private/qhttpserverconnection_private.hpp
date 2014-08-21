@@ -24,39 +24,34 @@
 namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
-class QHttpConnectionPrivate  : public HttpParserBase<QHttpConnectionPrivate>
+class QHttpConnectionPrivate  : public HttpParser<QHttpConnectionPrivate>
 {
 protected:
     Q_DECLARE_PUBLIC(QHttpConnection)
     QHttpConnection* const q_ptr;
 
 public:
-    QByteArray              itempUrl;
+    QByteArray             itempUrl;
 
-    // Since there can only be one request at any time even with pipelining.
-    QHttpRequest*           irequest  = nullptr;     ///< latest request
-    QHttpResponse*          iresponse = nullptr;     ///< latest response
+    // Since there can only be one request/response pair per connection at any time even with pipelining.
+    QHttpRequest*          ilastRequest  = nullptr;
+    QHttpResponse*         ilastResponse = nullptr;
 
-    QBasicTimer             itimer;
 
-    TServerHandler          ihandler = nullptr;
+    TServerHandler         ihandler = nullptr;
 
 public:
-    explicit     QHttpConnectionPrivate(QHttpConnection* q)
-        : HttpParserBase(HTTP_REQUEST), q_ptr(q) {
+    explicit     QHttpConnectionPrivate(QHttpConnection* q) : HttpParser(HTTP_REQUEST), q_ptr(q) {
 
         QObject::connect(q_func(), &QHttpConnection::disconnected, [this](){
             // if socket drops and http_parser can find messageComplete, calls it manually
             messageComplete(nullptr);
+            isocket.release();
 
-            irequest    = nullptr;
-            iresponse   = nullptr;
-
-            if ( itcpSocket )
-                itcpSocket->deleteLater();
-
-            if ( ilocalSocket )
-                ilocalSocket->deleteLater();
+            if ( ilastRequest )
+                ilastRequest->deleteLater();
+            if ( ilastResponse )
+                ilastResponse->deleteLater();
 
             q_func()->deleteLater();
         });
@@ -68,45 +63,52 @@ public:
         QHTTP_LINE_DEEPLOG
     }
 
-    void         initialize(qintptr sokDesc, TBackend bend) {
-        Q_ASSERT(itcpSocket == nullptr    &&    ilocalSocket == nullptr);
+    void         createSocket(qintptr sokDesc, TBackend bend) {
+        isocket.ibackendType = bend;
 
-        ibackendType = bend;
-        if        ( ibackendType == ETcpSocket ) {
-            itcpSocket = new QTcpSocket( q_func() );
-            itcpSocket->setSocketDescriptor(sokDesc);
+        if        ( bend == ETcpSocket ) {
+            QTcpSocket* sok    = new QTcpSocket( q_func() );
+            isocket.itcpSocket = sok;
+            sok->setSocketDescriptor(sokDesc);
 
-            QObject::connect(itcpSocket, &QTcpSocket::readyRead, [this](){
-                while ( itcpSocket->bytesAvailable() ) {
-                    char buffer[4096] = {0};
-                    size_t readLength = itcpSocket->read(buffer, 4095);
-
-                    parse(buffer, readLength);
-                }
+            QObject::connect(sok,       &QTcpSocket::readyRead, [this](){
+                onReadyRead();
             });
-
-            QObject::connect(itcpSocket, &QTcpSocket::disconnected,
-                             q_func(),   &QHttpConnection::disconnected,
+            QObject::connect(sok,       &QTcpSocket::bytesWritten, [this](){
+                if ( isocket.itcpSocket->bytesToWrite() == 0  &&  ilastResponse )
+                    emit ilastResponse->allBytesWritten();
+            });
+            QObject::connect(sok,       &QTcpSocket::disconnected,
+                             q_func(),  &QHttpConnection::disconnected,
                              Qt::QueuedConnection);
 
-        } else if ( ibackendType == ELocalSocket ) {
-            ilocalSocket = new QLocalSocket( q_func() );
-            ilocalSocket->setSocketDescriptor(sokDesc);
+        } else if ( bend == ELocalSocket ) {
+            QLocalSocket* sok    = new QLocalSocket( q_func() );
+            isocket.ilocalSocket = sok;
+            sok->setSocketDescriptor(sokDesc);
 
-            QObject::connect(ilocalSocket, &QTcpSocket::readyRead, [this](){
-                while ( ilocalSocket->bytesAvailable() ) {
-                    char buffer[4096] = {0};
-                    size_t readLength = ilocalSocket->read(buffer, 4095);
-
-                    parse(buffer, readLength);
-                }
+            QObject::connect(sok,       &QLocalSocket::readyRead, [this](){
+                onReadyRead();
             });
-
-            QObject::connect(ilocalSocket, &QLocalSocket::disconnected,
-                             q_func(),      &QHttpConnection::disconnected,
+            QObject::connect(sok,       &QLocalSocket::bytesWritten, [this](){
+                if ( isocket.ilocalSocket->bytesToWrite() == 0  &&  ilastResponse )
+                    emit ilastResponse->allBytesWritten();
+            });
+            QObject::connect(sok,       &QLocalSocket::disconnected,
+                             q_func(),  &QHttpConnection::disconnected,
                              Qt::QueuedConnection);
         }
 
+    }
+
+public:
+    void         onReadyRead() {
+        while ( isocket.bytesAvailable() > 0 ) {
+            char buffer[4097] = {0};
+            size_t readLength = (size_t) isocket.readRaw(buffer, 4096);
+
+            parse(buffer, readLength);
+        }
     }
 
 public:
