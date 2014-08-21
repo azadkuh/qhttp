@@ -44,10 +44,6 @@ public:
 
     }
 
-    void        allBytesWritten() {
-        emit q_func()->allBytesWritten();
-    }
-
     QByteArray  makeTitle();
 
     void        prepareHeadersToWrite();

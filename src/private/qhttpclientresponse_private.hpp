@@ -20,9 +20,12 @@ namespace client {
 ///////////////////////////////////////////////////////////////////////////////
 class QHttpResponsePrivate : public HttpReader<HttpResponseBase>
 {
+    Q_DECLARE_PUBLIC(QHttpResponse)
+    QHttpResponse* const    q_ptr;
+
 public:
     explicit    QHttpResponsePrivate(QHttpClient* cli, QHttpResponse* q)
-        : iclient(cli), q_ptr(q) {
+        : q_ptr(q), iclient(cli) {
         QHTTP_LINE_DEEPLOG
     }
 
@@ -34,11 +37,10 @@ public:
     }
 
 public:
+    QString                 icustomStatusMessage;
 
 protected:
     QHttpClient* const      iclient;
-    QHttpResponse* const    q_ptr;
-    Q_DECLARE_PUBLIC(QHttpResponse)
 };
 
 ///////////////////////////////////////////////////////////////////////////////
