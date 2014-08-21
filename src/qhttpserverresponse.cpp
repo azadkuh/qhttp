@@ -59,72 +59,19 @@ QHttpResponse::connection() const {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void
-QHttpResponsePrivate::ensureWritingHeaders() {
-    if ( ifinished    ||    iheaderWritten )
-        return;
+QByteArray
+QHttpResponsePrivate::makeTitle() {
 
-    writeRaw(QString("HTTP/%1 %2 %3\r\n")
-             .arg(iversion)
-             .arg(istatus)
-             .arg(Stringify::toString(istatus))
-             .toLatin1()
-             );
-    writeHeaders();
-    writeRaw("\r\n");
+    QString title = QString("HTTP/%1 %2 %3\r\n")
+                    .arg(iversion)
+                    .arg(istatus)
+                    .arg(Stringify::toString(istatus));
 
-    if ( itcpSocket )
-        itcpSocket->flush();
-    else if ( ilocalSocket )
-        ilocalSocket->flush();
-
-    iheaderWritten = true;
+    return title.toLatin1();
 }
 
 void
-QHttpResponsePrivate::writeHeaders() {
-    if ( ifinished    ||    iheaderWritten )
-        return;
-
-    bool bsentConnectionHeader       = false;
-    bool bsentTransferEncodingHeader = false;
-    bool buseChunkedEncoding         = false;
-    bool bsentContentLengthHeader    = false;
-
-    for ( THeaderHash::const_iterator cit = iheaders.begin(); cit != iheaders.end(); cit++ ) {
-        const QByteArray& field = cit.key();
-        const QByteArray& value = cit.value();
-
-        if ( field == "connection" ) {
-            bsentConnectionHeader = true;
-            ikeepAlive = (value == "keep-alive");
-
-        } else if ( field == "transfer-encoding" ) {
-            bsentTransferEncodingHeader = true;
-            if ( value == "chunked" )
-                buseChunkedEncoding = true;
-
-        } else if ( field == "content-length" ) {
-            bsentContentLengthHeader = true;
-        }
-
-        writeHeader(field, value);
-    }
-
-    if ( !bsentConnectionHeader ) {
-        if ( ikeepAlive && ( bsentContentLengthHeader || buseChunkedEncoding ) ) {
-            writeHeader("connection", "keep-alive");
-        } else {
-            writeHeader("connection", "close");
-        }
-    }
-
-    if ( !bsentContentLengthHeader && !bsentTransferEncodingHeader ) {
-        if ( buseChunkedEncoding )
-            writeHeader("transfer-encoding", "chunked");
-        else
-            ikeepAlive = false;
-    }
+QHttpResponsePrivate::prepareHeadersToWrite() {
 
     if ( !iheaders.contains("date") ) {
         // Sun, 06 Nov 1994 08:49:37 GMT - RFC 822. Use QLocale::c() so english is used for month and
@@ -133,7 +80,7 @@ QHttpResponsePrivate::writeHeaders() {
                                  QDateTime::currentDateTimeUtc(),
                                  "ddd, dd MMM yyyy hh:mm:ss GMT"
                                  );
-        writeHeader("date", dateString.toLatin1());
+        addHeader("date", dateString.toLatin1());
     }
 }
 

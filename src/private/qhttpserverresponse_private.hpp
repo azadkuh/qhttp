@@ -22,14 +22,13 @@
 namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
-class QHttpResponsePrivate : public HttpResponseBase,
-        public HttpWriterBase<QHttpResponsePrivate>
+class QHttpResponsePrivate : public HttpWriter<HttpResponseBase, QHttpResponsePrivate>
 {
     Q_DECLARE_PUBLIC(QHttpResponse)
 
 public:
     explicit    QHttpResponsePrivate(QHttpConnection* conn, QHttpResponse* q)
-        : HttpWriterBase(), q_ptr(q), iconnection(conn) {
+        : q_ptr(q), iconnection(conn) {
         QHTTP_LINE_DEEPLOG
     }
 
@@ -38,33 +37,17 @@ public:
     }
 
     void        initialize() {
-        if ( iconnection->backendType() == ETcpSocket )
-            itcpSocket = iconnection->tcpSocket();
-        else if ( iconnection->backendType() == ELocalSocket )
-            ilocalSocket = iconnection->localSocket();
+        isocket.ibackendType = iconnection->backendType();
+        isocket.ilocalSocket = iconnection->localSocket();
+        isocket.itcpSocket   = iconnection->tcpSocket();
 
-        HttpWriterBase::initialize();
-
-        QObject::connect(q_func(),     &QHttpResponse::done, [this](bool wasTheLastResponse) {
-            if ( wasTheLastResponse )
-                iconnection->killConnection();
-        });
-
-        QObject::connect(iconnection,  &QHttpConnection::disconnected, [this]() {
-            ifinished   = true;
-        });
+        QObject::connect(iconnection,  &QHttpConnection::disconnected,
+                         q_func(),     &QHttpResponse::deleteLater);
     }
 
-    void        allBytesWritten() {
-        emit q_func()->allBytesWritten();
-    }
+    QByteArray  makeTitle();
 
-    void        ensureWritingHeaders();
-
-    void        writeHeaders();
-
-public:
-    bool        ikeepAlive = false;
+    void        prepareHeadersToWrite();
 
 protected:
     QHttpResponse* const    q_ptr;
