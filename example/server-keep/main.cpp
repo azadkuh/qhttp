@@ -14,6 +14,9 @@
 
 #include <QLocalServer>
 
+#include <signal.h>
+#include <unistd.h>
+
 #include "../include/ticktock.hxx"
 ///////////////////////////////////////////////////////////////////////////////
 using namespace qhttp::server;

@@ -13,6 +13,9 @@
 
 #include <QLocalServer>
 
+#include <signal.h>
+#include <unistd.h>
+
 #include "../include/ticktock.hxx"
 ///////////////////////////////////////////////////////////////////////////////
 using namespace qhttp::client;
@@ -134,13 +137,10 @@ int main(int argc, char ** argv) {
                                         "number", "100"));
     parser.process(app);
 
-    qhttp::TBackend backend = qhttp::ELocalSocket;
-
     QStringList posList = parser.positionalArguments();
 
     QUrl url;
     if ( posList.size() >= 1    &&    posList.at(0).toLower() == "tcp" ){
-        backend = qhttp::ETcpSocket;
         url.setScheme("http");
         url.setHost("localhost");
         url.setPort(parser.value("port").toInt());
