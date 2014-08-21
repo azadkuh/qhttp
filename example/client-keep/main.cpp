@@ -96,11 +96,26 @@ public:
     am::TickTock    itick;
 };
 
-
 ///////////////////////////////////////////////////////////////////////////////
+void catchUnixSignals(const std::vector<int>& quitSignals,
+                      const std::vector<int>& ignoreSignals = std::vector<int>()) {
+
+    auto handler = [](int sig) ->void {
+        printf("\nquit the application (user request signal = %d).\n", sig);
+        QCoreApplication::quit();
+    };
+
+    for ( int sig : ignoreSignals )
+        signal(sig, SIG_IGN);
+
+    for ( int sig : quitSignals )
+        signal(sig, handler);
+}
 
 int main(int argc, char ** argv) {
     QCoreApplication app(argc, argv);
+    catchUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP});
+
     app.setApplicationName("client-keep");
     app.setApplicationVersion("1.0.0");
 
@@ -112,8 +127,8 @@ int main(int argc, char ** argv) {
                                  "backend mode, tcp or local. default: local");
 
     parser.addOption(QCommandLineOption(QStringList() << "p" << "port",
-                                        "tcp port of local server (only in tcp mode), default: 10022",
-                                        "number", "10022"));
+                                        "tcp port number or UNIX socket path of local server, default: 10022",
+                                        "number/path", "10022"));
     parser.addOption(QCommandLineOption(QStringList() << "c" << "count",
                                         "count of request/response pairs, default: 100",
                                         "number", "100"));
@@ -131,7 +146,7 @@ int main(int argc, char ** argv) {
         url.setPort(parser.value("port").toInt());
 
     } else {
-        url = QUrl::fromLocalFile("/tmp/client-ka.socket");
+        url = QUrl::fromLocalFile(parser.value("port"));
     }
 
     Client  client;
