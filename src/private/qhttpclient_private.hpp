@@ -56,6 +56,8 @@ public:
             isocket.close();
         }
 
+        ikeepAlive = false;
+
         // create a tcp connection
         if ( isocket.ibackendType == ETcpSocket ) {
 

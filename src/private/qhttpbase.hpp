@@ -209,7 +209,7 @@ public:
         iheaderWritten = true;
     }
 
-    void            writeHeaders() {
+    void            writeHeaders(bool doFlush = false) {
         if ( ifinished    ||    iheaderWritten )
             return;
 
@@ -230,7 +230,8 @@ public:
         }
 
         isocket.writeRaw("\r\n");
-        isocket.flush();
+        if ( doFlush )
+            isocket.flush();
     }
 
 public:
