@@ -79,7 +79,9 @@ public:
      * @note if you set this handler, the data() signal won't be emitted anymore.
      */
     void                        onData(const TDataHandler& dataHandler) {
-        idataHandler = dataHandler;
+        QObject::connect(this, &QHttpAbstractInput::data, [dataHandler](QByteArray data){
+            dataHandler(data);
+        });
     }
 
     /** optionally set a handler for end() signal.
@@ -87,7 +89,9 @@ public:
      * @note if you set this handler, the end() signal won't be emitted anymore.
      */
     void                        onEnd(const TEndHandler& endHandler) {
-        iendHandler  = endHandler;
+        QObject::connect(this, &QHttpAbstractInput::end, [endHandler](){
+            endHandler();
+        });
     }
 
 public:
@@ -107,10 +111,6 @@ public:
 
 public:
     virtual                    ~QHttpAbstractInput() = default;
-
-protected:
-    TDataHandler                idataHandler = nullptr;
-    TEndHandler                 iendHandler  = nullptr;
 
     explicit                    QHttpAbstractInput(QObject* parent);
 
