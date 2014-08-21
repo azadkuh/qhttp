@@ -139,8 +139,14 @@ template<class TBase>
 class HttpReader : public TBase
 {
 public:
+    void            collectData(int atMost) {
+        icollectCapacity = atMost;
+        icollectedData.clear();
+        icollectedData.reserve(atMost);
+    }
+
+public:
     bool            isuccessful = false;
-    QString         icustomStatusMessage;
 
     int             icollectCapacity = 0;
     QByteArray      icollectedData;
@@ -196,8 +202,8 @@ public:
         if ( ifinished    ||    iheaderWritten )
             return;
 
-        TImpl me = *static_cast<TImpl*>(this);
-        isocket.writeRaw(me.makeTitle());
+        TImpl* me = static_cast<TImpl*>(this);
+        isocket.writeRaw(me->makeTitle());
         writeHeaders();
 
         iheaderWritten = true;
@@ -212,8 +218,8 @@ public:
         else
             TBase::iheaders.insert("connection", "close");
 
-        TImpl me = *static_cast<TImpl*>(this);
-        me.prepareHeadersToWrite();
+        TImpl* me = static_cast<TImpl*>(this);
+        me->prepareHeadersToWrite();
 
 
         for ( auto cit = TBase::iheaders.constBegin(); cit != TBase::iheaders.constEnd(); cit++ ) {
