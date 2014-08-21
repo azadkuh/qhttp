@@ -97,6 +97,8 @@ QHttpServer::incomingConnection(qintptr handle) {
     conn->setSocketDescriptor(handle, backendType());
     conn->setTimeOut(d_func()->itimeOut);
 
+    emit newConnection(conn);
+
     Q_D(QHttpServer);
     if ( d->ihandler )
         QObject::connect(conn, &QHttpConnection::newRequest, d->ihandler);
