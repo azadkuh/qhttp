@@ -37,10 +37,10 @@ public:
                                             "maximum timeout for an open connection. default: 5000",
                                             "number", "5000"));
         parser.addOption(QCommandLineOption(QStringList() << "p" << "port",
-                                            "server's tcp port number. default: 8080",
-                                            "portNumber", "8080"));
+                                            "server's tcp port number or UNIX socket path. default: 8080",
+                                            "port/path", "8080"));
         parser.addOption(QCommandLineOption(QStringList() << "a" << "address",
-                                            "server's address (url or ip[:port]), only in client mode. default: localhost",
+                                            "server's address (url or ip[:port]), only in client/tcp mode. default: localhost",
                                             "ip", "127.0.0.1"));
         parser.addOption(QCommandLineOption(QStringList() << "c" << "count",
                                             "number of sockets to be connected to the server, only in client mode. default: 10",
@@ -55,6 +55,8 @@ public:
         QStringList posList = parser.positionalArguments();
         if ( posList.size() >= 1    &&    posList.at(0) == "client" )
             imode = EClient;
+        else
+            imode = EServer;
 
         ithreads         = parser.value("threads").toUInt();
         itimeOut         = parser.value("timeout").toUInt();
@@ -67,7 +69,7 @@ public:
 
         if ( parser.value("backend") == "local" ) {
             ibackend  = qhttp::ELocalSocket;
-            iaddress  = "/tmp/qhttp.benchmark"; // default value
+            iaddress  = parser.value("port"); // default value
             iport     = 0;
 
             if ( imode == EClient )
