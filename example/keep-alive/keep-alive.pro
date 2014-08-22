@@ -2,7 +2,7 @@ QT          += core network
 QT          -= gui
 osx:CONFIG  -= app_bundle
 
-TARGET       = server-keep
+TARGET       = keep-alive
 TEMPLATE     = app
 CONFIG      += c++11
 
