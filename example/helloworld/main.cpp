@@ -28,6 +28,13 @@ void    runServer(QCoreApplication& app, const QString& portOrPath) {
         res->end("Hello World!\n");                 // response body data
 
         // when "connection: close", the req and res will be deleted automatically.
+
+        // optionally let the clients to shut down the server
+        if ( req->headers().keyHasValue("command", "quit") ) {
+            printf("a client sends a quit command.\nserver quits.\n");
+            QCoreApplication::quit();
+            return;
+        }
     });
 
     if ( !server.isListening() ) {

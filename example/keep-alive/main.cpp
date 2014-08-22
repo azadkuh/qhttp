@@ -130,6 +130,12 @@ public:
 
         bool isListening = listen(pathOrPortNumber,
                                   [this](QHttpRequest* req, QHttpResponse* res){
+                           if ( req->headers().keyHasValue("command", "quit") ) {
+                               printf("a client sends a quit command.\nserver quits.\n");
+                               QCoreApplication::quit();
+                               return;
+                           }
+
                            req->collectData(512);
                            req->onEnd([this, req, res](){
                                 onData(req, res);
@@ -166,6 +172,7 @@ public:
         res->addHeaderValue("content-length", body.length());
         res->setStatusCode(qhttp::ESTATUS_OK);
         res->end(body);
+
     }
 
 };
