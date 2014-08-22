@@ -147,13 +147,36 @@ template<class TBase>
 class HttpReader : public TBase
 {
 public:
+    enum TReadState {
+        EEmpty,
+        EPartial,
+        EComplete,
+        ESent
+    };
+
+public:
     void            collectData(int atMost) {
         icollectCapacity = atMost;
         icollectedData.clear();
         icollectedData.reserve(atMost);
     }
 
+    bool            shouldCollect() const {
+        return icollectCapacity > 0;
+    }
+
+    bool            append(const char* data, size_t length) {
+        int currentLength = icollectedData.length();
+
+        if ( (currentLength + (int)length) >= icollectCapacity )
+            return false;       // capacity if full
+
+        icollectedData.append(data, length);
+        return true;
+    }
+
 public:
+    TReadState      ireadState = EEmpty;
     bool            isuccessful = false;
 
     int             icollectCapacity = 0;
