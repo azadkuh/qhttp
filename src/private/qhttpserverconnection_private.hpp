@@ -44,8 +44,8 @@ public:
     explicit     QHttpConnectionPrivate(QHttpConnection* q) : HttpParser(HTTP_REQUEST), q_ptr(q) {
 
         QObject::connect(q_func(), &QHttpConnection::disconnected, [this](){
-            // if socket drops and http_parser can find messageComplete, calls it manually
-            messageComplete(nullptr);
+            // if socket drops and http_parser can not call messageComplete, dispatch the ilastRequest
+            onDispatchRequest();
             isocket.release();
 
             if ( ilastRequest )
@@ -109,6 +109,17 @@ public:
 
             parse(buffer, readLength);
         }
+
+        onDispatchRequest();
+    }
+
+    void         onDispatchRequest() {
+        // if ilastRequest has been sent previously, just return
+        if ( ilastRequest->d_func()->ireadState == QHttpRequestPrivate::ESent )
+            return;
+
+        ilastRequest->d_func()->ireadState = QHttpRequestPrivate::ESent;
+        emit ilastRequest->end();
     }
 
 public:

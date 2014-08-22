@@ -198,21 +198,16 @@ int
 QHttpConnectionPrivate::body(http_parser*, const char* at, size_t length) {
     CHECK_FOR_DISCONNECTED
 
-    if ( ilastRequest->d_func()->icollectCapacity != 0 ) {
-        int currentLength = ilastRequest->d_func()->icollectedData.length();
-        if ( (currentLength + (int)length) < ilastRequest->d_func()->icollectCapacity )
-            ilastRequest->d_func()->icollectedData.append(at, length);
-        else
-            messageComplete(nullptr); // no other data will be read.
+    ilastRequest->d_func()->ireadState = QHttpRequestPrivate::EPartial;
+
+    if ( ilastRequest->d_func()->shouldCollect() ) {
+        if ( !ilastRequest->d_func()->append(at, length) )
+            onDispatchRequest(); // forcefully dispatch the ilastRequest
 
         return 0;
     }
 
-    if ( ilastRequest->idataHandler )
-        ilastRequest->idataHandler(QByteArray(at, length));
-    else
-        emit ilastRequest->data(QByteArray(at, length));
-
+    emit ilastRequest->data(QByteArray(at, length));
     return 0;
 }
 
@@ -220,17 +215,9 @@ int
 QHttpConnectionPrivate::messageComplete(http_parser*) {
     CHECK_FOR_DISCONNECTED
 
-    //prevents double messageComplete calls
-    if ( ilastRequest->d_func()->isuccessful )
-        return 0;
-
+     // request is ready to be dispatched
     ilastRequest->d_func()->isuccessful = true;
-
-    if ( ilastRequest->iendHandler )
-        ilastRequest->iendHandler();
-    else
-        emit ilastRequest->end();
-
+    ilastRequest->d_func()->ireadState  = QHttpRequestPrivate::EComplete;
     return 0;
 }
 
