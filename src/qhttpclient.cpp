@@ -74,7 +74,10 @@ QHttpClient::request(THttpMethod method, QUrl url,
         if ( reqHandler )
             d->ireqHandler = reqHandler;
         else
-            d->ireqHandler = [](QHttpRequest* req) ->void { req->end(); };
+            d->ireqHandler = [](QHttpRequest* req) ->void {
+                req->addHeader("connection", "close");
+                req->end();
+            };
     }
 
     auto requestCreator = [&]() {
@@ -137,30 +140,6 @@ QHttpClient::onRequestReady(QHttpRequest *req) {
 void
 QHttpClient::onResponseReady(QHttpResponse *res) {
     emit newResponse(res);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void
-QHttpClientPrivate::onConnected() {
-
-    if ( itimeOut > 0 )
-        itimer.start(itimeOut, Qt::CoarseTimer, q_func());
-
-    if ( ireqHandler )
-        ireqHandler(ilastRequest);
-    else
-        q_func()->onRequestReady(ilastRequest);
-}
-
-void
-QHttpClientPrivate::onReadyRead() {
-    while ( isocket.bytesAvailable() > 0 ) {
-        char buffer[4097] = {0};
-        size_t readLength = (size_t) isocket.readRaw(buffer, 4096);
-
-        parse(buffer, readLength);
-    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -248,21 +227,16 @@ int
 QHttpClientPrivate::body(http_parser*, const char* at, size_t length) {
     CHECK_FOR_DISCONNECTED
 
-    if ( ilastResponse->d_func()->icollectCapacity != 0 ) {
-        int currentLength = ilastResponse->d_func()->icollectedData.length();
-        if ( (currentLength + (int)length) < ilastResponse->d_func()->icollectCapacity )
-            ilastResponse->d_func()->icollectedData.append(at, length);
-        else
-            messageComplete(nullptr); // no other data will be read.
+    ilastResponse->d_func()->ireadState = QHttpResponsePrivate::EPartial;
+
+    if ( ilastResponse->d_func()->shouldCollect() ) {
+        if ( !ilastResponse->d_func()->append(at, length) )
+            onDispatchResponse(); // forcefully dispatch the ilastResponse
 
         return 0;
     }
 
-    if ( ilastResponse->idataHandler )
-        ilastResponse->idataHandler(QByteArray(at, length));
-    else
-        emit ilastResponse->data(QByteArray(at, length));
-
+    emit ilastResponse->data(QByteArray(at, length));
     return 0;
 }
 
@@ -270,21 +244,9 @@ int
 QHttpClientPrivate::messageComplete(http_parser*) {
     CHECK_FOR_DISCONNECTED
 
-    // prevents double messageComplete!
-    if ( ilastResponse->d_func()->isuccessful )
-        return 0;
-
+    // response is ready to be  dispatched
     ilastResponse->d_func()->isuccessful = true;
-
-    if ( ilastResponse->iendHandler )
-        ilastResponse->iendHandler();
-    else
-        emit ilastResponse->end();
-
-    // close the socket if it was the connection: close
-    if ( !ikeepAlive )
-        isocket.close();
-
+    ilastResponse->d_func()->ireadState  = QHttpResponsePrivate::EComplete;
     return 0;
 }
 

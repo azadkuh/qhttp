@@ -14,10 +14,6 @@
 #include "qhttpclientrequest_private.hpp"
 #include "qhttpclientresponse_private.hpp"
 
-#include <QPointer>
-#include <QBasicTimer>
-#include <QFile>
-
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
 namespace client {
@@ -30,14 +26,7 @@ class QHttpClientPrivate : public HttpParser<QHttpClientPrivate>
 public:
     explicit     QHttpClientPrivate(QHttpClient* q) : HttpParser(HTTP_RESPONSE), q_ptr(q) {
         QObject::connect(q_func(),    &QHttpClient::disconnected,    [this](){
-            // if socket drops and http_parser can find messageComplete, calls it manually
-            messageComplete(nullptr);
-            isocket.release();
-
-            if ( ilastRequest )
-                ilastRequest->deleteLater();
-            if ( ilastResponse )
-                ilastResponse->deleteLater();
+            release();
         });
 
         QHTTP_LINE_DEEPLOG
@@ -47,13 +36,34 @@ public:
         QHTTP_LINE_DEEPLOG
     }
 
+    void         release() {
+        // if socket drops and http_parser can not call messageComplete, dispatch the ilastResponse
+        onDispatchResponse();
+
+        isocket.disconnectAllQtConnections();
+        isocket.close();
+        isocket.release();
+
+        if ( ilastRequest ) {
+            ilastRequest->deleteLater();
+            ilastRequest  = nullptr;
+        }
+        if ( ilastResponse ) {
+            ilastResponse->deleteLater();
+            ilastResponse = nullptr;
+        }
+
+        // must be called! or the later http_parser_execute() may fail
+        http_parser_init(&iparser, HTTP_RESPONSE);
+    }
+
     void         initializeSocket() {
         if ( isocket.isOpen() ) {
             if ( ikeepAlive ) // no need to reconnect. do nothing and simply return
                 return;
 
             // close previous connection
-            isocket.close();
+            release(); // release now! instead being called by emitted disconnected signal
         }
 
         ikeepAlive = false;
@@ -110,8 +120,35 @@ public:
     int          messageComplete(http_parser* parser);
 
 protected:
-    void         onConnected();
-    void         onReadyRead();
+    void         onConnected() {
+        if ( itimeOut > 0 )
+            itimer.start(itimeOut, Qt::CoarseTimer, q_func());
+
+        if ( ireqHandler )
+            ireqHandler(ilastRequest);
+        else
+            q_func()->onRequestReady(ilastRequest);
+    }
+
+    void         onReadyRead() {
+        while ( isocket.bytesAvailable() > 0 ) {
+            char buffer[4097] = {0};
+            size_t readLength = (size_t) isocket.readRaw(buffer, 4096);
+
+            parse(buffer, readLength);
+        }
+
+        onDispatchResponse();
+    }
+
+    void         onDispatchResponse() {
+        // if ilastResponse has been sent previously, just return
+        if ( ilastResponse->d_func()->ireadState == QHttpResponsePrivate::ESent )
+            return;
+
+        ilastResponse->d_func()->ireadState = QHttpResponsePrivate::ESent;
+        emit ilastResponse->end();
+    }
 
 protected:
     QHttpClient* const  q_ptr;
