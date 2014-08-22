@@ -7,6 +7,8 @@
 #include <QDateTime>
 #include <QLocale>
 
+#include "../include/unixcatcher.hpp"
+
 using namespace qhttp::server;
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -42,7 +44,7 @@ public:
                                 );
 
             res->setStatusCode(qhttp::ESTATUS_OK);
-            res->addHeader("content-length", QString::number(body.size()).toLatin1());
+            res->addHeaderValue("content-length", body.size());
             res->end(body.toUtf8());
 
             if ( req->headers().keyHasValue("command", "quit") ) {
@@ -65,12 +67,17 @@ protected:
 
 int main(int argc, char ** argv) {
     QCoreApplication app(argc, argv);
+    catchUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP});
 
     // dumb (trivial) connection counter
     quint64 iconnectionCounter = 0;
 
+    QString portOrUnixSocket("10022"); // default: TCP port 10022
+    if ( argc > 1 )
+        portOrUnixSocket = argv[1];
+
     QHttpServer server(&app);
-    server.listen(QHostAddress::Any, 8080, [&](QHttpRequest* req, QHttpResponse* res){
+    server.listen(portOrUnixSocket, [&](QHttpRequest* req, QHttpResponse* res){
         new ClientHandler(iconnectionCounter++, req, res);
         // this ClientHandler object will be deleted automatically when:
         // socket disconnects (automatically after data has been sent to the client)
@@ -81,7 +88,7 @@ int main(int argc, char ** argv) {
     });
 
     if ( !server.isListening() ) {
-        fprintf(stderr, "can not listen @8080!\n");
+        fprintf(stderr, "can not listen on %s!\n", qPrintable(portOrUnixSocket));
         return -1;
     }
 

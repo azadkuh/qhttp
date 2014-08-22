@@ -6,8 +6,7 @@
 #include "server.hpp"
 #include "clients.hpp"
 
-#include <signal.h>
-#include <unistd.h>
+#include "../include/unixcatcher.hpp"
 ///////////////////////////////////////////////////////////////////////////////
 
 class Application : public QCoreApplication
@@ -28,7 +27,7 @@ public:
         parser.addHelpOption();
         parser.addVersionOption();
         parser.addPositionalArgument("mode",
-                                     "working mode, client or server. default: server");
+                                     "working mode: client or server. default: server");
 
         parser.addOption(QCommandLineOption(QStringList() << "b" << "backend",
                                             "backend type of http connection. could be tcp or local (unix socket). default: tcp",
@@ -141,20 +140,6 @@ protected:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-void catchUnixSignals(const std::vector<int>& quitSignals,
-                      const std::vector<int>& ignoreSignals = std::vector<int>()) {
-
-    auto handler = [](int sig) ->void {
-        printf("\nquit the application (user request signal = %d).\n", sig);
-        QCoreApplication::quit();
-    };
-
-    for ( int sig : ignoreSignals )
-        signal(sig, SIG_IGN);
-
-    for ( int sig : quitSignals )
-        signal(sig, handler);
-}
 
 int main(int argc, char *argv[]) {
     Application app(argc, argv);
