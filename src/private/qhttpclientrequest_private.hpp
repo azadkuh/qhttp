@@ -38,10 +38,6 @@ public:
         isocket.ibackendType  = iclient->backendType();
         isocket.itcpSocket    = iclient->tcpSocket();
         isocket.ilocalSocket  = iclient->localSocket();
-
-        QObject::connect(iclient,      &QHttpClient::disconnected,
-                         q_func(),     &QHttpRequest::deleteLater);
-
     }
 
     QByteArray  makeTitle();
