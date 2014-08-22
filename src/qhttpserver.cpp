@@ -23,7 +23,7 @@ QHttpServer::listen(const QString &socketOrPort, const TServerHandler &handler) 
 
     bool isNumber   = false;
     quint16 tcpPort = socketOrPort.toUShort(&isNumber);
-    if ( isNumber )
+    if ( isNumber    &&    tcpPort > 0 )
         return listen(QHostAddress::Any, tcpPort, handler);
 
     d->initialize(ELocalSocket, this);
