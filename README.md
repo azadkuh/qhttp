@@ -47,7 +47,7 @@
 
 * **high throughput**, I have tried the `QHttp` and [gason++](https://github.com/azadkuh/gason--) to implement a REST/Json web service on an Ubuntu VPS (dual core + 512MB ram) with more than **5800** connections per second (stress test). On a MacBook Pro (i5 4258U 4cores with HT + 8096MB ram), `QHttp` easily reaches to more than **11700** connections / second. Generally `QHttp` is **1.5x ~ 3x** faster than `Node.js` depending on your machine / OS. check [benchmark app](./example/benchmard/README.md) to measure your system.
 
-* Tested under **Linux** (Ubuntu 12.04 LTS, 14.04 LTS, gcc) and **OS X** (10.9, clang). Easily portable where ever Qt 5 works. I have no *Windows* machine (nor time, nor interest), but this lib should work just fine under *Windows*, although I've not tried by myself.
+* Tested under **Linux** (Ubuntu 12.04 LTS, 14.04 LTS, g++) and **OS X** (10.9/10.10, clang) and Windows7 (msvc 2013). Easily portable where ever Qt 5 works. I have no *Windows* machine (nor time, nor interest), but this lib should work just fine under *Windows*, although I've not tested it by myself.
 
 
 ## Sample codes
