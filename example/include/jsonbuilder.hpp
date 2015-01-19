@@ -18,6 +18,18 @@
 
 #include <string.h>
 
+#if defined(__linux__) || defined(__MACH__)
+#   include <signal.h>
+#   include <unistd.h>
+#   define snwprintf       swprintf
+#elif defined(_WINDOWS)
+#   include <windows.h>
+#   define snprintf        _snprintf
+#   define vsnprintf       _vsnprintf
+#   define snscanf         _snscanf
+#   define snwprintf       _snwprintf
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 namespace gason {
 ///////////////////////////////////////////////////////////////////////////////

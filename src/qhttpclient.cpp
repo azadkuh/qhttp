@@ -80,18 +80,18 @@ QHttpClient::request(THttpMethod method, QUrl url,
             };
     }
 
-    auto requestCreator = [&]() {
+    auto requestCreator = [this, method, url]() {
         // create request object
-        if ( d->ilastRequest )
-            d->ilastRequest->deleteLater();
+        if ( d_ptr->ilastRequest )
+            d_ptr->ilastRequest->deleteLater();
 
-        d->ilastRequest = new QHttpRequest(this);
-        QObject::connect(d->ilastRequest, &QHttpRequest::done, [this](bool wasTheLastPacket){
-            d_func()->ikeepAlive = !wasTheLastPacket;
+        d_ptr->ilastRequest = new QHttpRequest(this);
+        QObject::connect(d_ptr->ilastRequest, &QHttpRequest::done, [this](bool wasTheLastPacket){
+            d_ptr->ikeepAlive = !wasTheLastPacket;
         });
 
-        d->ilastRequest->d_func()->imethod  = method;
-        d->ilastRequest->d_func()->iurl     = url;
+        d_ptr->ilastRequest->d_ptr->imethod  = method;
+        d_ptr->ilastRequest->d_ptr->iurl     = url;
     };
 
     // connecting to host/server must be the last thing. (after all function handlers and ...)

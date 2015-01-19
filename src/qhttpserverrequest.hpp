@@ -21,7 +21,7 @@ namespace server {
  * The class is <b>read-only</b>.
  * @sa QHttpConnection
  */
-class QHttpRequest : public QHttpAbstractInput
+class QHTTP_API QHttpRequest : public QHttpAbstractInput
 {
     Q_OBJECT
 

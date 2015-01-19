@@ -29,7 +29,7 @@ typedef std::function<void (QHttpResponse*)>    TResponseHandler;
  * in fact the QHttpRequest and QHttpResponse object will be deleted when the internal socket
  *  disconnects.
  */
-class QHttpClient : public QObject
+class QHTTP_API QHttpClient : public QObject
 {
     Q_OBJECT
 

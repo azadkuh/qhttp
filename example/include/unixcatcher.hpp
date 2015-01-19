@@ -1,3 +1,7 @@
+#ifndef UNIX_CATCHER_HPP
+#define UNIX_CATCHER_HPP
+
+#if defined(Q_OS_UNIX)
 #include <QCoreApplication>
 #include <signal.h>
 #include <unistd.h>
@@ -18,3 +22,7 @@ void catchUnixSignals(const std::vector<int>& quitSignals,
         signal(sig, handler);
 }
 ///////////////////////////////////////////////////////////////////////////////
+
+#endif // Q_OS_UNIX
+
+#endif // UNIX_CATCHER_HPP

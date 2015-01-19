@@ -19,7 +19,7 @@ namespace qhttp {
 ///////////////////////////////////////////////////////////////////////////////
 
 /** a utility class to give the string representation of qhttp types. */
-class Stringify
+class QHTTP_API Stringify
 {
 public:
     /** returns the standard message for an HTTP status code. */
@@ -37,7 +37,7 @@ typedef std::function<void (void)>           TEndHandler;
 ///////////////////////////////////////////////////////////////////////////////
 /** an interface for input (incoming) HTTP packets.
  * server::QHttpRequest or client::QHttpResponse inherit from this class. */
-class QHttpAbstractInput : public QObject
+class QHTTP_API QHttpAbstractInput : public QObject
 {
     Q_OBJECT
 
@@ -121,7 +121,7 @@ public:
 
 /** an interface for output (outgoing) HTTP packets.
  * server::QHttpResponse or client::QHttpRequest inherit from this class. */
-class QHttpAbstractOutput : public QObject
+class QHTTP_API QHttpAbstractOutput : public QObject
 {
     Q_OBJECT
 

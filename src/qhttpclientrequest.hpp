@@ -20,7 +20,7 @@ namespace client {
  * the life cycle of this class and the memory management is handled by QHttpClient.
  * @sa QHttpClient
  */
-class QHttpRequest : public QHttpAbstractOutput
+class QHTTP_API QHttpRequest : public QHttpAbstractOutput
 {
     Q_OBJECT
 

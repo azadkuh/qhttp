@@ -21,7 +21,7 @@ namespace server {
  * this class controls the HTTP connetion and handles life cycle and the memory management
  *  of QHttpRequest and QHttpResponse instances autoamtically.
  */
-class QHttpConnection : public QObject
+class QHTTP_API QHttpConnection : public QObject
 {
     Q_OBJECT
 

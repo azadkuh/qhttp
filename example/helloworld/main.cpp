@@ -137,7 +137,9 @@ void    runWeatherClient(QCoreApplication& app) {
 
 int main(int argc, char ** argv) {
     QCoreApplication app(argc, argv);
+#if defined(Q_OS_UNIX)
     catchUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP});
+#endif
 
     app.setApplicationName("helloworld");
     app.setApplicationVersion("1.0.0");

@@ -7,7 +7,12 @@ unix {
     QMAKE_CXXFLAGS  += -std=c++11
 }
 
-!unix:error("your platform is not supported!")
+win32 {
+    warning("Windows port of this library has not been tested nor profiled.")
+    TEMPDIR         = $$PRJDIR/tmp/win32/$$TARGET
+    CONFIG         += c++11
+    DEFINES        += _WINDOWS WIN32_LEAN_AND_MEAN NOMINMAX
+}
 
 
 DESTDIR         = $$PRJDIR/xbin

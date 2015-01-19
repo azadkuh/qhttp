@@ -9,6 +9,7 @@ PRJDIR    = ..
 include($$PRJDIR/commondir.pri)
 
 DEFINES  += QHTTP_MEMORY_LOG=0
+win32:DEFINES += QHTTP_EXPORT
 
 
 SOURCES  += \

@@ -4,6 +4,7 @@ SUBDIRS += helloworld
 SUBDIRS += basic-server
 SUBDIRS += benchmark
 SUBDIRS += nodejs
-SUBDIRS += keep-alive
+
+unix:SUBDIRS += keep-alive
 
 

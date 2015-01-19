@@ -187,7 +187,9 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char ** argv) {
     QCoreApplication app(argc, argv);
+#if defined(Q_OS_UNIX)
     catchUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP});
+#endif
 
     app.setApplicationName("keep-alive");
     app.setApplicationVersion("1.0.0");

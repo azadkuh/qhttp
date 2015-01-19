@@ -106,7 +106,9 @@ protected:
 
 int main(int argc, char *argv[]) {
     Application app(argc, argv);
+#if defined(Q_OS_UNIX)
     catchUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP});
+#endif
 
     if ( app.initialize() )
         app.exec();
