@@ -76,10 +76,10 @@ QHttpResponsePrivate::prepareHeadersToWrite() {
     if ( !iheaders.contains("date") ) {
         // Sun, 06 Nov 1994 08:49:37 GMT - RFC 822. Use QLocale::c() so english is used for month and
         // day.
-        QString dateString = QLocale::c().toString(
-                                 QDateTime::currentDateTimeUtc(),
-                                 "ddd, dd MMM yyyy hh:mm:ss GMT"
-                                 );
+        QString dateString = QLocale::c().
+            toString(QDateTime::currentDateTimeUtc(),
+                    "ddd, dd MMM yyyy hh:mm:ss")
+            .append(" GMT");
         addHeader("date", dateString.toLatin1());
     }
 }
