@@ -3,8 +3,8 @@
 
 ### Table of contents
 - [About](#about)
-- [Features](#features)
 - [Sample codes](#sample-codes)
+- [Features](#features)
 - [Setup](#setup)
 - [Multi-threading](#multi-threading)
 - [Source tree](#source-tree)
@@ -14,40 +14,14 @@
 ## About
 [TOC](#table-of-contents)
 
-`QHttp` is a lightweight, asynchronous and fast HTTP library, containing both server and client side classes for managing connections, parsing and building HTTP requests and responses.
-
-* this project is inspired by [nikhilm/qhttpserver](https://github.com/nikhilm/qhttpserver) effort to implement a Qt HTTP server. `QHttp` pushes the idea further by implementing client classes and better memory management, a lot more Node.js-like API, ...
+`QHttp` is a lightweight, asynchronous and fast HTTP library, containing both server and client side classes for managing connections, parsing and building HTTP requests and responses. this project is inspired by [nikhilm/qhttpserver](https://github.com/nikhilm/qhttpserver) effort to implement a Qt HTTP server. `QHttp` pushes the idea further by implementing client classes and better memory management, a lot more Node.js-like API, ...
 
 * the fantastic [joyent/http-parser](https://github.com/joyent/http-parser) is the core parser of HTTP requests (server mode) and responses (client mode). 
 
 * By using `std::function` and `c++11 lambda`, the API is intentionally similar to the [Node.js' http module](http://nodejs.org/api/http.html). Asynchronous and non-blocking HTTP programming is quite easy with `QHttp`. have a look at [sample codes](#sample-codes).
 
-* the objective of `QHttp` is being light weight with a simple API for Qt developers to implement RESTful web services in private (internal) zones. for a fast c++ Json parser / builder, have a look at [azadkuh/gason++](https://github.com/azadkuh/gason--)
+* the objective of `QHttp` is being light weight with a simple API for Qt developers to implement RESTful web services in private (internal) zones. [more](#disclaimer)
 
-
-
-## Features
-[TOC](#table-of-contents)
-
-* the only dependencies are: [Qt 5](http://qt-project.org/downloads), [c++11](http://en.wikipedia.org/wiki/C%2B%2B11) and [joyent/http-parser](https://github.com/joyent/http-parser)
-
-* both TCP and UNIX (local) sockets are supported as backend.
-
-* separate `namespace`s for server and client classes.
-
-* HTTP server classes: [QHttpServer](./src/qhttpserver.hpp), [QHttpConnection](./src/qhttpserverconnection.hpp), [QHttpRequest](./src/qhttpserverrequest.hpp) and [QHttpResponse](./src/qhttpserverresponse.hpp).
-
-* HTTP client classes: [QHttpClient](./src/qhttpclient.hpp), [QHttpRequest](./src/qhttpclientrequest.hpp) and [QHttpResponse](./src/qhttpclientresponse.hpp).
-
-* **automatic memory management** of objects. Instances of connections, requests and replies will be deleted automatically when socket drops or disconnected.
-
-* **PIMPL** (Private classes) to achieve better ABI compatibility and cleaner API.
-
-* **Asynchronous** and **non-blocking**. You can handle thousands of concurrent HTTP connections efficiently by a single thread, although a multi-threaded HTTP server is easy to implement.
-
-* **high throughput**, I have tried the `QHttp` and [gason++](https://github.com/azadkuh/gason--) to implement a REST/Json web service on an Ubuntu VPS (dual core + 512MB ram) with more than **5800** connections per second (stress test). On a MacBook Pro (i5 4258U 4cores with HT + 8096MB ram), `QHttp` easily reaches to more than **11700** connections / second. Generally `QHttp` is **1.5x ~ 3x** faster than `Node.js` depending on your machine / OS. check [benchmark app](./example/benchmard/README.md) to measure your system.
-
-* Tested under **Linux** (Ubuntu 12.04 LTS, 14.04 LTS, g++) and **OS X** (10.9/10.10, clang) and Windows7 (msvc 2013). Easily portable where ever Qt 5 works. I have no *Windows* machine (nor time, nor interest), but this lib should work just fine under *Windows*, although I've not tested it by myself.
 
 
 ## Sample codes
@@ -56,29 +30,24 @@
 a HelloWorld **HTTP server** by `QHttp` looks like:
 ``` cpp
 int main(int argc, char** argv) {
-
     QCoreApplication app(argc, argv);
-
+    
     using namespace qhttp::server;
-
     QHttpServer server(&app);
     // listening on 0.0.0.0:8080
     server.listen(QHostAddress::Any, 8080, [](QHttpRequest* req, QHttpResponse* res) {
 
-        res->setStatusCode(qhttp::ESTATUS_OK);      // status 200
-        res->addHeader("connection", "close");      // it's the default header, this line can be omitted.
-        res->end("Hello World!\n");                 // response body data
-
-        // when "connection: close", the req and res will be deleted automatically.
+        res->setStatusCode(qhttp::ESTATUS_OK);      // http status 200
+        //res->addHeader("connection", "close");    // optional, it's the default header
+        res->end("Hello World!\n");                 // the response body data
+        // by "connection: close", the req and res objects will be deleted automatically.
     });
-
 
     if ( !server.isListening() ) {
         fprintf(stderr, "failed. can not listen at port 8080!\n");
         return -1;
     }
 
-    // application's main event loop
     return app.exec();
 }
 ```
@@ -87,8 +56,8 @@ to request weather information by **HTTP client**:
 ```cpp
 int main(int argc, char** argv) {
     QCoreApplication app(argc, argv);
+    
     using namespace qhttp::client;
-
     QHttpClient  client(&app);
     QByteArray   httpBody;
 
@@ -112,7 +81,7 @@ int main(int argc, char** argv) {
             QCoreApplication::instance()->quit();
         });
 
-        // just for fun! print headers:
+        // just for fun! print incoming headers:
         puts("\n[Headers:]");
         const qhttp::THeaderHash& hs = res->headers();
         for ( auto cit = hs.constBegin(); cit != hs.constEnd(); cit++) {
@@ -120,10 +89,34 @@ int main(int argc, char** argv) {
         }
     });
 
-
     return app.exec();
 }
 ```
+
+
+## Features
+[TOC](#table-of-contents)
+
+* the only dependencies are: [Qt 5](http://qt-project.org/downloads), [c++11](http://en.wikipedia.org/wiki/C%2B%2B11) and [joyent/http-parser](https://github.com/joyent/http-parser)
+
+* both TCP and UNIX (local) sockets are supported as backend.
+
+* separate `namespace`s for server and client classes.
+
+* HTTP server classes: [QHttpServer](./src/qhttpserver.hpp), [QHttpConnection](./src/qhttpserverconnection.hpp), [QHttpRequest](./src/qhttpserverrequest.hpp) and [QHttpResponse](./src/qhttpserverresponse.hpp).
+
+* HTTP client classes: [QHttpClient](./src/qhttpclient.hpp), [QHttpRequest](./src/qhttpclientrequest.hpp) and [QHttpResponse](./src/qhttpclientresponse.hpp).
+
+* **automatic memory management** of objects. Instances of connections, requests and replies will be deleted automatically when socket drops or disconnected.
+
+* **PIMPL** (Private classes) to achieve better ABI compatibility and cleaner API.
+
+* **Asynchronous** and **non-blocking**. You can handle thousands of concurrent HTTP connections efficiently by a single thread, although a multi-threaded HTTP server is easy to implement.
+
+* **high throughput**, I have tried the `QHttp` and [gason++](https://github.com/azadkuh/gason--) to implement a REST/Json web service on an Ubuntu VPS (dual core + 512MB ram) with more than **5800** connections per second (stress test). On a MacBook Pro (i5 4258U 4cores with HT + 8096MB ram), `QHttp` easily reaches to more than **11700** connections / second. Generally `QHttp` is **1.5x ~ 3x** faster than `Node.js` depending on your machine / OS. check [benchmark app](./example/benchmard/README.md) to measure your system.
+
+* Tested under **Linux** (Ubuntu 12.04 LTS, 14.04 LTS, g++) and **OS X** (10.9/10.10/10.11, clang). Easily portable where ever Qt 5 works. (tested by some users on Windows7/msvc2013 and Windows8.1/msvc2015)
+
 
 ## Setup
 [TOC](#table-of-contents)
