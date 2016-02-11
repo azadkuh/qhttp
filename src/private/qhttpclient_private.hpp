@@ -143,7 +143,7 @@ protected:
 
     void         onDispatchResponse() {
         // if ilastResponse has been sent previously, just return
-        if ( ilastResponse->d_func()->ireadState == QHttpResponsePrivate::ESent )
+        if ( !ilastResponse  ||  ilastResponse->d_func()->ireadState == QHttpResponsePrivate::ESent )
             return;
 
         ilastResponse->d_func()->ireadState = QHttpResponsePrivate::ESent;
