@@ -12,6 +12,7 @@
 #include <QUrlQuery>
 
 #include <QLocalServer>
+#include <QTimer>
 
 #include "../include/unixcatcher.hpp"
 ///////////////////////////////////////////////////////////////////////////////
@@ -128,7 +129,11 @@ void    runWeatherClient(QCoreApplication& app) {
             printf("%s : %s\n", cit.key().constData(), cit.value().constData());
         }
     });
-
+    // set a timeout for making the request
+    client.setConnectingTimeOut(10000, []{
+        qDebug("conneting to HTTP server timed out!");
+        QCoreApplication::quit();
+    });
 
     app.exec();
 }
