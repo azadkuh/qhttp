@@ -121,6 +121,8 @@ public:
 
 protected:
     void         onConnected() {
+        iconnectingTimer.stop();
+
         if ( itimeOut > 0 )
             itimer.start(itimeOut, Qt::CoarseTimer, q_func());
 
@@ -157,6 +159,8 @@ protected:
     QHttpResponse*      ilastResponse = nullptr;
     TRequstHandler      ireqHandler;
     TResponseHandler    irespHandler;
+
+    QBasicTimer         iconnectingTimer;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
