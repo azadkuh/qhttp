@@ -1,41 +1,29 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en-us">
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="QHttp (Qt HTTP server+client) : a light-weight and asynchronous (non-blocking) HTTP library (both server and client) in Qt 5 and c++11 which is based on Node.js&#39; http parser.">
-
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>QHttp (Qt HTTP server+client)</title>
+    <meta charset="UTF-8">
+    <title>QHttp (Qt HTTP server+client) by azadkuh</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
-
   <body>
+    <section class="page-header">
+      <h1 class="project-name">QHttp (Qt HTTP server+client)</h1>
+      <h2 class="project-tagline">a light-weight and asynchronous (non-blocking) HTTP library (both server and client) in Qt 5 and c++11 which is based on Node.js&#39; http parser.</h2>
+      <a href="https://github.com/azadkuh/qhttp" class="btn">View on GitHub</a>
+      <a href="https://github.com/azadkuh/qhttp/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/azadkuh/qhttp/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/azadkuh/qhttp">View on GitHub</a>
-
-          <h1 id="project_title">QHttp (Qt HTTP server+client)</h1>
-          <h2 id="project_tagline">a light-weight and asynchronous (non-blocking) HTTP library (both server and client) in Qt 5 and c++11 which is based on Node.js&#39; http parser.</h2>
-
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/azadkuh/qhttp/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/azadkuh/qhttp/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h1>
-<a name="qhttp" class="anchor" href="#qhttp"><span class="octicon octicon-link"></span></a>QHttp</h1>
+    <section class="main-content">
+      <h1>
+<a id="qhttp" class="anchor" href="#qhttp" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>QHttp</h1>
 
 <h3>
-<a name="table-of-contents" class="anchor" href="#table-of-contents"><span class="octicon octicon-link"></span></a>Table of contents</h3>
+<a id="table-of-contents" class="anchor" href="#table-of-contents" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Table of contents</h3>
 
 <ul>
 <li><a href="#about">About</a></li>
@@ -46,8 +34,10 @@
 <li><a href="#source-tree">Source tree</a></li>
 <li><a href="#disclaimer">Disclaimer</a></li>
 <li><a href="#license">License</a></li>
-</ul><h2>
-<a name="about" class="anchor" href="#about"><span class="octicon octicon-link"></span></a>About</h2>
+</ul>
+
+<h2>
+<a id="about" class="anchor" href="#about" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>About</h2>
 
 <p><a href="#table-of-contents">TOC</a></p>
 
@@ -58,8 +48,10 @@
 <li><p>the fantastic <a href="https://github.com/joyent/http-parser">joyent/http-parser</a> is the core parser of HTTP requests (server mode) and responses (client mode). </p></li>
 <li><p>By using <code>std::function</code> and <code>c++11 lambda</code>, the API is intentionally similar to the <a href="http://nodejs.org/api/http.html">Node.js' http module</a>. Asynchronous and non-blocking HTTP programming is quite easy with <code>QHttp</code>. have a look at <a href="#sample-codes">sample codes</a>.</p></li>
 <li><p>the objective of <code>QHttp</code> is being light weight with a simple API for Qt developers to implement RESTful web services in private (internal) zones. for a fast c++ Json parser / builder, have a look at <a href="https://github.com/azadkuh/gason--">azadkuh/gason++</a></p></li>
-</ul><h2>
-<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h2>
+</ul>
+
+<h2>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Features</h2>
 
 <p><a href="#table-of-contents">TOC</a></p>
 
@@ -74,104 +66,103 @@
 <li><p><strong>Asynchronous</strong> and <strong>non-blocking</strong>. You can handle thousands of concurrent HTTP connections efficiently by a single thread, although a multi-threaded HTTP server is easy to implement.</p></li>
 <li><p><strong>high throughput</strong>, I have tried the <code>QHttp</code> and <a href="https://github.com/azadkuh/gason--">gason++</a> to implement a REST/Json web service on an Ubuntu VPS (dual core + 512MB ram) with more than <strong>5800</strong> connections per second (stress test). On a MacBook Pro (i5 4258U 4cores with HT + 8096MB ram), <code>QHttp</code> easily reaches to more than <strong>11700</strong> connections / second. Generally <code>QHttp</code> is <strong>1.5x ~ 3x</strong> faster than <code>Node.js</code> depending on your machine / OS. check <a href="https://github.com/azadkuh/qhttp/tree/master/example/benchmard/README.md">benchmark app</a> to measure your system.</p></li>
 <li><p>Tested under <strong>Linux</strong> (Ubuntu 12.04 LTS, 14.04 LTS, gcc) and <strong>OS X</strong> (10.9, clang). Easily portable where ever Qt 5 works. I have no <em>Windows</em> machine (nor time, nor interest), but this lib should work just fine under <em>Windows</em>, although I've not tried by myself.</p></li>
-</ul><h2>
-<a name="sample-codes" class="anchor" href="#sample-codes"><span class="octicon octicon-link"></span></a>Sample codes</h2>
+</ul>
+
+<h2>
+<a id="sample-codes" class="anchor" href="#sample-codes" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Sample codes</h2>
 
 <p><a href="#table-of-contents">TOC</a></p>
 
 <p>a HelloWorld <strong>HTTP server</strong> by <code>QHttp</code> looks like:</p>
 
-<div class="highlight highlight-cpp"><pre><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+<div class="highlight highlight-source-c++"><pre><span class="pl-k">int</span> <span class="pl-en">main</span>(<span class="pl-k">int</span> argc, <span class="pl-k">char</span>** argv) {
 
-    <span class="n">QCoreApplication</span> <span class="n">app</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">);</span>
+    QCoreApplication <span class="pl-smi">app</span>(argc, argv);
 
-    <span class="k">using</span> <span class="k">namespace</span> <span class="n">qhttp</span><span class="o">::</span><span class="n">server</span><span class="p">;</span>
+    <span class="pl-k">using</span> <span class="pl-k">namespace</span> <span class="pl-en">qhttp</span>::server<span class="pl-k">;</span>
 
-    <span class="n">QHttpServer</span> <span class="n">server</span><span class="p">(</span><span class="o">&amp;</span><span class="n">app</span><span class="p">);</span>
-    <span class="c1">// listening on 0.0.0.0:8080</span>
-    <span class="n">server</span><span class="p">.</span><span class="n">listen</span><span class="p">(</span><span class="n">QHostAddress</span><span class="o">::</span><span class="n">Any</span><span class="p">,</span> <span class="mi">8080</span><span class="p">,</span> <span class="p">[](</span><span class="n">QHttpRequest</span><span class="o">*</span> <span class="n">req</span><span class="p">,</span> <span class="n">QHttpResponse</span><span class="o">*</span> <span class="n">res</span><span class="p">)</span> <span class="p">{</span>
+    QHttpServer <span class="pl-smi">server</span>(&amp;app);
+    <span class="pl-c">// listening on 0.0.0.0:8080</span>
+    server.<span class="pl-c1">listen</span>(QHostAddress::Any, <span class="pl-c1">8080</span>, [](QHttpRequest* req, QHttpResponse* res) {
 
-        <span class="n">res</span><span class="o">-&gt;</span><span class="n">setStatusCode</span><span class="p">(</span><span class="n">qhttp</span><span class="o">::</span><span class="n">ESTATUS_OK</span><span class="p">);</span>      <span class="c1">// status 200</span>
-        <span class="n">res</span><span class="o">-&gt;</span><span class="n">addHeader</span><span class="p">(</span><span class="s">"connection"</span><span class="p">,</span> <span class="s">"close"</span><span class="p">);</span>      <span class="c1">// it's the default header, this line can be omitted.</span>
-        <span class="n">res</span><span class="o">-&gt;</span><span class="n">end</span><span class="p">(</span><span class="s">"Hello World!</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>                 <span class="c1">// response body data</span>
+        res-&gt;<span class="pl-c1">setStatusCode</span>(qhttp::ESTATUS_OK);      <span class="pl-c">// status 200</span>
+        res-&gt;<span class="pl-c1">addHeader</span>(<span class="pl-s"><span class="pl-pds">"</span>connection<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>close<span class="pl-pds">"</span></span>);      <span class="pl-c">// it's the default header, this line can be omitted.</span>
+        res-&gt;<span class="pl-c1">end</span>(<span class="pl-s"><span class="pl-pds">"</span>Hello World!<span class="pl-cce">\n</span><span class="pl-pds">"</span></span>);                 <span class="pl-c">// response body data</span>
 
-        <span class="c1">// when "connection: close", the req and res will be deleted automatically.</span>
-    <span class="p">});</span>
+        <span class="pl-c">// when "connection: close", the req and res will be deleted automatically.</span>
+    });
 
 
-    <span class="k">if</span> <span class="p">(</span> <span class="o">!</span><span class="n">server</span><span class="p">.</span><span class="n">isListening</span><span class="p">()</span> <span class="p">)</span> <span class="p">{</span>
-        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">"failed. can not listen at port 8080!</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
-        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
-    <span class="p">}</span>
+    <span class="pl-k">if</span> ( !server.<span class="pl-c1">isListening</span>() ) {
+        <span class="pl-c1">fprintf</span>(stderr, <span class="pl-s"><span class="pl-pds">"</span>failed. can not listen at port 8080!<span class="pl-cce">\n</span><span class="pl-pds">"</span></span>);
+        <span class="pl-k">return</span> -<span class="pl-c1">1</span>;
+    }
 
-    <span class="c1">// application's main event loop</span>
-    <span class="k">return</span> <span class="n">app</span><span class="p">.</span><span class="n">exec</span><span class="p">();</span>
-<span class="p">}</span>
-</pre></div>
+    <span class="pl-c">// application's main event loop</span>
+    <span class="pl-k">return</span> app.<span class="pl-c1">exec</span>();
+}</pre></div>
 
 <p>to request weather information by <strong>HTTP client</strong>:</p>
 
-<div class="highlight highlight-cpp"><pre><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">QCoreApplication</span> <span class="n">app</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">);</span>
-    <span class="k">using</span> <span class="k">namespace</span> <span class="n">qhttp</span><span class="o">::</span><span class="n">client</span><span class="p">;</span>
+<div class="highlight highlight-source-c++"><pre><span class="pl-k">int</span> <span class="pl-en">main</span>(<span class="pl-k">int</span> argc, <span class="pl-k">char</span>** argv) {
+    QCoreApplication <span class="pl-smi">app</span>(argc, argv);
+    <span class="pl-k">using</span> <span class="pl-k">namespace</span> <span class="pl-en">qhttp</span>::client<span class="pl-k">;</span>
 
-    <span class="n">QHttpClient</span>  <span class="n">client</span><span class="p">(</span><span class="o">&amp;</span><span class="n">app</span><span class="p">);</span>
-    <span class="n">QByteArray</span>   <span class="n">httpBody</span><span class="p">;</span>
+    QHttpClient  <span class="pl-smi">client</span>(&amp;app);
+    QByteArray   httpBody;
 
-    <span class="n">QUrl</span> <span class="n">weatherUrl</span><span class="p">(</span><span class="s">"http://api.openweathermap.org/data/2.5/weather?q=tehran,ir&amp;units=metric&amp;mode=xml"</span><span class="p">);</span>
+    QUrl <span class="pl-smi">weatherUrl</span>(<span class="pl-s"><span class="pl-pds">"</span>http://api.openweathermap.org/data/2.5/weather?q=tehran,ir&amp;units=metric&amp;mode=xml<span class="pl-pds">"</span></span>);
 
-    <span class="n">client</span><span class="p">.</span><span class="n">request</span><span class="p">(</span><span class="n">qhttp</span><span class="o">::</span><span class="n">EHTTP_GET</span><span class="p">,</span> <span class="n">weatherUrl</span><span class="p">,</span> <span class="p">[</span><span class="o">&amp;</span><span class="n">httpBody</span><span class="p">](</span><span class="n">QHttpResponse</span><span class="o">*</span> <span class="n">res</span><span class="p">)</span> <span class="p">{</span>
-        <span class="c1">// response handler, called when the HTTP headers of the response are ready</span>
+    client.<span class="pl-c1">request</span>(qhttp::EHTTP_GET, weatherUrl, [&amp;httpBody](QHttpResponse* res) {
+        <span class="pl-c">// response handler, called when the HTTP headers of the response are ready</span>
 
-        <span class="c1">// gather HTTP response data</span>
-        <span class="n">res</span><span class="o">-&gt;</span><span class="n">onData</span><span class="p">([</span><span class="o">&amp;</span><span class="n">httpBody</span><span class="p">](</span><span class="k">const</span> <span class="n">QByteArray</span><span class="o">&amp;</span> <span class="n">chunk</span><span class="p">)</span> <span class="p">{</span>
-            <span class="n">httpBody</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">chunk</span><span class="p">);</span>
-        <span class="p">});</span>
+        <span class="pl-c">// gather HTTP response data</span>
+        res-&gt;<span class="pl-c1">onData</span>([&amp;httpBody](<span class="pl-k">const</span> QByteArray&amp; chunk) {
+            httpBody.<span class="pl-c1">append</span>(chunk);
+        });
 
-        <span class="c1">// called when all data in HTTP response have been read.</span>
-        <span class="n">res</span><span class="o">-&gt;</span><span class="n">onEnd</span><span class="p">([</span><span class="o">&amp;</span><span class="n">httpBody</span><span class="p">]()</span> <span class="p">{</span>
-            <span class="c1">// print the XML body of the response</span>
-            <span class="n">puts</span><span class="p">(</span><span class="s">"</span><span class="se">\n</span><span class="s">[incoming response:]"</span><span class="p">);</span>
-            <span class="n">puts</span><span class="p">(</span><span class="n">httpBody</span><span class="p">.</span><span class="n">constData</span><span class="p">());</span>
-            <span class="n">puts</span><span class="p">(</span><span class="s">"</span><span class="se">\n\n</span><span class="s">"</span><span class="p">);</span>
+        <span class="pl-c">// called when all data in HTTP response have been read.</span>
+        res-&gt;<span class="pl-c1">onEnd</span>([&amp;httpBody]() {
+            <span class="pl-c">// print the XML body of the response</span>
+            <span class="pl-c1">puts</span>(<span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\n</span>[incoming response:]<span class="pl-pds">"</span></span>);
+            <span class="pl-c1">puts</span>(httpBody.<span class="pl-c1">constData</span>());
+            <span class="pl-c1">puts</span>(<span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\n\n</span><span class="pl-pds">"</span></span>);
 
-            <span class="n">QCoreApplication</span><span class="o">::</span><span class="n">instance</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">quit</span><span class="p">();</span>
-        <span class="p">});</span>
+            <span class="pl-c1">QCoreApplication::instance</span>()-&gt;<span class="pl-c1">quit</span>();
+        });
 
-        <span class="c1">// just for fun! print headers:</span>
-        <span class="n">puts</span><span class="p">(</span><span class="s">"</span><span class="se">\n</span><span class="s">[Headers:]"</span><span class="p">);</span>
-        <span class="k">const</span> <span class="n">qhttp</span><span class="o">::</span><span class="n">THeaderHash</span><span class="o">&amp;</span> <span class="n">hs</span> <span class="o">=</span> <span class="n">res</span><span class="o">-&gt;</span><span class="n">headers</span><span class="p">();</span>
-        <span class="k">for</span> <span class="p">(</span> <span class="k">auto</span> <span class="n">cit</span> <span class="o">=</span> <span class="n">hs</span><span class="p">.</span><span class="n">constBegin</span><span class="p">();</span> <span class="n">cit</span> <span class="o">!=</span> <span class="n">hs</span><span class="p">.</span><span class="n">constEnd</span><span class="p">();</span> <span class="n">cit</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-            <span class="n">printf</span><span class="p">(</span><span class="s">"%s : %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">cit</span><span class="p">.</span><span class="n">key</span><span class="p">().</span><span class="n">constData</span><span class="p">(),</span> <span class="n">cit</span><span class="p">.</span><span class="n">value</span><span class="p">().</span><span class="n">constData</span><span class="p">());</span>
-        <span class="p">}</span>
-    <span class="p">});</span>
+        <span class="pl-c">// just for fun! print headers:</span>
+        <span class="pl-c1">puts</span>(<span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\n</span>[Headers:]<span class="pl-pds">"</span></span>);
+        <span class="pl-k">const</span> qhttp::THeaderHash&amp; hs = res-&gt;<span class="pl-c1">headers</span>();
+        <span class="pl-k">for</span> ( <span class="pl-k">auto</span> cit = hs.<span class="pl-c1">constBegin</span>(); cit != hs.<span class="pl-c1">constEnd</span>(); cit++) {
+            <span class="pl-c1">printf</span>(<span class="pl-s"><span class="pl-pds">"</span><span class="pl-c1">%s</span> : <span class="pl-c1">%s</span><span class="pl-cce">\n</span><span class="pl-pds">"</span></span>, cit.<span class="pl-c1">key</span>().<span class="pl-c1">constData</span>(), cit.<span class="pl-c1">value</span>().<span class="pl-c1">constData</span>());
+        }
+    });
 
 
-    <span class="k">return</span> <span class="n">app</span><span class="p">.</span><span class="n">exec</span><span class="p">();</span>
-<span class="p">}</span>
-</pre></div>
+    <span class="pl-k">return</span> app.<span class="pl-c1">exec</span>();
+}</pre></div>
 
 <h2>
-<a name="setup" class="anchor" href="#setup"><span class="octicon octicon-link"></span></a>Setup</h2>
+<a id="setup" class="anchor" href="#setup" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Setup</h2>
 
 <p><a href="#table-of-contents">TOC</a></p>
 
 <p>instructions:</p>
 
-<div class="highlight highlight-bash"><pre><span class="c"># first clone this repository:</span>
-<span class="nv">$&gt;</span> git clone --depth<span class="o">=</span><span class="m">1</span> https://github.com/azadkuh/qhttp.git -b master
-<span class="nv">$&gt;</span> <span class="nb">cd </span>qhttp
+<div class="highlight highlight-source-shell"><pre><span class="pl-c"># first clone this repository:</span>
+$<span class="pl-k">&gt;</span> git clone --depth=1 https://github.com/azadkuh/qhttp.git -b master
+$<span class="pl-k">&gt;</span> <span class="pl-c1">cd</span> qhttp
 
-<span class="c"># prepare dependencies:</span>
-<span class="nv">$&gt;</span> ./update-dependencies.sh
+<span class="pl-c"># prepare dependencies:</span>
+$<span class="pl-k">&gt;</span> ./update-dependencies.sh
 
-<span class="c"># now build the library and the examples</span>
-<span class="nv">$&gt;</span> qmake qhttp.pro
-<span class="nv">$&gt;</span> make -j 8
-</pre></div>
+<span class="pl-c"># now build the library and the examples</span>
+$<span class="pl-k">&gt;</span> qmake qhttp.pro
+$<span class="pl-k">&gt;</span> make -j 8</pre></div>
 
 <h2>
-<a name="multi-threading" class="anchor" href="#multi-threading"><span class="octicon octicon-link"></span></a>Multi-threading</h2>
+<a id="multi-threading" class="anchor" href="#multi-threading" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Multi-threading</h2>
 
 <p><a href="#table-of-contents">TOC</a></p>
 
@@ -182,7 +173,9 @@
 <ul>
 <li><p>there are some blocking APIs (QSql, system calls, ...) in your connection handler (adopting asynchronous layer over the blocking API is a better approach).</p></li>
 <li><p>the hardware has lots of free cores and the measurement shows that the load on the main <code>QHttp</code> thread is close to highest limit. There you can spawn some other handler threads.</p></li>
-</ul><p><a href="https://github.com/azadkuh/qhttp/tree/master/example/benchmark/README.md">benchmark example</a> shows how to implement a single or multi threaded HTTP app (both server and client). This example uses worker <code>QThread</code> and <code>QObject::moveToThread()</code> for worker objects. see aslo: <a href="http://qt-project.org/doc/note_revisions/5/8/view">Subclassing no longer recommended way of using QThread</a>.</p>
+</ul>
+
+<p><a href="https://github.com/azadkuh/qhttp/tree/master/example/benchmark/README.md">benchmark example</a> shows how to implement a single or multi threaded HTTP app (both server and client). This example uses worker <code>QThread</code> and <code>QObject::moveToThread()</code> for worker objects. see aslo: <a href="http://qt-project.org/doc/note_revisions/5/8/view">Subclassing no longer recommended way of using QThread</a>.</p>
 
 <p><strong>Note</strong>:</p>
 
@@ -195,8 +188,10 @@
 <ul>
 <li><a href="http://zeromq.org/blog:multithreading-magic">ZeroMQ : Multithreading Magic</a></li>
 <li><a href="http://nodejs.org/about/">Node.js : about</a></li>
-</ul><h2>
-<a name="source-tree" class="anchor" href="#source-tree"><span class="octicon octicon-link"></span></a>Source tree</h2>
+</ul>
+
+<h2>
+<a id="source-tree" class="anchor" href="#source-tree" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Source tree</h2>
 
 <p><a href="#table-of-contents">TOC</a></p>
 
@@ -237,8 +232,10 @@ Private classes of the library. see: <a href="https://qt-project.org/wiki/Dpoint
 a temporary directory which is created while <code>make</code>ing the library and holds all the <code>.o</code>, <code>moc files</code>, etc.</p></li>
 <li><p><strong><code>xbin/</code></strong>:
 all the executable and binaries will be placed on this folder by <code>make</code>.</p></li>
-</ul><h2>
-<a name="disclaimer" class="anchor" href="#disclaimer"><span class="octicon octicon-link"></span></a>Disclaimer</h2>
+</ul>
+
+<h2>
+<a id="disclaimer" class="anchor" href="#disclaimer" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Disclaimer</h2>
 
 <p><a href="#table-of-contents">TOC</a></p>
 
@@ -247,28 +244,28 @@ all the executable and binaries will be placed on this folder by <code>make</cod
 <li><p>There are lots of features in a full blown HTTP server which are out of scope of this small library, although those can be added on top of <code>QHttp</code>.</p></li>
 <li><p>The client classes are by no mean designed as a <code>QNetworkAccessManager</code> replacement. <code>QHttpClient</code> is simpler and lighter, for serious scenarios just use <code>QNetworkAccessManager</code>.</p></li>
 <li><p>I'm a busy person.</p></li>
-</ul><blockquote>
+</ul>
+
+<blockquote>
 <p>If you have any ideas, critiques, suggestions or whatever you want to call it, please open an issue. I'll be happy to hear from you what you'd see in this lib. I think about all suggestions, and I try to add those that make sense.</p>
 </blockquote>
 
 <h2>
-<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
 
 <p><a href="#table-of-contents">TOC</a></p>
 
 <p>Distributed under the MIT license. Copyright (c) 2014, Amir Zamani.</p>
-      </section>
-    </div>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">QHttp (Qt HTTP server+client) maintained by <a href="https://github.com/azadkuh">azadkuh</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/azadkuh/qhttp">QHttp (Qt HTTP server+client)</a> is maintained by <a href="https://github.com/azadkuh">azadkuh</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
       </footer>
-    </div>
 
-              <script type="text/javascript">
+    </section>
+
+            <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
           </script>
@@ -278,7 +275,6 @@ all the executable and binaries will be placed on this folder by <code>make</cod
             pageTracker._trackPageview();
             } catch(err) {}
           </script>
-
 
   </body>
 </html>
