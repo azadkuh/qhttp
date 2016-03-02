@@ -16,7 +16,7 @@
 
 `QHttp` is a lightweight, asynchronous and fast HTTP library, containing both server and client side classes for managing connections, parsing and building HTTP requests and responses. this project is inspired by [nikhilm/qhttpserver](https://github.com/nikhilm/qhttpserver) effort to implement a Qt HTTP server. `QHttp` pushes the idea further by implementing client classes and better memory management, a lot more Node.js-like API, ...
 
-* the fantastic [joyent/http-parser](https://github.com/joyent/http-parser) is the core parser of HTTP requests (server mode) and responses (client mode). 
+* the fantastic [joyent/http-parser](https://github.com/joyent/http-parser) is the core parser of HTTP requests (server mode) and responses (client mode).
 
 * By using `std::function` and `c++11 lambda`, the API is intentionally similar to the [Node.js' http module](http://nodejs.org/api/http.html). Asynchronous and non-blocking HTTP programming is quite easy with `QHttp`. have a look at [sample codes](#sample-codes).
 
@@ -31,7 +31,7 @@ a HelloWorld **HTTP server** by `QHttp` looks like:
 ``` cpp
 int main(int argc, char** argv) {
     QCoreApplication app(argc, argv);
-    
+
     using namespace qhttp::server;
     QHttpServer server(&app);
     // listening on 0.0.0.0:8080
@@ -56,7 +56,7 @@ to request weather information by **HTTP client**:
 ```cpp
 int main(int argc, char** argv) {
     QCoreApplication app(argc, argv);
-    
+
     using namespace qhttp::client;
     QHttpClient  client(&app);
     QByteArray   httpBody;
@@ -88,6 +88,13 @@ int main(int argc, char** argv) {
             printf("%s : %s\n", cit.key().constData(), cit.value().constData());
         }
     });
+
+    // set a timeout for making the request
+    client.setConnectingTimeOut(10000, []{
+        qDebug("conneting to HTTP server timed out!");
+        QCoreApplication::quit();
+    });
+
 
     return app.exec();
 }
@@ -138,7 +145,7 @@ $> make -j 8
 ## Multi-threading
 [TOC](#table-of-contents)
 
-As `QHttp` is **asynchrounous** and **non-bloking**, your app can handle thousands of concurrent HTTP connections by a single thread. 
+As `QHttp` is **asynchronous** and **non-blocking**, your app can handle thousands of concurrent HTTP connections by a single thread.
 
 in some rare scenarios you may want to use multiple handler threads (although it's not the best solution):
 
@@ -147,7 +154,7 @@ in some rare scenarios you may want to use multiple handler threads (although it
 * the hardware has lots of free cores and the measurement shows that the load on the main `QHttp` thread is close to highest limit. There you can spawn some other handler threads.
 
 
-[benchmark example](./example/benchmark/README.md) shows how to implement a single or multi threaded HTTP app (both server and client). This example uses worker `QThread` and `QObject::moveToThread()` for worker objects. see aslo: [Subclassing no longer recommended way of using QThread](http://qt-project.org/doc/note_revisions/5/8/view).
+[benchmark example](./example/benchmark/README.md) shows how to implement a single or multi threaded HTTP app (both server and client). This example uses worker `QThread` and `QObject::moveToThread()` for worker objects. see also: [Subclassing no longer recommended way of using QThread](http://qt-project.org/doc/note_revisions/5/8/view).
 
 **Note**:
 > moving objects between threads is an expensive job, more ever the locking/unlocking mechanism, creating or stopping threads, ... cost even more! so using multiple threads in an application is not guaranteed to get better performance, but it's guaranteed to add more complexity, nasty bugs and headache!
@@ -175,16 +182,16 @@ contains some sample applications representing the `QHttp` usage:
     * **`basic-server/`**:
     a basic HTTP server shows how to collect the request body, and respond to the clients.
     see: [README@basic-server](./example/basic-server/README.md)
-    
+
 
     * **`benchmark/`**:
-    a simple utility to measure the throughput (requests per second) of `QHttp` as a REST/Json server. this app provides both the server and attacking clinets.
+    a simple utility to measure the throughput (requests per second) of `QHttp` as a REST/Json server. this app provides both the server and attacking clients.
     see: [README@benchmark](./example/benchmark/README.md)
-    
+
     * **`nodejs/`**:
     Node.js implementation of `benchmark/` in server mode. Provided for benchmarking `QHttp` with `Node.js` as a RESTFul service app.
     see: [README@nodejs](./example/nodejs/README.md)
-    
+
 
 * **`src/`**:
 holds the source code of `QHttp`. server classes are prefixed by `qhttpserver*` and client classes by `qhttpclient*`.
