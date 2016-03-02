@@ -2,11 +2,19 @@
 3rdparty
 tmp
 xbin
-docs/html
+docs
 res/keys
+res/
+TODO.md
+tags
 
 # ahh! OSX finder!
+.directory
 .DS_Store
+
+# translation files
+*.qm
+*.ts
 
 # key files
 *.pem
@@ -19,8 +27,18 @@ Makefile*
 *.o
 *.qmake.stash
 *.pro.user*
+*.bak
+*.log
+*_plugin_import.cpp
+*.swp
+
+# java files
+*.jar
+*.class
 
 # Visual studio
+*.htm
+*.html
 *.ncb
 *.idb
 *.suo
@@ -33,3 +51,6 @@ Makefile*
 
 # node.js external modules
 node_modules
+# YouCompleteMe
+.ycm_extra_conf.*
+
