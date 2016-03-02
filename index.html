@@ -27,8 +27,8 @@
 
 <ul>
 <li><a href="#about">About</a></li>
-<li><a href="#features">Features</a></li>
 <li><a href="#sample-codes">Sample codes</a></li>
+<li><a href="#features">Features</a></li>
 <li><a href="#setup">Setup</a></li>
 <li><a href="#multi-threading">Multi-threading</a></li>
 <li><a href="#source-tree">Source tree</a></li>
@@ -41,31 +41,12 @@
 
 <p><a href="#table-of-contents">TOC</a></p>
 
-<p><code>QHttp</code> is a lightweight, asynchronous and fast HTTP library, containing both server and client side classes for managing connections, parsing and building HTTP requests and responses.</p>
+<p><code>QHttp</code> is a lightweight, asynchronous and fast HTTP library, containing both server and client side classes for managing connections, parsing and building HTTP requests and responses. this project is inspired by <a href="https://github.com/nikhilm/qhttpserver">nikhilm/qhttpserver</a> effort to implement a Qt HTTP server. <code>QHttp</code> pushes the idea further by implementing client classes and better memory management, a lot more Node.js-like API, ...</p>
 
 <ul>
-<li><p>this project is inspired by <a href="https://github.com/nikhilm/qhttpserver">nikhilm/qhttpserver</a> effort to implement a Qt HTTP server. <code>QHttp</code> pushes the idea further by implementing client classes and better memory management, a lot more Node.js-like API, ...</p></li>
-<li><p>the fantastic <a href="https://github.com/joyent/http-parser">joyent/http-parser</a> is the core parser of HTTP requests (server mode) and responses (client mode). </p></li>
+<li><p>the fantastic <a href="https://github.com/joyent/http-parser">joyent/http-parser</a> is the core parser of HTTP requests (server mode) and responses (client mode).</p></li>
 <li><p>By using <code>std::function</code> and <code>c++11 lambda</code>, the API is intentionally similar to the <a href="http://nodejs.org/api/http.html">Node.js' http module</a>. Asynchronous and non-blocking HTTP programming is quite easy with <code>QHttp</code>. have a look at <a href="#sample-codes">sample codes</a>.</p></li>
-<li><p>the objective of <code>QHttp</code> is being light weight with a simple API for Qt developers to implement RESTful web services in private (internal) zones. for a fast c++ Json parser / builder, have a look at <a href="https://github.com/azadkuh/gason--">azadkuh/gason++</a></p></li>
-</ul>
-
-<h2>
-<a id="features" class="anchor" href="#features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Features</h2>
-
-<p><a href="#table-of-contents">TOC</a></p>
-
-<ul>
-<li><p>the only dependencies are: <a href="http://qt-project.org/downloads">Qt 5</a>, <a href="http://en.wikipedia.org/wiki/C%2B%2B11">c++11</a> and <a href="https://github.com/joyent/http-parser">joyent/http-parser</a></p></li>
-<li><p>both TCP and UNIX (local) sockets are supported as backend.</p></li>
-<li><p>separate <code>namespace</code>s for server and client classes.</p></li>
-<li><p>HTTP server classes: <a href="https://github.com/azadkuh/qhttp/tree/master/src/qhttpserver.hpp">QHttpServer</a>, <a href="https://github.com/azadkuh/qhttp/tree/master/src/qhttpserverconnection.hpp">QHttpConnection</a>, <a href="https://github.com/azadkuh/qhttp/tree/master/src/qhttpserverrequest.hpp">QHttpRequest</a> and <a href="https://github.com/azadkuh/qhttp/tree/master/src/qhttpserverresponse.hpp">QHttpResponse</a>.</p></li>
-<li><p>HTTP client classes: <a href="https://github.com/azadkuh/qhttp/tree/master/src/qhttpclient.hpp">QHttpClient</a>, <a href="https://github.com/azadkuh/qhttp/tree/master/src/qhttpclientrequest.hpp">QHttpRequest</a> and <a href="https://github.com/azadkuh/qhttp/tree/master/src/qhttpclientresponse.hpp">QHttpResponse</a>.</p></li>
-<li><p><strong>automatic memory management</strong> of objects. Instances of connections, requests and replies will be deleted automatically when socket drops or disconnected.</p></li>
-<li><p><strong>PIMPL</strong> (Private classes) to achieve better ABI compatibility and cleaner API.</p></li>
-<li><p><strong>Asynchronous</strong> and <strong>non-blocking</strong>. You can handle thousands of concurrent HTTP connections efficiently by a single thread, although a multi-threaded HTTP server is easy to implement.</p></li>
-<li><p><strong>high throughput</strong>, I have tried the <code>QHttp</code> and <a href="https://github.com/azadkuh/gason--">gason++</a> to implement a REST/Json web service on an Ubuntu VPS (dual core + 512MB ram) with more than <strong>5800</strong> connections per second (stress test). On a MacBook Pro (i5 4258U 4cores with HT + 8096MB ram), <code>QHttp</code> easily reaches to more than <strong>11700</strong> connections / second. Generally <code>QHttp</code> is <strong>1.5x ~ 3x</strong> faster than <code>Node.js</code> depending on your machine / OS. check <a href="https://github.com/azadkuh/qhttp/tree/master/example/benchmard/README.md">benchmark app</a> to measure your system.</p></li>
-<li><p>Tested under <strong>Linux</strong> (Ubuntu 12.04 LTS, 14.04 LTS, gcc) and <strong>OS X</strong> (10.9, clang). Easily portable where ever Qt 5 works. I have no <em>Windows</em> machine (nor time, nor interest), but this lib should work just fine under <em>Windows</em>, although I've not tried by myself.</p></li>
+<li><p>the objective of <code>QHttp</code> is being light weight with a simple API for Qt developers to implement RESTful web services in private (internal) zones. <a href="#disclaimer">more</a></p></li>
 </ul>
 
 <h2>
@@ -76,29 +57,24 @@
 <p>a HelloWorld <strong>HTTP server</strong> by <code>QHttp</code> looks like:</p>
 
 <div class="highlight highlight-source-c++"><pre><span class="pl-k">int</span> <span class="pl-en">main</span>(<span class="pl-k">int</span> argc, <span class="pl-k">char</span>** argv) {
-
     QCoreApplication <span class="pl-smi">app</span>(argc, argv);
 
     <span class="pl-k">using</span> <span class="pl-k">namespace</span> <span class="pl-en">qhttp</span>::server<span class="pl-k">;</span>
-
     QHttpServer <span class="pl-smi">server</span>(&amp;app);
     <span class="pl-c">// listening on 0.0.0.0:8080</span>
     server.<span class="pl-c1">listen</span>(QHostAddress::Any, <span class="pl-c1">8080</span>, [](QHttpRequest* req, QHttpResponse* res) {
 
-        res-&gt;<span class="pl-c1">setStatusCode</span>(qhttp::ESTATUS_OK);      <span class="pl-c">// status 200</span>
-        res-&gt;<span class="pl-c1">addHeader</span>(<span class="pl-s"><span class="pl-pds">"</span>connection<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>close<span class="pl-pds">"</span></span>);      <span class="pl-c">// it's the default header, this line can be omitted.</span>
-        res-&gt;<span class="pl-c1">end</span>(<span class="pl-s"><span class="pl-pds">"</span>Hello World!<span class="pl-cce">\n</span><span class="pl-pds">"</span></span>);                 <span class="pl-c">// response body data</span>
-
-        <span class="pl-c">// when "connection: close", the req and res will be deleted automatically.</span>
+        res-&gt;<span class="pl-c1">setStatusCode</span>(qhttp::ESTATUS_OK);      <span class="pl-c">// http status 200</span>
+        <span class="pl-c">//res-&gt;addHeader("connection", "close");    // optional, it's the default header</span>
+        res-&gt;<span class="pl-c1">end</span>(<span class="pl-s"><span class="pl-pds">"</span>Hello World!<span class="pl-cce">\n</span><span class="pl-pds">"</span></span>);                 <span class="pl-c">// the response body data</span>
+        <span class="pl-c">// by "connection: close", the req and res objects will be deleted automatically.</span>
     });
-
 
     <span class="pl-k">if</span> ( !server.<span class="pl-c1">isListening</span>() ) {
         <span class="pl-c1">fprintf</span>(stderr, <span class="pl-s"><span class="pl-pds">"</span>failed. can not listen at port 8080!<span class="pl-cce">\n</span><span class="pl-pds">"</span></span>);
         <span class="pl-k">return</span> -<span class="pl-c1">1</span>;
     }
 
-    <span class="pl-c">// application's main event loop</span>
     <span class="pl-k">return</span> app.<span class="pl-c1">exec</span>();
 }</pre></div>
 
@@ -106,8 +82,8 @@
 
 <div class="highlight highlight-source-c++"><pre><span class="pl-k">int</span> <span class="pl-en">main</span>(<span class="pl-k">int</span> argc, <span class="pl-k">char</span>** argv) {
     QCoreApplication <span class="pl-smi">app</span>(argc, argv);
-    <span class="pl-k">using</span> <span class="pl-k">namespace</span> <span class="pl-en">qhttp</span>::client<span class="pl-k">;</span>
 
+    <span class="pl-k">using</span> <span class="pl-k">namespace</span> <span class="pl-en">qhttp</span>::client<span class="pl-k">;</span>
     QHttpClient  <span class="pl-smi">client</span>(&amp;app);
     QByteArray   httpBody;
 
@@ -131,7 +107,7 @@
             <span class="pl-c1">QCoreApplication::instance</span>()-&gt;<span class="pl-c1">quit</span>();
         });
 
-        <span class="pl-c">// just for fun! print headers:</span>
+        <span class="pl-c">// just for fun! print incoming headers:</span>
         <span class="pl-c1">puts</span>(<span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\n</span>[Headers:]<span class="pl-pds">"</span></span>);
         <span class="pl-k">const</span> qhttp::THeaderHash&amp; hs = res-&gt;<span class="pl-c1">headers</span>();
         <span class="pl-k">for</span> ( <span class="pl-k">auto</span> cit = hs.<span class="pl-c1">constBegin</span>(); cit != hs.<span class="pl-c1">constEnd</span>(); cit++) {
@@ -139,9 +115,33 @@
         }
     });
 
+    <span class="pl-c">// set a timeout for making the request</span>
+    client.<span class="pl-c1">setConnectingTimeOut</span>(<span class="pl-c1">10000</span>, []{
+        <span class="pl-c1">qDebug</span>(<span class="pl-s"><span class="pl-pds">"</span>conneting to HTTP server timed out!<span class="pl-pds">"</span></span>);
+        <span class="pl-c1">QCoreApplication::quit</span>();
+    });
+
 
     <span class="pl-k">return</span> app.<span class="pl-c1">exec</span>();
 }</pre></div>
+
+<h2>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Features</h2>
+
+<p><a href="#table-of-contents">TOC</a></p>
+
+<ul>
+<li><p>the only dependencies are: <a href="http://qt-project.org/downloads">Qt 5</a>, <a href="http://en.wikipedia.org/wiki/C%2B%2B11">c++11</a> and <a href="https://github.com/joyent/http-parser">joyent/http-parser</a></p></li>
+<li><p>both TCP and UNIX (local) sockets are supported as backend.</p></li>
+<li><p>separate <code>namespace</code>s for server and client classes.</p></li>
+<li><p>HTTP server classes: <a href="./src/qhttpserver.hpp">QHttpServer</a>, <a href="./src/qhttpserverconnection.hpp">QHttpConnection</a>, <a href="./src/qhttpserverrequest.hpp">QHttpRequest</a> and <a href="./src/qhttpserverresponse.hpp">QHttpResponse</a>.</p></li>
+<li><p>HTTP client classes: <a href="./src/qhttpclient.hpp">QHttpClient</a>, <a href="./src/qhttpclientrequest.hpp">QHttpRequest</a> and <a href="./src/qhttpclientresponse.hpp">QHttpResponse</a>.</p></li>
+<li><p><strong>automatic memory management</strong> of objects. Instances of connections, requests and replies will be deleted automatically when socket drops or disconnected.</p></li>
+<li><p><strong>PIMPL</strong> (Private classes) to achieve better ABI compatibility and cleaner API.</p></li>
+<li><p><strong>Asynchronous</strong> and <strong>non-blocking</strong>. You can handle thousands of concurrent HTTP connections efficiently by a single thread, although a multi-threaded HTTP server is easy to implement.</p></li>
+<li><p><strong>high throughput</strong>, I have tried the <code>QHttp</code> and <a href="https://github.com/azadkuh/gason--">gason++</a> to implement a REST/Json web service on an Ubuntu VPS (dual core + 512MB ram) with more than <strong>5800</strong> connections per second (stress test). On a MacBook Pro (i5 4258U 4cores with HT + 8096MB ram), <code>QHttp</code> easily reaches to more than <strong>11700</strong> connections / second. Generally <code>QHttp</code> is <strong>1.5x ~ 3x</strong> faster than <code>Node.js</code> depending on your machine / OS. check <a href="./example/benchmard/README.md">benchmark app</a> to measure your system.</p></li>
+<li><p>Tested under <strong>Linux</strong> (Ubuntu 12.04 LTS, 14.04 LTS, g++) and <strong>OS X</strong> (10.9/10.10/10.11, clang). Easily portable where ever Qt 5 works. (tested by some users on Windows7/msvc2013 and Windows8.1/msvc2015)</p></li>
+</ul>
 
 <h2>
 <a id="setup" class="anchor" href="#setup" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Setup</h2>
@@ -166,7 +166,7 @@ $<span class="pl-k">&gt;</span> make -j 8</pre></div>
 
 <p><a href="#table-of-contents">TOC</a></p>
 
-<p>As <code>QHttp</code> is <strong>asynchrounous</strong> and <strong>non-bloking</strong>, your app can handle thousands of concurrent HTTP connections by a single thread. </p>
+<p>As <code>QHttp</code> is <strong>asynchronous</strong> and <strong>non-blocking</strong>, your app can handle thousands of concurrent HTTP connections by a single thread.</p>
 
 <p>in some rare scenarios you may want to use multiple handler threads (although it's not the best solution):</p>
 
@@ -175,7 +175,7 @@ $<span class="pl-k">&gt;</span> make -j 8</pre></div>
 <li><p>the hardware has lots of free cores and the measurement shows that the load on the main <code>QHttp</code> thread is close to highest limit. There you can spawn some other handler threads.</p></li>
 </ul>
 
-<p><a href="https://github.com/azadkuh/qhttp/tree/master/example/benchmark/README.md">benchmark example</a> shows how to implement a single or multi threaded HTTP app (both server and client). This example uses worker <code>QThread</code> and <code>QObject::moveToThread()</code> for worker objects. see aslo: <a href="http://qt-project.org/doc/note_revisions/5/8/view">Subclassing no longer recommended way of using QThread</a>.</p>
+<p><a href="./example/benchmark/README.md">benchmark example</a> shows how to implement a single or multi threaded HTTP app (both server and client). This example uses worker <code>QThread</code> and <code>QObject::moveToThread()</code> for worker objects. see also: <a href="http://qt-project.org/doc/note_revisions/5/8/view">Subclassing no longer recommended way of using QThread</a>.</p>
 
 <p><strong>Note</strong>:</p>
 
@@ -206,16 +206,16 @@ contains some sample applications representing the <code>QHttp</code> usage:</p>
 <ul>
 <li><p><strong><code>helloworld/</code></strong>:
 the HelloWorld example of <code>QHttp</code>, both server + client are represented.
-see: <a href="https://github.com/azadkuh/qhttp/tree/master/example/helloworld/README.md">README@helloworld</a></p></li>
+see: <a href="./example/helloworld/README.md">README@helloworld</a></p></li>
 <li><p><strong><code>basic-server/</code></strong>:
 a basic HTTP server shows how to collect the request body, and respond to the clients.
-see: <a href="https://github.com/azadkuh/qhttp/tree/master/example/basic-server/README.md">README@basic-server</a></p></li>
+see: <a href="./example/basic-server/README.md">README@basic-server</a></p></li>
 <li><p><strong><code>benchmark/</code></strong>:
-a simple utility to measure the throughput (requests per second) of <code>QHttp</code> as a REST/Json server. this app provides both the server and attacking clinets.
-see: <a href="https://github.com/azadkuh/qhttp/tree/master/example/benchmark/README.md">README@benchmark</a></p></li>
+a simple utility to measure the throughput (requests per second) of <code>QHttp</code> as a REST/Json server. this app provides both the server and attacking clients.
+see: <a href="./example/benchmark/README.md">README@benchmark</a></p></li>
 <li><p><strong><code>nodejs/</code></strong>:
 Node.js implementation of <code>benchmark/</code> in server mode. Provided for benchmarking <code>QHttp</code> with <code>Node.js</code> as a RESTFul service app.
-see: <a href="https://github.com/azadkuh/qhttp/tree/master/example/nodejs/README.md">README@nodejs</a></p></li>
+see: <a href="./example/nodejs/README.md">README@nodejs</a></p></li>
 </ul>
 </li>
 <li>
