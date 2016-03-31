@@ -16,7 +16,7 @@
 
 `QHttp` is a lightweight, asynchronous and fast HTTP library, containing both server and client side classes for managing connections, parsing and building HTTP requests and responses. this project is inspired by [nikhilm/qhttpserver](https://github.com/nikhilm/qhttpserver) effort to implement a Qt HTTP server. `QHttp` pushes the idea further by implementing client classes and better memory management, a lot more Node.js-like API, ...
 
-* the fantastic [joyent/http-parser](https://github.com/joyent/http-parser) is the core parser of HTTP requests (server mode) and responses (client mode).
+* the fantastic [nodejs/http-parser](https://github.com/nodejs/http-parser) is the core parser of HTTP requests (server mode) and responses (client mode).
 
 * By using `std::function` and `c++11 lambda`, the API is intentionally similar to the [Node.js' http module](http://nodejs.org/api/http.html). Asynchronous and non-blocking HTTP programming is quite easy with `QHttp`. have a look at [sample codes](#sample-codes).
 
