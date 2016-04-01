@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
 
     // set a timeout for making the request
     client.setConnectingTimeOut(10000, []{
-        qDebug("conneting to HTTP server timed out!");
+        qDebug("connecting to HTTP server timed out!");
         QCoreApplication::quit();
     });
 
