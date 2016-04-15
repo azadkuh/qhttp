@@ -69,19 +69,28 @@ enum THttpMethod {
     EHTTP_PROPPATCH      = 13,        ///< PROPPATCH
     EHTTP_SEARCH         = 14,        ///< SEARCH
     EHTTP_UNLOCK         = 15,        ///< UNLOCK
+    EHTTP_BIND           = 16,        ///< BIND
+    EHTTP_REBIND         = 17,        ///< REBIND
+    EHTTP_UNBIND         = 18,        ///< UNBIND
+    EHTTP_ACL            = 19,        ///< ACL
     /* subversion */
-    EHTTP_REPORT         = 16,        ///< REPORT
-    EHTTP_MKACTIVITY     = 17,        ///< MKACTIVITY
-    EHTTP_CHECKOUT       = 18,        ///< CHECKOUT
-    EHTTP_MERGE          = 19,        ///< MERGE
+    EHTTP_REPORT         = 20,        ///< REPORT
+    EHTTP_MKACTIVITY     = 21,        ///< MKACTIVITY
+    EHTTP_CHECKOUT       = 22,        ///< CHECKOUT
+    EHTTP_MERGE          = 23,        ///< MERGE
     /* upnp */
-    EHTTP_MSEARCH        = 20,        ///< M-SEARCH
-    EHTTP_NOTIFY         = 21,        ///< NOTIFY
-    EHTTP_SUBSCRIBE      = 22,        ///< SUBSCRIBE
-    EHTTP_UNSUBSCRIBE    = 23,        ///< UNSUBSCRIBE
+    EHTTP_MSEARCH        = 24,        ///< M-SEARCH
+    EHTTP_NOTIFY         = 25,        ///< NOTIFY
+    EHTTP_SUBSCRIBE      = 26,        ///< SUBSCRIBE
+    EHTTP_UNSUBSCRIBE    = 27,        ///< UNSUBSCRIBE
     /* RFC-5789 */
-    EHTTP_PATCH          = 24,        ///< PATCH
-    EHTTP_PURGE          = 25,        ///< PURGE
+    EHTTP_PATCH          = 28,        ///< PATCH
+    EHTTP_PURGE          = 29,        ///< PURGE
+    /* CalDAV */
+    EHTTP_MKCALENDAR     = 30,        ///< MKCALENDAR
+    /* RFC-2068, section 19.6.1.2 */
+    EHTTP_LINK           = 31,        ///< LINK
+    EHTTP_UNLINK         = 32,        ///< UNLINK
 };
 
 /** HTTP status codes. */
