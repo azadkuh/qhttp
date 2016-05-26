@@ -48,6 +48,16 @@ public:
     }
 };
 
+/// QHash/QMap iterators are incompatibility with range for
+template<class Iterator, class Func>
+void for_each(Iterator first, Iterator last, Func&& f) {
+    while ( first != last ) {
+        f( first );
+        ++first;
+    }
+}
+
+
 /** Request method enumeration.
  * @note Taken from http_parser.h */
 enum THttpMethod {
