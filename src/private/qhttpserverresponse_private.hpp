@@ -22,7 +22,8 @@
 namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
-class QHttpResponsePrivate : public HttpWriter<HttpResponseBase, QHttpResponsePrivate>
+class QHttpResponsePrivate :
+    public details::HttpWriter<details::HttpResponseBase, QHttpResponsePrivate>
 {
     Q_DECLARE_PUBLIC(QHttpResponse)
 

@@ -19,7 +19,8 @@ namespace qhttp {
 namespace client {
 ///////////////////////////////////////////////////////////////////////////////
 
-class QHttpClientPrivate : public HttpParser<QHttpClientPrivate>
+class QHttpClientPrivate :
+    public details::HttpParser<QHttpClientPrivate>
 {
     Q_DECLARE_PUBLIC(QHttpClient)
 

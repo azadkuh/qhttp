@@ -18,7 +18,8 @@
 namespace qhttp {
 namespace client {
 ///////////////////////////////////////////////////////////////////////////////
-class QHttpResponsePrivate : public HttpReader<HttpResponseBase>
+class QHttpResponsePrivate :
+    public details::HttpReader<details::HttpResponseBase>
 {
     Q_DECLARE_PUBLIC(QHttpResponse)
     QHttpResponse* const    q_ptr;

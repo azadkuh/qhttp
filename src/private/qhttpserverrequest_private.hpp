@@ -18,7 +18,7 @@
 namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
-class QHttpRequestPrivate : public HttpReader<HttpRequestBase>
+class QHttpRequestPrivate : public details::HttpReader<details::HttpRequestBase>
 {
 protected:
     Q_DECLARE_PUBLIC(QHttpRequest)

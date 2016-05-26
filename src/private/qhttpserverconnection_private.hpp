@@ -24,7 +24,8 @@
 namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
-class QHttpConnectionPrivate  : public HttpParser<QHttpConnectionPrivate>
+class QHttpConnectionPrivate  :
+    public details::HttpParser<QHttpConnectionPrivate>
 {
 protected:
     Q_DECLARE_PUBLIC(QHttpConnection)

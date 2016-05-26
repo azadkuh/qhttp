@@ -19,7 +19,8 @@
 namespace qhttp {
 namespace client {
 ///////////////////////////////////////////////////////////////////////////////
-class QHttpRequestPrivate : public HttpWriter<HttpRequestBase, QHttpRequestPrivate>
+class QHttpRequestPrivate :
+    public details::HttpWriter<details::HttpRequestBase, QHttpRequestPrivate>
 {
     Q_DECLARE_PUBLIC(QHttpRequest)
 
