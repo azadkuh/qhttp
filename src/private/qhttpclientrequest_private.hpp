@@ -9,7 +9,7 @@
 #ifndef QHTTPCLIENT_REQUEST_PRIVATE_HPP
 #define QHTTPCLIENT_REQUEST_PRIVATE_HPP
 ///////////////////////////////////////////////////////////////////////////////
-#include "qhttpbase.hpp"
+#include "httpwriter.hxx"
 #include "qhttpclient.hpp"
 #include "qhttpclientrequest.hpp"
 

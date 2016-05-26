@@ -9,7 +9,7 @@
 #ifndef QHTTPSERVER_RESPONSE_PRIVATE_HPP
 #define QHTTPSERVER_RESPONSE_PRIVATE_HPP
 ///////////////////////////////////////////////////////////////////////////////
-#include "qhttpbase.hpp"
+#include "httpwriter.hxx"
 #include "qhttpserverresponse.hpp"
 #include "qhttpserver.hpp"
 #include "qhttpserverconnection.hpp"
