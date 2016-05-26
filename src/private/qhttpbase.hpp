@@ -22,77 +22,28 @@ namespace qhttp {
 namespace details {
 ///////////////////////////////////////////////////////////////////////////////
 
-class HttpBase
+struct HttpBase
 {
-public:
-    THeaderHash         iheaders;
-    QString             iversion;
-};
+    QString     iversion;
+    THeaderHash iheaders;
+}; // struct HttpBase
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class HttpRequestBase : public HttpBase
+struct HttpRequestBase : public HttpBase
 {
-public:
-    QUrl                iurl;
-    THttpMethod         imethod;
-};
+    QUrl        iurl;
+    THttpMethod imethod;
+}; // HttpRequestBase
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class HttpResponseBase : public HttpBase
+struct HttpResponseBase : public HttpBase
 {
-public:
-    HttpResponseBase() {
-        iversion    = "1.1";
-    }
+    TStatusCode istatus = ESTATUS_BAD_REQUEST;
 
-public:
-    TStatusCode         istatus = ESTATUS_BAD_REQUEST;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
-// usage in client::QHttpResponse, server::QHttpRequest
-template<class TBase>
-class HttpReader : public TBase
-{
-public:
-    enum TReadState {
-        EEmpty,
-        EPartial,
-        EComplete,
-        ESent
-    };
-
-public:
-    void            collectData(int atMost) {
-        icollectCapacity = atMost;
-        icollectedData.clear();
-        icollectedData.reserve(atMost);
-    }
-
-    bool            shouldCollect() const {
-        return icollectCapacity > 0;
-    }
-
-    bool            append(const char* data, size_t length) {
-        int currentLength = icollectedData.length();
-
-        if ( (currentLength + (int)length) >= icollectCapacity )
-            return false;       // capacity if full
-
-        icollectedData.append(data, length);
-        return true;
-    }
-
-public:
-    TReadState      ireadState = EEmpty;
-    bool            isuccessful = false;
-
-    int             icollectCapacity = 0;
-    QByteArray      icollectedData;
-};
+    HttpResponseBase() { iversion = "1.1"; }
+}; // HttpResponseBase
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -275,106 +226,6 @@ protected:
     http_parser_settings    iparserSettings;
 };
 
-///////////////////////////////////////////////////////////////////////////////
-#if 0
-template<class T>
-class HttpWriterBase
-{
-public:
-    explicit    HttpWriterBase() {
-    }
-
-    virtual    ~HttpWriterBase() {
-    }
-
-    void        initialize() {
-        reset();
-
-        if ( itcpSocket ) {
-            // first disconnects previous dangling lambdas
-            QObject::disconnect(itcpSocket, &QTcpSocket::bytesWritten, 0, 0);
-
-            QObject::connect(itcpSocket,  &QTcpSocket::bytesWritten, [this](qint64 ){
-                if ( itcpSocket->bytesToWrite() == 0 )
-                    static_cast<T*>(this)->allBytesWritten();
-
-            });
-
-        } else if ( ilocalSocket ) {
-            // first disconnects previous dangling lambdas
-            QObject::disconnect(ilocalSocket, &QLocalSocket::bytesWritten, 0, 0);
-
-            QObject::connect(ilocalSocket, &QLocalSocket::bytesWritten, [this](qint64 ){
-                if ( ilocalSocket->bytesToWrite() == 0 )
-                    static_cast<T*>(this)->allBytesWritten();
-            });
-        }
-    }
-
-    void        reset() {
-        iheaderWritten   = false;
-        ifinished        = false;
-    }
-
-public:
-    bool        addHeader(const QByteArray &field, const QByteArray &value) {
-        if ( ifinished )
-            return false;
-
-        static_cast<T*>(this)->iheaders.insert(field.toLower(), value);
-        return true;
-    }
-
-    bool        writeHeader(const QByteArray& field, const QByteArray& value) {
-        if ( ifinished )
-            return false;
-
-        QByteArray buffer = QByteArray(field)
-                            .append(": ")
-                            .append(value)
-                            .append("\r\n");
-        writeRaw(buffer);
-        return true;
-    }
-
-    bool        writeData(const QByteArray& data) {
-        if ( ifinished )
-            return false;
-
-        static_cast<T*>(this)->ensureWritingHeaders();
-        writeRaw(data);
-        return true;
-    }
-
-    bool        endPacket(const QByteArray& data) {
-        if ( !writeData(data) )
-            return false;
-
-        if ( itcpSocket )
-            itcpSocket->flush();
-        else if ( ilocalSocket )
-            ilocalSocket->flush();
-
-        ifinished = true;
-        return true;
-    }
-
-protected:
-    void        writeRaw(const QByteArray &data) {
-        if ( itcpSocket )
-            itcpSocket->write(data);
-        else if ( ilocalSocket )
-            ilocalSocket->write(data);
-    }
-
-public:
-    QTcpSocket*         itcpSocket   = nullptr;
-    QLocalSocket*       ilocalSocket = nullptr;
-
-    bool                iheaderWritten;
-    bool                ifinished;
-};
-#endif
 ///////////////////////////////////////////////////////////////////////////////
 } // namespace details
 } // namespace qhttp

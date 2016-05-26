@@ -10,7 +10,7 @@
 #define QHTTPCLIENT_RESPONSE_PRIVATE_HPP
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "qhttpbase.hpp"
+#include "httpreader.hxx"
 #include "qhttpclient.hpp"
 #include "qhttpclientresponse.hpp"
 

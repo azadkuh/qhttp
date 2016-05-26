@@ -10,7 +10,7 @@
 #define QHTTPSERVER_REQUEST_PRIVATE_HPP
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "qhttpbase.hpp"
+#include "httpreader.hxx"
 #include "qhttpserverrequest.hpp"
 #include "qhttpserverconnection.hpp"
 
