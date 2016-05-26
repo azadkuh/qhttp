@@ -11,7 +11,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "qhttpserverconnection.hpp"
-
+#include "httpparser.hxx"
 #include "qhttpserverrequest.hpp"
 #include "qhttpserverresponse.hpp"
 

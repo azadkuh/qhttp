@@ -11,6 +11,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "qhttpclient.hpp"
+#include "httpparser.hxx"
 #include "qhttpclientrequest_private.hpp"
 #include "qhttpclientresponse_private.hpp"
 
