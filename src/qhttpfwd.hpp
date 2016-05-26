@@ -34,12 +34,12 @@ class THeaderHash : public QHash<QByteArray, QByteArray>
 {
 public:
     /** checks for a header item, regardless of the case of the characters. */
-    inline bool    has(const QByteArray& key) const {
+    bool    has(const QByteArray& key) const {
         return contains(key.toLower());
     }
 
     /** checks if a header has the specified value ignoring the case of the characters. */
-    inline bool    keyHasValue(const QByteArray& key, const QByteArray& value) const {
+    bool    keyHasValue(const QByteArray& key, const QByteArray& value) const {
         if ( !contains(key) )
             return false;
 
@@ -159,7 +159,7 @@ class QHttpConnectionPrivate;
 class QHttpRequestPrivate;
 class QHttpResponsePrivate;
 
-typedef std::function<void (QHttpRequest*, QHttpResponse*)>     TServerHandler;
+using TServerHandler = std::function<void (QHttpRequest*, QHttpResponse*)>;
 
 ///////////////////////////////////////////////////////////////////////////////
 } // namespace server

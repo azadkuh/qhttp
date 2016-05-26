@@ -31,10 +31,6 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-typedef std::function<void (QByteArray)>     TDataHandler;
-typedef std::function<void (void)>           TEndHandler;
-
-///////////////////////////////////////////////////////////////////////////////
 /** an interface for input (incoming) HTTP packets.
  * server::QHttpRequest or client::QHttpResponse inherit from this class. */
 class QHTTP_API QHttpAbstractInput : public QObject
@@ -78,20 +74,23 @@ public:
      * @param dataHandler a std::function or lambda handler to receive incoming data.
      * @note if you set this handler, the data() signal won't be emitted anymore.
      */
-    void                        onData(const TDataHandler& dataHandler) {
-        QObject::connect(this, &QHttpAbstractInput::data, [dataHandler](QByteArray data){
-            dataHandler(data);
-        });
+    template<class Func>
+    void                        onData(Func&& f) {
+        QObject::connect(this, &QHttpAbstractInput::data,
+                         std::forward<Func&&>(f)
+                         );
     }
+
 
     /** optionally set a handler for end() signal.
      * @param endHandler a std::function or lambda handler to receive end notification.
      * @note if you set this handler, the end() signal won't be emitted anymore.
      */
-    void                        onEnd(const TEndHandler& endHandler) {
-        QObject::connect(this, &QHttpAbstractInput::end, [endHandler](){
-            endHandler();
-        });
+    template<class Func>
+    void                        onEnd(Func&& f) {
+        QObject::connect(this, &QHttpAbstractInput::end,
+                std::forward<Func&&>(f)
+                );
     }
 
 public:

@@ -46,8 +46,8 @@ public:
         }
     };
 
-    typedef QScopedPointer<BackendServer<QTcpServer>>   TTcpServer;
-    typedef QScopedPointer<BackendServer<QLocalServer>> TLocalServer;
+    using TTcpServer   = QScopedPointer<BackendServer<QTcpServer>>;
+    using TLocalServer = QScopedPointer<BackendServer<QLocalServer>>;
 
 public:
     quint32         itimeOut = 0;

@@ -19,8 +19,8 @@
 namespace qhttp {
 namespace client {
 ///////////////////////////////////////////////////////////////////////////////
-typedef std::function<void (QHttpRequest*)>     TRequstHandler;
-typedef std::function<void (QHttpResponse*)>    TResponseHandler;
+using TRequstHandler   = std::function<void (QHttpRequest*)>;
+using TResponseHandler = std::function<void (QHttpResponse*)>;
 
 /** a simple and async HTTP client class which sends a request to an HTTP server and parses the
  *  corresponding response.
