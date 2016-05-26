@@ -1,11 +1,20 @@
 # 3rdparty, tmp and build direcotry
-3rdparty
-tmp
-xbin
-docs
+3rdparty/
+tmp/
+xbin/
+build/
+docs/
 res/keys
 res/
 TODO.md
+
+# vim/neovim / YouCompleteMe
+.vimrc
+.gvimrc
+init.vim
+Session.vim
+.ycm_extra_conf.*
+.color_coded*
 tags
 
 # ahh! OSX finder!
@@ -32,10 +41,6 @@ Makefile*
 *_plugin_import.cpp
 *.swp
 
-# java files
-*.jar
-*.class
-
 # Visual studio
 *.htm
 *.html
@@ -51,6 +56,5 @@ Makefile*
 
 # node.js external modules
 node_modules
-# YouCompleteMe
-.ycm_extra_conf.*
+
 
