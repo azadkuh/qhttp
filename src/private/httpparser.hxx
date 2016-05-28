@@ -17,7 +17,7 @@ namespace details {
 ///////////////////////////////////////////////////////////////////////////////
 
 
-// usage in client::QHttpClient, server::QHttpConnection
+/// base HttpParser based on joyent http_parser
 template<class TImpl>
 class HttpParser
 {
@@ -46,36 +46,36 @@ public:
     }
 
 public: // callback functions for http_parser_settings
-    static int onMessageBegin(http_parser* parser) {
-        return me(parser)->messageBegin(parser);
+    static int onMessageBegin(http_parser* p) {
+        return me(p)->messageBegin(p);
     }
 
-    static int onUrl(http_parser* parser, const char* at, size_t length) {
-        return me(parser)->url(parser, at, length);
+    static int onUrl(http_parser* p, const char* at, size_t length) {
+        return me(p)->url(p, at, length);
     }
 
-    static int onStatus(http_parser* parser, const char* at, size_t length) {
-        return me(parser)->status(parser, at, length);
+    static int onStatus(http_parser* p, const char* at, size_t length) {
+        return me(p)->status(p, at, length);
     }
 
-    static int onHeaderField(http_parser* parser, const char* at, size_t length) {
-        return me(parser)->headerField(parser, at, length);
+    static int onHeaderField(http_parser* p, const char* at, size_t length) {
+        return me(p)->headerField(p, at, length);
     }
 
-    static int onHeaderValue(http_parser* parser, const char* at, size_t length) {
-        return me(parser)->headerValue(parser, at, length);
+    static int onHeaderValue(http_parser* p, const char* at, size_t length) {
+        return me(p)->headerValue(p, at, length);
     }
 
-    static int onHeadersComplete(http_parser* parser) {
-        return me(parser)->headersComplete(parser);
+    static int onHeadersComplete(http_parser* p) {
+        return me(p)->headersComplete(p);
     }
 
-    static int onBody(http_parser* parser, const char* at, size_t length) {
-        return me(parser)->body(parser, at, length);
+    static int onBody(http_parser* p, const char* at, size_t length) {
+        return me(p)->body(p, at, length);
     }
 
-    static int onMessageComplete(http_parser* parser) {
-        return me(parser)->messageComplete(parser);
+    static int onMessageComplete(http_parser* p) {
+        return me(p)->messageComplete(p);
     }
 
 
@@ -98,6 +98,18 @@ protected:
     static auto me(http_parser* p) {
         return static_cast<TImpl*>(p->data);
     }
+}; //
+
+/// basic request parser (server)
+template<class TImpl>
+struct HttpRequestParser : public HttpParser<TImpl> {
+    HttpRequestParser() : HttpParser<TImpl>(HTTP_REQUEST) {}
+};
+
+/// basic response parser (clinet)
+template<class TImpl>
+struct HttpResponseParser : public HttpParser<TImpl> {
+    HttpResponseParser() : HttpParser<TImpl>(HTTP_RESPONSE) {}
 };
 
 ///////////////////////////////////////////////////////////////////////////////
