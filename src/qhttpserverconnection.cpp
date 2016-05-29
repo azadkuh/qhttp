@@ -63,12 +63,12 @@ QHttpConnection::timerEvent(QTimerEvent *) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// if user closes the connection, ends the response or by any other reason
-//  the socket be disconnected, then the irequest and iresponse instances may bhave been deleted.
-//  In these situations reading more http body or emitting end() for incoming request
-//  are not possible.
-#define CHECK_FOR_DISCONNECTED  if ( ilastRequest == nullptr ) \
-    return 0;
+// if user closes the connection, ends the response or by any other reason the
+// socket disconnects, then the irequest and iresponse instances may have
+// been deleted. In these situations reading more http body or emitting end()
+// for incoming request are not possible:
+// if ( ilastRequest == nullptr )
+//     return 0;
 
 
 int
@@ -93,7 +93,8 @@ QHttpConnectionPrivate::url(http_parser*, const char* at, size_t length) {
 
 int
 QHttpConnectionPrivate::headerField(http_parser*, const char* at, size_t length) {
-    CHECK_FOR_DISCONNECTED
+    if ( ilastResponse == nullptr )
+        return 0;
 
     // insert the header we parsed previously
     // into the header map
@@ -116,7 +117,8 @@ QHttpConnectionPrivate::headerField(http_parser*, const char* at, size_t length)
 
 int
 QHttpConnectionPrivate::headerValue(http_parser*, const char* at, size_t length) {
-    CHECK_FOR_DISCONNECTED
+    if ( ilastResponse == nullptr )
+        return 0;
 
     itempHeaderValue.append(at, length);
     return 0;
@@ -124,7 +126,8 @@ QHttpConnectionPrivate::headerValue(http_parser*, const char* at, size_t length)
 
 int
 QHttpConnectionPrivate::headersComplete(http_parser* parser) {
-    CHECK_FOR_DISCONNECTED
+    if ( ilastResponse == nullptr )
+        return 0;
 
     ilastRequest->d_func()->iurl = QUrl(itempUrl);
 
@@ -180,7 +183,8 @@ QHttpConnectionPrivate::headersComplete(http_parser* parser) {
 
 int
 QHttpConnectionPrivate::body(http_parser*, const char* at, size_t length) {
-    CHECK_FOR_DISCONNECTED
+    if ( ilastResponse == nullptr )
+        return 0;
 
     ilastRequest->d_func()->ireadState = QHttpRequestPrivate::EPartial;
 
@@ -197,7 +201,8 @@ QHttpConnectionPrivate::body(http_parser*, const char* at, size_t length) {
 
 int
 QHttpConnectionPrivate::messageComplete(http_parser*) {
-    CHECK_FOR_DISCONNECTED
+    if ( ilastResponse == nullptr )
+        return 0;
 
      // request is ready to be dispatched
     ilastRequest->d_func()->isuccessful = true;

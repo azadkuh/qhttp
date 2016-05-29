@@ -166,12 +166,13 @@ QHttpClient::onResponseReady(QHttpResponse *res) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// if user closes the connection, ends the response or by any other reason
-//  the socket be disconnected, then the iresponse instance may has been deleted.
-//  In these situations reading more http body or emitting end() for incoming response
-//  is not possible.
-#define CHECK_FOR_DISCONNECTED  if ( ilastResponse == nullptr ) \
-    return 0;
+// if server closes the connection, ends the response or by any other reason
+// the socket disconnects, then the irequest and iresponse instances may have
+// been deleted. In these situations reading more http body or emitting end()
+// for incoming request are not possible:
+// if ( ilastRequest == nullptr )
+//     return 0;
+
 
 
 int
@@ -199,7 +200,8 @@ QHttpClientPrivate::status(http_parser* parser, const char* at, size_t length) {
 
 int
 QHttpClientPrivate::headerField(http_parser*, const char* at, size_t length) {
-    CHECK_FOR_DISCONNECTED
+    if ( ilastResponse == nullptr )
+        return 0;
 
     // insert the header we parsed previously
     // into the header map
@@ -229,7 +231,8 @@ QHttpClientPrivate::headerValue(http_parser*, const char* at, size_t length) {
 
 int
 QHttpClientPrivate::headersComplete(http_parser*) {
-    CHECK_FOR_DISCONNECTED
+    if ( ilastResponse == nullptr )
+        return 0;
 
     // Insert last remaining header
     ilastResponse->d_func()->iheaders.insert(
@@ -247,7 +250,8 @@ QHttpClientPrivate::headersComplete(http_parser*) {
 
 int
 QHttpClientPrivate::body(http_parser*, const char* at, size_t length) {
-    CHECK_FOR_DISCONNECTED
+    if ( ilastResponse == nullptr )
+        return 0;
 
     ilastResponse->d_func()->ireadState = QHttpResponsePrivate::EPartial;
 
@@ -264,7 +268,8 @@ QHttpClientPrivate::body(http_parser*, const char* at, size_t length) {
 
 int
 QHttpClientPrivate::messageComplete(http_parser*) {
-    CHECK_FOR_DISCONNECTED
+    if ( ilastResponse == nullptr )
+        return 0;
 
     // response is ready to be  dispatched
     ilastResponse->d_func()->isuccessful = true;
