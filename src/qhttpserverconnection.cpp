@@ -126,23 +126,7 @@ int
 QHttpConnectionPrivate::headersComplete(http_parser* parser) {
     CHECK_FOR_DISCONNECTED
 
-#if defined(USE_CUSTOM_URL_CREATOR)
-    // get parsed url
-    struct http_parser_url urlInfo;
-    int r = http_parser_parse_url(itempUrl.constData(),
-                                  itempUrl.size(),
-                                  parser->method == HTTP_CONNECT,
-                                  &urlInfo);
-    Q_ASSERT(r == 0);
-    Q_UNUSED(r);
-
-    ilastRequest->d_func()->iurl = createUrl(
-                                       itempUrl.constData(),
-                                       urlInfo
-                                       );
-#else
     ilastRequest->d_func()->iurl = QUrl(itempUrl);
-#endif // defined(USE_CUSTOM_URL_CREATOR)
 
     // set method
     ilastRequest->d_func()->imethod =
@@ -220,50 +204,6 @@ QHttpConnectionPrivate::messageComplete(http_parser*) {
     ilastRequest->d_func()->ireadState  = QHttpRequestPrivate::EComplete;
     return 0;
 }
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-#if defined(USE_CUSTOM_URL_CREATOR)
-///////////////////////////////////////////////////////////////////////////////
-/* URL Utilities */
-#define HAS_URL_FIELD(info, field) (info.field_set &(1 << (field)))
-
-#define GET_FIELD(data, info, field)                                                               \
-    QString::fromLatin1(data + info.field_data[field].off, info.field_data[field].len)
-
-#define CHECK_AND_GET_FIELD(data, info, field)                                                     \
-    (HAS_URL_FIELD(info, field) ? GET_FIELD(data, info, field) : QString())
-
-QUrl
-QHttpConnectionPrivate::createUrl(const char *urlData, const http_parser_url &urlInfo) {
-    QUrl url;
-    url.setScheme(CHECK_AND_GET_FIELD(urlData, urlInfo, UF_SCHEMA));
-    url.setHost(CHECK_AND_GET_FIELD(urlData, urlInfo, UF_HOST));
-    // Port is dealt with separately since it is available as an integer.
-    url.setPath(CHECK_AND_GET_FIELD(urlData, urlInfo, UF_PATH));
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-    url.setQuery(CHECK_AND_GET_FIELD(urlData, urlInfo, UF_QUERY));
-#else
-    if (HAS_URL_FIELD(urlInfo, UF_QUERY)) {
-        url.setEncodedQuery(QByteArray(urlData + urlInfo.field_data[UF_QUERY].off,
-                                       urlInfo.field_data[UF_QUERY].len));
-    }
-#endif
-    url.setFragment(CHECK_AND_GET_FIELD(urlData, urlInfo, UF_FRAGMENT));
-    url.setUserInfo(CHECK_AND_GET_FIELD(urlData, urlInfo, UF_USERINFO));
-
-    if (HAS_URL_FIELD(urlInfo, UF_PORT))
-        url.setPort(urlInfo.port);
-
-    return url;
-}
-
-#undef CHECK_AND_SET_FIELD
-#undef GET_FIELD
-#undef HAS_URL_FIELD
-///////////////////////////////////////////////////////////////////////////////
-#endif // defined(USE_CUSTOM_URL_CREATOR)
 
 ///////////////////////////////////////////////////////////////////////////////
 } // namespace server
