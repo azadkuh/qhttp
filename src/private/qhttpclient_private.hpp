@@ -120,14 +120,12 @@ protected:
     }
 
     void onDispatchResponse() {
-        // if ilastResponse has been sent previously, just return
-        auto& readState = ilastResponse->d_func()->ireadState;
-
-        if ( !ilastResponse || readState == QHttpResponsePrivate::ESent )
+        if ( ilastResponse == nullptr )
             return;
 
-        readState = QHttpResponsePrivate::ESent;
-        emit ilastResponse->end();
+        ilastResponse->d_func()->finalizeSending([this]{
+            emit ilastResponse->end();
+        });
     }
 
 private:

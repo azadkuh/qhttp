@@ -50,6 +50,17 @@ public:
         return true;
     }
 
+    // call cb if the message is not finalized yet
+    template<class Func>
+    void finalizeSending(Func cb) {
+        if ( ireadState != EComplete ) {
+            ireadState  = EComplete;
+            isuccessful = true;
+
+            cb();
+        }
+    }
+
 public:
     bool       isuccessful      = false;
     TReadState ireadState       = EEmpty;

@@ -49,7 +49,7 @@ public:
                 [this](){
                     // if socket drops and http_parser can not call
                     // messageComplete, dispatch the ilastRequest
-                    onDispatchRequest();
+                    finalizeConnection();
                     isocket.release();
 
                     if ( ilastRequest )
@@ -59,6 +59,8 @@ public:
                         ilastResponse->deleteLater();
 
                     q_func()->deleteLater();
+                    ilastRequest  = nullptr;
+                    ilastResponse = nullptr;
                 });
 
         QHTTP_LINE_DEEPLOG
@@ -87,18 +89,15 @@ public:
 
             parse(buffer, readLength);
         }
-
-        onDispatchRequest();
     }
 
-    void onDispatchRequest() {
-        // if ilastRequest has been sent previously, just return
-        auto& readState = ilastRequest->d_func()->ireadState;
-        if ( !ilastRequest  ||  readState == QHttpRequestPrivate::ESent )
+    void finalizeConnection() {
+        if ( ilastRequest == nullptr )
             return;
 
-        readState = QHttpRequestPrivate::ESent;
-        emit ilastRequest->end();
+        ilastRequest->d_func()->finalizeSending([this]{
+            emit ilastRequest->end();
+        });
     }
 
 public:
