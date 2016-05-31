@@ -27,9 +27,10 @@ class QHttpClientPrivate :
 
 public:
     explicit QHttpClientPrivate(QHttpClient* q) : q_ptr(q) {
-        QObject::connect(q_func(), &QHttpClient::disconnected, [this](){
-            release();
-        });
+        QObject::connect(
+            q_func(), &QHttpClient::disconnected,
+            [this](){ release(); }
+        );
 
         QHTTP_LINE_DEEPLOG
     }
@@ -41,10 +42,9 @@ public:
     void release() {
         // if socket drops and http_parser can not call messageComplete,
         // dispatch the ilastResponse
-        onDispatchResponse();
+        finalizeConnection();
 
         isocket.disconnectAllQtConnections();
-        isocket.close();
         isocket.release();
 
         if ( ilastRequest ) {
@@ -115,11 +115,9 @@ protected:
 
             parse(buffer, readLength);
         }
-
-        onDispatchResponse();
     }
 
-    void onDispatchResponse() {
+    void finalizeConnection() {
         if ( ilastResponse == nullptr )
             return;
 

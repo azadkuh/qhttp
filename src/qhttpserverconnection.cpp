@@ -93,7 +93,7 @@ QHttpConnectionPrivate::url(http_parser*, const char* at, size_t length) {
 
 int
 QHttpConnectionPrivate::headerField(http_parser*, const char* at, size_t length) {
-    if ( ilastResponse == nullptr )
+    if ( ilastRequest == nullptr )
         return 0;
 
     // insert the header we parsed previously
@@ -117,7 +117,7 @@ QHttpConnectionPrivate::headerField(http_parser*, const char* at, size_t length)
 
 int
 QHttpConnectionPrivate::headerValue(http_parser*, const char* at, size_t length) {
-    if ( ilastResponse == nullptr )
+    if ( ilastRequest == nullptr )
         return 0;
 
     itempHeaderValue.append(at, length);
@@ -126,7 +126,7 @@ QHttpConnectionPrivate::headerValue(http_parser*, const char* at, size_t length)
 
 int
 QHttpConnectionPrivate::headersComplete(http_parser* parser) {
-    if ( ilastResponse == nullptr )
+    if ( ilastRequest == nullptr )
         return 0;
 
     ilastRequest->d_func()->iurl = QUrl(itempUrl);
@@ -183,14 +183,16 @@ QHttpConnectionPrivate::headersComplete(http_parser* parser) {
 
 int
 QHttpConnectionPrivate::body(http_parser*, const char* at, size_t length) {
-    if ( ilastResponse == nullptr )
+    if ( ilastRequest == nullptr )
         return 0;
 
     ilastRequest->d_func()->ireadState = QHttpRequestPrivate::EPartial;
 
-    if ( ilastRequest->d_func()->shouldCollect() ) {
-        if ( !ilastRequest->d_func()->append(at, length) )
-            onDispatchRequest(); // forcefully dispatch the ilastRequest
+    if ( ilastRequest->d_func()->icollectRequired ) {
+        if ( !ilastRequest->d_func()->append(at, length) ) {
+            // forcefully dispatch the ilastRequest
+            finalizeConnection();
+        }
 
         return 0;
     }
@@ -201,12 +203,11 @@ QHttpConnectionPrivate::body(http_parser*, const char* at, size_t length) {
 
 int
 QHttpConnectionPrivate::messageComplete(http_parser*) {
-    if ( ilastResponse == nullptr )
+    if ( ilastRequest == nullptr )
         return 0;
 
-     // request is ready to be dispatched
-    ilastRequest->d_func()->isuccessful = true;
-    ilastRequest->d_func()->ireadState  = QHttpRequestPrivate::EComplete;
+    // request is done
+    finalizeConnection();
     return 0;
 }
 

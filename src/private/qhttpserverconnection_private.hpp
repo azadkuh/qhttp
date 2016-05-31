@@ -27,41 +27,15 @@ namespace server {
 class QHttpConnectionPrivate  :
     public details::HttpRequestParser<QHttpConnectionPrivate>
 {
-protected:
     Q_DECLARE_PUBLIC(QHttpConnection)
-    QHttpConnection* const q_ptr;
-
-public:
-    QByteArray             itempUrl;
-
-    // Since there can only be one request/response pair per connection at any
-    // time even with pipelining.
-    QHttpRequest*          ilastRequest  = nullptr;
-    QHttpResponse*         ilastResponse = nullptr;
-
-    TServerHandler         ihandler      = nullptr;
 
 public:
     explicit QHttpConnectionPrivate(QHttpConnection* q) : q_ptr(q) {
 
         QObject::connect(
-                q_func(), &QHttpConnection::disconnected,
-                [this](){
-                    // if socket drops and http_parser can not call
-                    // messageComplete, dispatch the ilastRequest
-                    finalizeConnection();
-                    isocket.release();
-
-                    if ( ilastRequest )
-                        ilastRequest->deleteLater();
-
-                    if ( ilastResponse )
-                        ilastResponse->deleteLater();
-
-                    q_func()->deleteLater();
-                    ilastRequest  = nullptr;
-                    ilastResponse = nullptr;
-                });
+            q_func(), &QHttpConnection::disconnected,
+            [this](){ release(); }
+        );
 
         QHTTP_LINE_DEEPLOG
     }
@@ -79,6 +53,27 @@ public:
         } else if ( bend == ELocalSocket ) {
             initLocalSocket(sokDesc);
         }
+    }
+
+    void release() {
+        // if socket drops and http_parser can not call
+        // messageComplete, dispatch the ilastRequest
+        finalizeConnection();
+
+        isocket.disconnectAllQtConnections();
+        isocket.release();
+
+        if ( ilastRequest ) {
+            ilastRequest->deleteLater();
+            ilastRequest  = nullptr;
+        }
+
+        if ( ilastResponse ) {
+            ilastResponse->deleteLater();
+            ilastResponse = nullptr;
+        }
+
+        q_func()->deleteLater();
     }
 
 public:
@@ -158,6 +153,19 @@ private:
                 Qt::QueuedConnection
                 );
     }
+
+protected:
+    QHttpConnection* const q_ptr;
+
+    QByteArray             itempUrl;
+
+    // Since there can only be one request/response pair per connection at any
+    // time even with pipelining.
+    QHttpRequest*          ilastRequest  = nullptr;
+    QHttpResponse*         ilastResponse = nullptr;
+
+    TServerHandler         ihandler      = nullptr;
+
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -255,9 +255,11 @@ QHttpClientPrivate::body(http_parser*, const char* at, size_t length) {
 
     ilastResponse->d_func()->ireadState = QHttpResponsePrivate::EPartial;
 
-    if ( ilastResponse->d_func()->shouldCollect() ) {
-        if ( !ilastResponse->d_func()->append(at, length) )
-            onDispatchResponse(); // forcefully dispatch the ilastResponse
+    if ( ilastResponse->d_func()->icollectRequired ) {
+        if ( !ilastResponse->d_func()->append(at, length) ) {
+            // forcefully dispatch the ilastResponse
+            finalizeConnection();
+        }
 
         return 0;
     }
@@ -271,9 +273,8 @@ QHttpClientPrivate::messageComplete(http_parser*) {
     if ( ilastResponse == nullptr )
         return 0;
 
-    // response is ready to be  dispatched
-    ilastResponse->d_func()->isuccessful = true;
-    ilastResponse->d_func()->ireadState  = QHttpResponsePrivate::EComplete;
+    // response is done
+    finalizeConnection();
     return 0;
 }
 

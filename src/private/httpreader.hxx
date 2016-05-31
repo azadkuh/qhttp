@@ -30,20 +30,20 @@ public:
 
 public:
     void collectData(int atMost) {
+        icollectRequired = true;
         icollectCapacity = atMost;
         icollectedData.clear();
         if ( atMost > 0 )
             icollectedData.reserve(atMost);
     }
 
-    bool shouldCollect() const {
-        return icollectCapacity > 0;
-    }
-
     bool append(const char* data, size_t length) {
+        if ( !icollectRequired ) // not allowed to collect data
+            return false;
+
         int newLength = icollectedData.length() + (int) length;
 
-        if ( shouldCollect()    &&    newLength >= icollectCapacity )
+        if ( icollectCapacity > 0    &&    newLength > icollectCapacity )
             return false; // the capacity is full
 
         icollectedData.append(data, length);
@@ -65,6 +65,8 @@ public:
     bool       isuccessful      = false;
     TReadState ireadState       = EEmpty;
 
+    /// shall I collect incoming body data by myself?
+    bool       icollectRequired = false;
     int        icollectCapacity = 0;
     QByteArray icollectedData;
 };

@@ -75,10 +75,8 @@ public:
      * @note if you set this handler, the data() signal won't be emitted anymore.
      */
     template<class Func>
-    void                        onData(Func&& f) {
-        QObject::connect(this, &QHttpAbstractInput::data,
-                         std::forward<Func&&>(f)
-                         );
+    void                        onData(Func f) {
+        QObject::connect(this, &QHttpAbstractInput::data, f);
     }
 
 
@@ -87,10 +85,8 @@ public:
      * @note if you set this handler, the end() signal won't be emitted anymore.
      */
     template<class Func>
-    void                        onEnd(Func&& f) {
-        QObject::connect(this, &QHttpAbstractInput::end,
-                std::forward<Func&&>(f)
-                );
+    void                        onEnd(Func f) {
+        QObject::connect(this, &QHttpAbstractInput::end, f);
     }
 
 public:
@@ -100,7 +96,9 @@ public:
      *
      * @param atMost maximum acceptable incoming data. if the incoming data
      *  exceeds this value, the connection won't read any more data and
-     *  end() signal will be emitted. -1 means unlimited.
+     *  end() signal will be emitted.
+     *  default value (-1) means read data as "content-length" or unlimited if
+     *  the body size is unknown.
      */
     virtual void                collectData(int atMost = -1) =0;
 
