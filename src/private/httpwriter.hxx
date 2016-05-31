@@ -89,7 +89,7 @@ public:
             const QByteArray& field = cit.key();
             const QByteArray& value = cit.value();
 
-            writeHeader(field, value);
+            this->writeHeader(field, value);
         });
 
         isocket.writeRaw("\r\n");
