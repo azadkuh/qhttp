@@ -5,7 +5,7 @@ osx:CONFIG  -= app_bundle
 
 TARGET       = helloworld
 TEMPLATE     = app
-CONFIG      += c++11
+CONFIG      += c++14
 
 PRJDIR       = ../..
 include($$PRJDIR/commondir.pri)

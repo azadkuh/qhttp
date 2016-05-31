@@ -59,34 +59,28 @@ int main(int argc, char** argv) {
 
     using namespace qhttp::client;
     QHttpClient  client(&app);
-    QByteArray   httpBody;
 
-    QUrl weatherUrl("http://api.openweathermap.org/data/2.5/weather?q=tehran,ir&units=metric&mode=xml");
+    QUrl weatherUrl("http://wttr.in/tehran");
 
-    client.request(qhttp::EHTTP_GET, weatherUrl, [&httpBody](QHttpResponse* res) {
+    client.request(qhttp::EHTTP_GET, weatherUrl, [](QHttpResponse* res) {
         // response handler, called when the HTTP headers of the response are ready
 
         // gather HTTP response data
-        res->onData([&httpBody](const QByteArray& chunk) {
-            httpBody.append(chunk);
-        });
+        res->collectData();
 
         // called when all data in HTTP response have been read.
-        res->onEnd([&httpBody]() {
-            // print the XML body of the response
-            puts("\n[incoming response:]");
-            puts(httpBody.constData());
-            puts("\n\n");
+        res->onEnd([req]() {
+            // save req->collectedData() (as html body) to a file or ...
 
             QCoreApplication::instance()->quit();
         });
 
-        // just for fun! print incoming headers:
-        puts("\n[Headers:]");
-        const qhttp::THeaderHash& hs = res->headers();
-        for ( auto cit = hs.constBegin(); cit != hs.constEnd(); cit++) {
-            printf("%s : %s\n", cit.key().constData(), cit.value().constData());
-        }
+        // just for fun! print headers:
+        qDebug("\n[Headers:]");
+        const auto& hs = res->headers();
+        qhttp::for_each(hs.constBegin(), hs.constEnd(), [](auto cit){
+            qDebug("%s : %s", cit.key().constData(), cit.value().constData());
+        });
     });
 
     // set a timeout for making the request
@@ -94,7 +88,6 @@ int main(int argc, char** argv) {
         qDebug("connecting to HTTP server timed out!");
         QCoreApplication::quit();
     });
-
 
     return app.exec();
 }
