@@ -1,6 +1,7 @@
 TEMPLATE = subdirs
 
 # SUBDIRS += helloworld
+SUBDIRS += postcollector
 # SUBDIRS += basic-server
 # SUBDIRS += benchmark
 # SUBDIRS += nodejs
