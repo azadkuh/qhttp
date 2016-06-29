@@ -5,7 +5,6 @@ osx:CONFIG  -= app_bundle
 
 TARGET       = helloworld
 TEMPLATE     = app
-CONFIG      += c++14
 
 PRJDIR       = ../..
 include($$PRJDIR/commondir.pri)
@@ -13,6 +12,5 @@ include($$PRJDIR/commondir.pri)
 HEADERS   +=
 
 SOURCES   += main.cpp
-
 
 LIBS      += -lqhttp

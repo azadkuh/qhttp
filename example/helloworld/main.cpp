@@ -6,6 +6,8 @@
 #include "qhttpclientrequest.hpp"
 #include "qhttpclientresponse.hpp"
 
+#include "../include/unixcatcher.hpp"
+
 #include <QCoreApplication>
 #include <QCommandLineOption>
 #include <QCommandLineParser>
@@ -14,39 +16,33 @@
 #include <QLocalServer>
 #include <QTimer>
 #include <QFile>
-#include "../include/unixcatcher.hpp"
+///////////////////////////////////////////////////////////////////////////////
+namespace {
 ///////////////////////////////////////////////////////////////////////////////
 
-void    runServer(QCoreApplication& app, const QString& portOrPath) {
+void runServer(const QString& portOrPath) {
     using namespace qhttp::server;
 
-    QHttpServer server(&app);
+    QHttpServer server(qApp);
     // listening tcp port or Unix path
     server.listen(portOrPath, [](QHttpRequest* req, QHttpResponse* res) {
         req->collectData();
 
         req->onEnd([req, res](){
-            // status 200
-            res->setStatusCode(qhttp::ESTATUS_OK);
-            // it's the default header, this line can be omitted.
-            res->addHeader("connection", "close");
+            res->setStatusCode(qhttp::ESTATUS_OK); // status 200
+            res->addHeader("connection", "close"); // optional(default) header
 
             int size = req->collectedData().size();
             auto message = [size]() -> QByteArray {
                 if ( size == 0 )
                     return "Hello World!\n";
 
-                char buffer[33] = {0};
-                qsnprintf(buffer, 32, "Hello!\nyou've sent me %d bytes!\n", size);
+                char buffer[65] = {0};
+                qsnprintf(buffer, 64, "Hello!\nyou've sent me %d bytes!\n", size);
                 return buffer;
             };
-            res->end(message());  // reponse body data
 
-            if ( size > 0 ) {
-            qDebug("\n[ %d bytes of incoming request as:]\n%s\n",
-                    size, req->collectedData().constData()
-                    );
-            }
+            res->end(message());  // reponse body data
         });
 
         const auto& h = req->headers();
@@ -76,18 +72,18 @@ void    runServer(QCoreApplication& app, const QString& portOrPath) {
         return;
     }
 
-    app.exec();                 // application's main event loop
+    qApp->exec(); // application's main event loop
 }
 
-///////////////////////////////////////////////////////////////////////////////
+#if defined(QHTTP_HAS_CLIENT)
 
-void    runClient(QCoreApplication& app, QString url) {
+void runClient(QString url) {
     using namespace qhttp::client;
     // ensure there the url has http://
     if ( !url.startsWith("http://") && !url.startsWith("https://") )
         url.prepend("http://");
 
-    QHttpClient  client(&app);
+    QHttpClient  client(qApp);
 
     bool success = client.request(qhttp::EHTTP_GET, url, [](QHttpResponse* res) {
         // response handler, called when the HTTP headers of the response are ready
@@ -100,7 +96,7 @@ void    runClient(QCoreApplication& app, QString url) {
                     res->collectedData().constData()
                   );
 
-            QCoreApplication::instance()->quit();
+            qApp->quit();
         });
 
         // just for fun! print headers:
@@ -112,20 +108,18 @@ void    runClient(QCoreApplication& app, QString url) {
     });
 
     if ( !success ) {
-        fprintf(stderr, "can not send a request to %s\n", qPrintable(url));
+        qDebug("failed: can not send a request to %s\n", qPrintable(url));
         return;
     }
 
-    app.exec();
+    qApp->exec();
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-void    runWeatherClient(QCoreApplication& app, const QString& cityName) {
+void runWeatherClient(const QString& cityName) {
     using namespace qhttp::client;
 
-    QHttpClient  client(&app);
-    QByteArray   httpBody;
+    QHttpClient client(qApp);
+    QByteArray  httpBody;
 
     QUrl weatherUrl(QString("http://wttr.in/%1").arg(cityName));
 
@@ -145,7 +139,7 @@ void    runWeatherClient(QCoreApplication& app, const QString& cityName) {
             if ( f.open(QFile::WriteOnly) )
                 f.write(httpBody);
 
-            QCoreApplication::instance()->quit();
+            qApp->quit();
         });
 
 
@@ -160,11 +154,18 @@ void    runWeatherClient(QCoreApplication& app, const QString& cityName) {
     // set a timeout for making the request
     client.setConnectingTimeOut(10000, []{
         qDebug("connecting to HTTP server timed out!");
-        QCoreApplication::quit();
+        qApp->quit();
     });
 
-    app.exec();
+    qApp->exec();
 }
+
+
+#endif // QHTTP_HAS_CLIENT
+
+///////////////////////////////////////////////////////////////////////////////
+} // namespace anon
+///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -207,13 +208,19 @@ int main(int argc, char ** argv) {
         const auto& mode = posArgs.at(0);
 
         if ( mode == QLatin1Literal("server") )
-            runServer(app, parser.value("listen"));
+            runServer(parser.value("listen"));
 
+#if defined(QHTTP_HAS_CLIENT)
         else if ( mode == QLatin1Literal("client") )
-            runClient(app, parser.value("url"));
+            runClient(parser.value("url"));
 
         else if ( mode == QLatin1Literal("weather") )
-            runWeatherClient(app, parser.value("geolocation"));
+            runWeatherClient(parser.value("geolocation"));
+#else
+        else if ( mode == QLatin1Literal("client")
+                || mode == QLatin1Literal("weather") )
+            qDebug("qhttp::client has not been enabled at build time");
+#endif // QHTTP_HAS_CLIENT
     }
 
     return 0;

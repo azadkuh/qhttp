@@ -38,6 +38,8 @@ $> curl -X POST -H "my_key: my_value" -H "connection: close" \
 ```
 
 ### client
+if the `qhttp` has been configured by `QHTTP_HAS_CLIENT` (in `commondir.pri`):
+
 to fetch a custom http url:
 ```bash
 $> ./helloworld client --url https://www.google.com/?gws_rd=ssl#q=qt+c%2B%2B11

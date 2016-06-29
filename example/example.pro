@@ -1,11 +1,7 @@
 TEMPLATE = subdirs
 
-# SUBDIRS += helloworld
+SUBDIRS += helloworld
 SUBDIRS += postcollector
-# SUBDIRS += basic-server
-# SUBDIRS += benchmark
-# SUBDIRS += nodejs
-#
-# unix:SUBDIRS += keep-alive
-
+SUBDIRS += basic-server
+SUBDIRS += keep-alive
 

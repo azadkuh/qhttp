@@ -5,15 +5,12 @@ osx:CONFIG  -= app_bundle
 
 TARGET       = basic-server
 TEMPLATE     = app
-CONFIG      += c++11
 
 PRJDIR       = ../..
 include($$PRJDIR/commondir.pri)
 
-HEADERS   +=
+HEADERS     +=
 
-SOURCES   += \
-    main.cpp
+SOURCES     += main.cpp
 
-
-LIBS      += -lqhttp
+LIBS        += -lqhttp

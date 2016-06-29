@@ -9,60 +9,72 @@
 
 #include "../include/unixcatcher.hpp"
 
-using namespace qhttp::server;
+namespace {
 ///////////////////////////////////////////////////////////////////////////////
+using namespace qhttp::server;
 
-/** connection class for gathering incomming chunks of data from HTTP client. */
+/** connection class for gathering incoming chunks of data from HTTP client.
+ * @warning please note that the incoming request instance is the parent of
+ * this QObject instance. Thus this class will be deleted automatically.
+ * */
 class ClientHandler : public QObject
 {
 public:
-    explicit        ClientHandler(quint64 id, QHttpRequest* req, QHttpResponse* res)
-        : QObject(req), iconnectionId(id) {
-        // append chunks of data into uniform body.
-        req->onData([this](const QByteArray& chunk) {
-            ibody.append(chunk);
-        });
+    explicit ClientHandler(quint64 id, QHttpRequest* req, QHttpResponse* res)
+        : QObject(req /* as parent*/), iconnectionId(id) {
+
+        qDebug("connection #%llu ..." , id);
+
+        // automatically collect http body(data) upto 1KB
+        req->collectData(1024);
 
         // when all the incoming data are gathered, send some response to client.
         req->onEnd([this, req, res]() {
 
-            printf("connection (#%llu ): request from %s:%d\nurl: %s\n",
+            qDebug("  connection (#%llu): request from %s:%d\n  method: %s url: %s",
                    iconnectionId,
                    req->remoteAddress().toUtf8().constData(),
                    req->remotePort(),
+                   qhttp::Stringify::toString(req->method()),
                    qPrintable(req->url().toString())
                    );
 
-            if ( req->method() == qhttp::EHTTP_POST )
-                printf("    body: \"%s\"\n", ibody.constData());
+            if ( req->collectedData().size() > 0 )
+                qDebug("  body (#%llu): %s",
+                        iconnectionId,
+                        req->collectedData().constData()
+                        );
 
-            QString body = QString("Hello World\n    packet count = %1\n    time = %2\n")
-                           .arg(iconnectionId)
-                           .arg(QLocale::c().toString(
-                                    QDateTime::currentDateTime(),
-                                    "yyyy-MM-dd hh:mm:ss")
-                                );
+            QString message =
+                QString("Hello World\n  packet count = %1\n  time = %2\n")
+                .arg(iconnectionId)
+                .arg(QLocale::c().toString(QDateTime::currentDateTime(),
+                                           "yyyy-MM-dd hh:mm:ss")
+                );
 
             res->setStatusCode(qhttp::ESTATUS_OK);
-            res->addHeaderValue("content-length", body.size());
-            res->end(body.toUtf8());
+            res->addHeaderValue("content-length", message.size());
+            res->end(message.toUtf8());
 
             if ( req->headers().keyHasValue("command", "quit") ) {
-                printf("a quit has been requested!\n");
+                qDebug("\n\na quit has been requested!\n");
                 QCoreApplication::instance()->quit();
             }
         });
     }
 
-    virtual        ~ClientHandler() {
-        puts("~ClientHandler(): I've being called automatically!");
+    virtual ~ClientHandler() {
+        qDebug("  ~ClientHandler(#%llu): I've being called automatically!",
+                iconnectionId
+                );
     }
 
 protected:
-    quint64         iconnectionId;
-    QByteArray      ibody;
+    quint64    iconnectionId;
 };
 
+///////////////////////////////////////////////////////////////////////////////
+} // namespace anon
 ///////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char ** argv) {
@@ -80,7 +92,7 @@ int main(int argc, char ** argv) {
 
     QHttpServer server(&app);
     server.listen(portOrUnixSocket, [&](QHttpRequest* req, QHttpResponse* res){
-        new ClientHandler(iconnectionCounter++, req, res);
+        new ClientHandler(++iconnectionCounter, req, res);
         // this ClientHandler object will be deleted automatically when:
         // socket disconnects (automatically after data has been sent to the client)
         //     -> QHttpConnection destroys
