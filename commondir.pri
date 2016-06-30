@@ -10,6 +10,9 @@ CONFIG  += c++11 c++14
 unix {
     TEMPDIR      = $$PRJDIR/tmp/unix/$$TARGET
     macx:TEMPDIR = $$PRJDIR/tmp/osx/$$TARGET
+    # add application working directory to RPATH
+    # helps finding the *.so files in app's working dir
+    QMAKE_LFLAGS += "-Wl,-rpath,\'\$$ORIGIN\'"
 }
 
 win32 {
