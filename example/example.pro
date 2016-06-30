@@ -1,5 +1,7 @@
 TEMPLATE = subdirs
 
+include(../commondir.pri)
+
 SUBDIRS += helloworld
 SUBDIRS += postcollector
 SUBDIRS += basic-server
