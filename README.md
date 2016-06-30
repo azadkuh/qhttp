@@ -18,23 +18,24 @@
 containing both server and client side classes for managing connections,
 parsing and building HTTP requests and responses.
 
-This project is inspired by
-[nikhilm/qhttpserver](https://github.com/nikhilm/qhttpserver) effort to
-implement a Qt HTTP server. `QHttp` pushes the idea further by implementing
-client classes and better memory management, a lot more Node.js-like API, ...
-
-* the fantastic [nodejs/http-parser](https://github.com/nodejs/http-parser) is
-the core parser of HTTP requests (server mode) and responses (client mode).
-* By using `std::function` and `c++14 generic lambda`, the API is intentionally similar
+- the objective of `QHttp` is being light weight with a simple API for Qt
+developers to implement RESTful web services in private (internal) zones.
+[more](#disclaimer)
+- by using `std::function` and `c++14 generic lambda`, the API is intentionally similar
 to the [Node.js' http module](http://nodejs.org/api/http.html). Asynchronous
 and non-blocking HTTP programming is quite easy with `QHttp`. have a look at
 [sample codes](#sample-codes).
-* the objective of `QHttp` is being light weight with a simple API for Qt
-developers to implement RESTful web services in private (internal) zones.
-[more](#disclaimer)
+- the fantastic [nodejs/http-parser](https://github.com/nodejs/http-parser)
+(which is a single pair of `*.h/*.c` files) is the only dependency of the
+`QHttp`.
 
 > **attention**: c++14 is the minimum requirement for version 3.0+
 > please see [releases](https://github.com/azadkuh/qhttp/releases)
+
+This project was inspired by
+[nikhilm/qhttpserver](https://github.com/nikhilm/qhttpserver) effort to
+implement a Qt HTTP server. `QHttp` pushes the idea further by implementing
+client side classes, better memory management, a lot more Node.js-like API, ...
 
 ## Sample codes
 [TOC](#table-of-contents)
@@ -75,14 +76,14 @@ int main(int argc, char** argv) {
     QUrl        weatherUrl("http://wttr.in/tehran");
 
     client.request(qhttp::EHTTP_GET, weatherUrl, [](QHttpResponse* res) {
-        // response handler, called when the HTTP headers of the response are ready
+        // response handler, called when the incoming HTTP headers are ready
 
-        // gather HTTP response data
+        // gather HTTP response data (HTTP body)
         res->collectData();
 
-        // called when all data in HTTP response have been read.
-        res->onEnd([req]() {
-            // save req->collectedData() (as html body) to a file or ...
+        // when all data in HTTP response have been read:
+        res->onEnd([&]() {
+            writeTo("weather.html", res->collectedData());
 
             // done! now quit the application
             qApp->quit();
@@ -90,8 +91,7 @@ int main(int argc, char** argv) {
 
         // just for fun! print incoming headers:
         qDebug("\n[Headers:]");
-        const auto& hs = res->headers();
-        qhttp::for_each(hs.constBegin(), hs.constEnd(), [](auto cit){
+        res->headers().forEach([](auto cit) {
             qDebug("%s : %s", cit.key().constData(), cit.value().constData());
         });
     });
@@ -110,34 +110,36 @@ int main(int argc, char** argv) {
 ## Features
 [TOC](#table-of-contents)
 
-* the only dependencies are: `Qt5`, `c++14` and the `http-parser`
-* both TCP and UNIX (local) sockets are supported as backend.
-* separate `namespace`s for server and client classes.
-* HTTP server classes: [QHttpServer](./src/qhttpserver.hpp),
+- the only dependencies are: `Qt5`, `c++14` and the `http-parser`
+- both TCP and UNIX (local) sockets are supported as backend.
+- separate `namespace`s for server and client classes.
+- HTTP server classes: [QHttpServer](./src/qhttpserver.hpp),
  [QHttpConnection](./src/qhttpserverconnection.hpp),
  [QHttpRequest](./src/qhttpserverrequest.hpp) and
  [QHttpResponse](./src/qhttpserverresponse.hpp).
-* HTTP client classes: [QHttpClient](./src/qhttpclient.hpp),
+- **optional** HTTP client classes: [QHttpClient](./src/qhttpclient.hpp),
  [QHttpRequest](./src/qhttpclientrequest.hpp) and
- [QHttpResponse](./src/qhttpclientresponse.hpp).
-* **automatic memory management** of objects. Instances of connections,
+ [QHttpResponse](./src/qhttpclientresponse.hpp). the client classes can be
+ disabled at build time by commenting `QHTTP_HAS_CLIENT` in
+ [common.dir](./commondir.pri)
+- **automatic memory management** of objects. Instances of connections,
  requests and replies will be deleted automatically when socket drops or
  *disconnected*.
-* **PIMPL** (Private implementaion) to achieve better ABI compatibility and cleaner
+- **PIMPL** (Private implementaion) to achieve better ABI compatibility and cleaner
  API and faster compile time.
-* **Asynchronous** and **non-blocking**. You can handle thousands of concurrent
+- **Asynchronous** and **non-blocking**. You can handle thousands of concurrent
  HTTP connections efficiently by a single thread, although a multi-threaded HTTP
  server is easy to implement.
-* **high throughput**, I have tried the `QHttp` and
+- **high throughput**, I have tried the `QHttp` and
 [gason++](https://github.com/azadkuh/gason--) to implement a REST/Json web
  service on an Ubuntu VPS (dual core + 512MB ram) with more than **5800**
  connections per second (stress test). On a MacBook Pro (i5 4258U, 8GB ram),
  `QHttp` easily reaches to more than **11700** connections / second. Generally
  `QHttp` is **1.5x ~ 3x** faster than `Node.js` depending on your machine / OS.
-* Easily portable where ever `Qt5 / c++14` works. Tested under:
+- Easily portable where ever `Qt5 / c++14` works. Tested under:
   - **Linux** Ubuntu 12.04 ~ 16.04 LTS, g++ 5.3+
   - **OS X** 10.9+, clang 3.7+
-  - **Windows**, msvs2015 / mingw
+  - **Windows** 7/8.1, msvs2015 / mingw (g++ 6.1)
 
 
 ## Setup
@@ -164,7 +166,7 @@ As `QHttp` is **asynchronous** and **non-blocking**, your app can handle
 thousands of concurrent HTTP connections by a single thread.
 
 in some rare scenarios you may want to use multiple handler threads (although
- it's not the best solution):
+ it's not always the best solution):
 
 * there are some blocking APIs (QSql, system calls, ...) in your connection
  handler (adopting asynchronous layer over the blocking API is a better
@@ -212,7 +214,8 @@ like API, is the main purpose of `QHttp`.
 of this small library, although those can be added on top of `QHttp`.
 - The client classes are by no mean designed as a `QNetworkAccessManager`
 replacement. `QHttpClient` is simpler and lighter, for serious scenarios just
-use `QNetworkAccessManager` which supports proxy, redirections, ...
+use `QNetworkAccessManager` which supports proxy, redirections, authentication,
+ cookie jar, ssl, ...
 - I'm a busy person.
 
 
