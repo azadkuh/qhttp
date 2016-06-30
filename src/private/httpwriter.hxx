@@ -84,12 +84,8 @@ public:
         TImpl* me = static_cast<TImpl*>(this);
         me->prepareHeadersToWrite();
 
-        qhttp::for_each(TBase::iheaders.constBegin(), TBase::iheaders.constEnd(),
-                [this](const auto& cit) {
-            const QByteArray& field = cit.key();
-            const QByteArray& value = cit.value();
-
-            this->writeHeader(field, value);
+        TBase::iheaders.forEach([this](const auto& cit) {
+            this->writeHeader(cit.key(), cit.value());
         });
 
         isocket.writeRaw("\r\n");

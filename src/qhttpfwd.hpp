@@ -29,25 +29,6 @@ struct http_parser;
 namespace qhttp {
 ///////////////////////////////////////////////////////////////////////////////
 
-/** A map of request or response headers. */
-class THeaderHash : public QHash<QByteArray, QByteArray>
-{
-public:
-    /** checks for a header item, regardless of the case of the characters. */
-    bool    has(const QByteArray& key) const {
-        return contains(key.toLower());
-    }
-
-    /** checks if a header has the specified value ignoring the case of the characters. */
-    bool    keyHasValue(const QByteArray& key, const QByteArray& value) const {
-        if ( !contains(key) )
-            return false;
-
-        const QByteArray& v = QHash<QByteArray, QByteArray>::value(key);
-        return qstrnicmp(value.constData(), v.constData(), v.size()) == 0;
-    }
-};
-
 /// QHash/QMap iterators are incompatibility with range for
 template<class Iterator, class Func>
 void for_each(Iterator first, Iterator last, Func&& f) {
@@ -56,6 +37,30 @@ void for_each(Iterator first, Iterator last, Func&& f) {
         ++first;
     }
 }
+
+/** A map of request or response headers. */
+class THeaderHash : public QHash<QByteArray, QByteArray>
+{
+public:
+    /** checks for a header item, regardless of the case of the characters. */
+    bool has(const QByteArray& key) const {
+        return contains(key.toLower());
+    }
+
+    /** checks if a header has the specified value ignoring the case of the characters. */
+    bool keyHasValue(const QByteArray& key, const QByteArray& value) const {
+        if ( !contains(key) )
+            return false;
+
+        const QByteArray& v = QHash<QByteArray, QByteArray>::value(key);
+        return qstrnicmp(value.constData(), v.constData(), v.size()) == 0;
+    }
+
+    template<class Func>
+    void forEach(Func&& f) const {
+        for_each(constBegin(), constEnd(), f);
+    }
+};
 
 
 /** Request method enumeration.

@@ -59,7 +59,7 @@ void runServer(const QString& portOrPath) {
                 qPrintable(req->url().toString().toUtf8())
               );
         qDebug("[Headers (%d)]", h.size());
-        qhttp::for_each(h.constBegin(), h.constEnd(), [](auto iter) {
+        h.forEach([](auto iter) {
             qDebug(" %s : %s",
                     iter.key().constData(),
                     iter.value().constData()
@@ -101,8 +101,7 @@ void runClient(QString url) {
 
         // just for fun! print headers:
         qDebug("\n[Headers:]");
-        const auto& hs = res->headers();
-        qhttp::for_each(hs.constBegin(), hs.constEnd(), [](auto cit) {
+        res->headers().forEach([](auto cit) {
             qDebug("%s : %s", cit.key().constData(), cit.value().constData());
         });
     });
@@ -145,8 +144,7 @@ void runWeatherClient(const QString& cityName) {
 
         // just for fun! print headers:
         qDebug("\n[Headers:]");
-        const auto& hs = res->headers();
-        qhttp::for_each(hs.constBegin(), hs.constEnd(), [](auto cit){
+        res->headers().forEach([](auto cit) {
             qDebug("%s : %s", cit.key().constData(), cit.value().constData());
         });
     });
