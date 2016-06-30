@@ -1,5 +1,5 @@
 #include "private/qhttpclientresponse_private.hpp"
-#include "qhttpclient.hpp"
+#include "qhttp/qhttpclient.hpp"
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
 namespace client {
@@ -7,18 +7,14 @@ namespace client {
 QHttpResponse::QHttpResponse(QHttpClient *cli)
     : QHttpAbstractInput(cli), d_ptr(new QHttpResponsePrivate(cli, this)) {
     d_ptr->initialize();
-    QHTTP_LINE_LOG
 }
 
 QHttpResponse::QHttpResponse(QHttpResponsePrivate &dd, QHttpClient *cli)
     : QHttpAbstractInput(cli), d_ptr(&dd) {
     d_ptr->initialize();
-    QHTTP_LINE_LOG
 }
 
-QHttpResponse::~QHttpResponse() {
-    QHTTP_LINE_LOG
-}
+QHttpResponse::~QHttpResponse() = default;
 
 TStatusCode
 QHttpResponse::status() const {
@@ -35,7 +31,7 @@ QHttpResponse::httpVersion() const {
     return d_func()->iversion;
 }
 
-const THeaderHash&
+const Headers&
 QHttpResponse::headers() const {
     return d_func()->iheaders;
 }

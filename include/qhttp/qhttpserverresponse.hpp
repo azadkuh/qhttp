@@ -1,4 +1,4 @@
-/** HTTP request from a client.
+/** HTTP response from a server.
  * https://github.com/azadkuh/qhttp
  *
  * @author amir zamani
@@ -6,29 +6,33 @@
  * @date 2014-07-11
   */
 
-#ifndef QHTTPCLIENT_REQUEST_HPP
-#define QHTTPCLIENT_REQUEST_HPP
-
-// configured by src.pro
-#if defined(QHTTP_HAS_CLIENT)
+#ifndef QHTTPSERVER_RESPONSE_HPP
+#define QHTTPSERVER_RESPONSE_HPP
 
 ///////////////////////////////////////////////////////////////////////////////
+
 #include "qhttpabstracts.hpp"
-#include <QUrl>
+
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
-namespace client {
+namespace server {
 ///////////////////////////////////////////////////////////////////////////////
-/** a class for building a new HTTP request.
- * the life cycle of this class and the memory management is handled by QHttpClient.
- * @sa QHttpClient
+/** The QHttpResponse class handles sending data back to the client as a response to a request.
+ * @sa QHttpConnection
  */
-class QHTTP_API QHttpRequest : public QHttpAbstractOutput
+class QHTTP_API QHttpResponse : public QHttpAbstractOutput
 {
     Q_OBJECT
 
 public:
-    virtual        ~QHttpRequest();
+    virtual        ~QHttpResponse();
+
+public:
+    /** set the response HTTP status code. @sa TStatusCode.
+     * default value is ESTATUS_BAD_REQUEST.
+     * @sa write()
+     */
+    void            setStatusCode(TStatusCode code);
 
 public: // QHttpAbstractOutput methods:
     /** @see QHttpAbstractOutput::setVersion(). */
@@ -38,7 +42,7 @@ public: // QHttpAbstractOutput methods:
     void            addHeader(const QByteArray& field, const QByteArray& value) override;
 
     /** @see QHttpAbstractOutput::headers(). */
-    THeaderHash&    headers() override;
+    Headers&        headers() override;
 
     /** @see QHttpAbstractOutput::write(). */
     void            write(const QByteArray &data) override;
@@ -47,21 +51,20 @@ public: // QHttpAbstractOutput methods:
     void            end(const QByteArray &data = QByteArray()) override;
 
 public:
-    /** returns parent QHttpClient object. */
-    QHttpClient*    connection() const;
+    /** returns the parent QHttpConnection object. */
+    QHttpConnection* connection() const;
 
 protected:
-    explicit        QHttpRequest(QHttpClient*);
-    explicit        QHttpRequest(QHttpRequestPrivate&, QHttpClient*);
-    friend class    QHttpClient;
+    explicit        QHttpResponse(QHttpConnection*);
+    explicit        QHttpResponse(QHttpResponsePrivate&, QHttpConnection*);
+    friend class    QHttpConnectionPrivate;
 
-    Q_DECLARE_PRIVATE(QHttpRequest)
-    QScopedPointer<QHttpRequestPrivate> d_ptr;
+    Q_DECLARE_PRIVATE(QHttpResponse)
+    QScopedPointer<QHttpResponsePrivate> d_ptr;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-} // namespace client
+} // namespace server
 } // namespace qhttp
 ///////////////////////////////////////////////////////////////////////////////
-#endif // QHTTP_HAS_CLIENT
-#endif // define QHTTPCLIENT_REQUEST_HPP
+#endif // define QHTTPSERVER_RESPONSE_HPP

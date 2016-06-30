@@ -10,7 +10,7 @@
 #define QHTTPABSTRACTS_HPP
 
 ///////////////////////////////////////////////////////////////////////////////
-#include "qhttpfwd.hpp"
+#include "qhttpheaders.hpp"
 
 #include <QObject>
 #include <functional>
@@ -43,7 +43,7 @@ public:
      *  somewhere else, where the request may be deleted,
      *  make sure you store them as a copy.
      * @note All header names are <b>lowercase</b> . */
-    virtual const THeaderHash&  headers() const=0;
+    virtual const Headers&      headers() const=0;
 
     /** The HTTP version of the packet.
      * @return A string in the form of "x.x" */
@@ -136,7 +136,7 @@ public:
     virtual void            addHeader(const QByteArray& field, const QByteArray& value)=0;
 
     /** returns all the headers that already been set. */
-    virtual THeaderHash&    headers()=0;
+    virtual Headers&        headers()=0;
 
     /** writes a block of data into the HTTP packet.
      * @note headers are written (flushed) before any data.

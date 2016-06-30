@@ -10,8 +10,8 @@
 #define QHTTPCLIENT_REQUEST_PRIVATE_HPP
 ///////////////////////////////////////////////////////////////////////////////
 #include "httpwriter.hxx"
-#include "qhttpclient.hpp"
-#include "qhttpclientrequest.hpp"
+#include "qhttp/qhttpclient.hpp"
+#include "qhttp/qhttpclientrequest.hpp"
 
 #include <QTcpSocket>
 
@@ -25,13 +25,10 @@ class QHttpRequestPrivate :
     Q_DECLARE_PUBLIC(QHttpRequest)
 
 public:
-    explicit    QHttpRequestPrivate(QHttpClient* cli, QHttpRequest* q) : q_ptr(q), iclient(cli) {
-        QHTTP_LINE_DEEPLOG
-    }
+    explicit    QHttpRequestPrivate(QHttpClient* cli, QHttpRequest* q)
+        : q_ptr(q), iclient(cli) { }
 
-    virtual    ~QHttpRequestPrivate() {
-        QHTTP_LINE_DEEPLOG
-    }
+    virtual    ~QHttpRequestPrivate() = default;
 
     void        initialize() {
         iversion    = "1.1";

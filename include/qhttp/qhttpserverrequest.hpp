@@ -30,7 +30,7 @@ public:
 
 public: // QHttpAbstractInput methods:
     /** @see QHttpAbstractInput::headers(). */
-    const THeaderHash&  headers() const override;
+    const Headers&      headers() const override;
 
     /** @see QHttpAbstractInput::httpVersion(). */
     const QString&      httpVersion() const override;

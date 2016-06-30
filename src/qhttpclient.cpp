@@ -6,18 +6,12 @@ namespace qhttp {
 namespace client {
 ///////////////////////////////////////////////////////////////////////////////
 QHttpClient::QHttpClient(QObject *parent)
-    : QObject(parent), d_ptr(new QHttpClientPrivate(this)) {
-    QHTTP_LINE_LOG
-}
+    : QObject(parent), d_ptr(new QHttpClientPrivate(this)) { }
 
 QHttpClient::QHttpClient(QHttpClientPrivate &dd, QObject *parent)
-    : QObject(parent), d_ptr(&dd) {
-    QHTTP_LINE_LOG
-}
+    : QObject(parent), d_ptr(&dd) { }
 
-QHttpClient::~QHttpClient() {
-    QHTTP_LINE_LOG
-}
+QHttpClient::~QHttpClient() = default;
 
 quint32
 QHttpClient::timeOut() const {

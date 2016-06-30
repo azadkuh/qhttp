@@ -7,18 +7,14 @@ namespace server {
 QHttpResponse::QHttpResponse(QHttpConnection* conn)
     : QHttpAbstractOutput(conn) , d_ptr(new QHttpResponsePrivate(conn, this)) {
     d_ptr->initialize();
-    QHTTP_LINE_LOG
 }
 
 QHttpResponse::QHttpResponse(QHttpResponsePrivate& dd, QHttpConnection* conn)
     : QHttpAbstractOutput(conn) , d_ptr(&dd) {
     d_ptr->initialize();
-    QHTTP_LINE_LOG
 }
 
-QHttpResponse::~QHttpResponse() {
-    QHTTP_LINE_LOG
-}
+QHttpResponse::~QHttpResponse() = default;
 
 void
 QHttpResponse::setStatusCode(TStatusCode code) {
@@ -35,7 +31,7 @@ QHttpResponse::addHeader(const QByteArray &field, const QByteArray &value) {
     d_func()->addHeader(field, value);
 }
 
-THeaderHash&
+Headers&
 QHttpResponse::headers() {
     return d_func()->iheaders;
 }

@@ -10,9 +10,9 @@
 #define QHTTPSERVER_RESPONSE_PRIVATE_HPP
 ///////////////////////////////////////////////////////////////////////////////
 #include "httpwriter.hxx"
-#include "qhttpserverresponse.hpp"
-#include "qhttpserver.hpp"
-#include "qhttpserverconnection.hpp"
+#include "qhttp/qhttpserverresponse.hpp"
+#include "qhttp/qhttpserver.hpp"
+#include "qhttp/qhttpserverconnection.hpp"
 
 #include <QDateTime>
 #include <QLocale>
@@ -29,13 +29,9 @@ class QHttpResponsePrivate :
 
 public:
     explicit    QHttpResponsePrivate(QHttpConnection* conn, QHttpResponse* q)
-        : q_ptr(q), iconnection(conn) {
-        QHTTP_LINE_DEEPLOG
-    }
+        : q_ptr(q), iconnection(conn) { }
 
-    virtual    ~QHttpResponsePrivate() {
-        QHTTP_LINE_DEEPLOG
-    }
+    virtual    ~QHttpResponsePrivate() = default;
 
     void        initialize() {
         isocket.ibackendType = iconnection->backendType();

@@ -25,5 +25,5 @@ RCC_DIR      = $$TEMPDIR
 UI_DIR       = $$TEMPDIR/Ui
 LIBS        += -L$$PRJDIR/xbin
 
-INCLUDEPATH +=  . $$PRJDIR/src $$PRJDIR/3rdparty
+INCLUDEPATH +=  . $$PRJDIR/include $$PRJDIR/3rdparty
 

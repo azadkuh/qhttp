@@ -5,23 +5,17 @@ namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
 QHttpConnection::QHttpConnection(QObject *parent)
-    : QObject(parent), d_ptr(new QHttpConnectionPrivate(this)) {
-    QHTTP_LINE_LOG
-}
+    : QObject(parent), d_ptr(new QHttpConnectionPrivate(this)) { }
 
 QHttpConnection::QHttpConnection(QHttpConnectionPrivate& dd, QObject* parent)
-    : QObject(parent), d_ptr(&dd) {
-    QHTTP_LINE_LOG
-}
+    : QObject(parent), d_ptr(&dd) { }
 
 void
 QHttpConnection::setSocketDescriptor(qintptr sokDescriptor, TBackend backendType) {
     d_ptr->createSocket(sokDescriptor, backendType);
 }
 
-QHttpConnection::~QHttpConnection() {
-    QHTTP_LINE_LOG
-}
+QHttpConnection::~QHttpConnection() = default;
 
 void
 QHttpConnection::setTimeOut(quint32 miliSeconds) {
@@ -52,7 +46,7 @@ QHttpConnection::localSocket() const {
 }
 
 void
-QHttpConnection::onHandler(const TServerHandler &handler) {
+QHttpConnection::onHandler(const ServerHandler &handler) {
     d_func()->ihandler = handler;
 }
 

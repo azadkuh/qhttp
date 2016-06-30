@@ -1,10 +1,10 @@
-#include "qhttpserver.hpp"
-#include "qhttpserverresponse.hpp"
-#include "qhttpserverrequest.hpp"
+#include "qhttp/qhttpserver.hpp"
+#include "qhttp/qhttpserverresponse.hpp"
+#include "qhttp/qhttpserverrequest.hpp"
 
-#include "qhttpclient.hpp"
-#include "qhttpclientrequest.hpp"
-#include "qhttpclientresponse.hpp"
+#include "qhttp/qhttpclient.hpp"
+#include "qhttp/qhttpclientrequest.hpp"
+#include "qhttp/qhttpclientresponse.hpp"
 
 #include "../include/unixcatcher.hpp"
 

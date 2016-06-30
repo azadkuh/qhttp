@@ -7,8 +7,14 @@ TEMPLATE  = lib
 PRJDIR    = ..
 include($$PRJDIR/commondir.pri)
 
-DEFINES       *= QHTTP_MEMORY_LOG=0
-win32:DEFINES *= QHTTP_EXPORT
+!contains(DEFINES, QHTTP_DYNAMIC_LIB) {
+    CONFIG += staticlib
+}
+
+win32-msvc* {
+    # inside library, enables msvc dllexport
+    DEFINES *= QHTTP_EXPORT
+}
 
 # Joyent http_parser
 SOURCES  += $$PRJDIR/3rdparty/http-parser/http_parser.c
@@ -22,12 +28,13 @@ SOURCES  += \
     qhttpserver.cpp
 
 HEADERS  += \
-    qhttpfwd.hpp \
-    qhttpabstracts.hpp \
-    qhttpserverconnection.hpp \
-    qhttpserverrequest.hpp \
-    qhttpserverresponse.hpp \
-    qhttpserver.hpp
+    ../include/qhttp/qhttpfwd.hpp \
+    ../include/qhttp/qhttpheaders.hpp \
+    ../include/qhttp/qhttpabstracts.hpp \
+    ../include/qhttp/qhttpserverconnection.hpp \
+    ../include/qhttp/qhttpserverrequest.hpp \
+    ../include/qhttp/qhttpserverresponse.hpp \
+    ../include/qhttp/qhttpserver.hpp
 
 contains(DEFINES, QHTTP_HAS_CLIENT) {
     SOURCES += \
@@ -36,7 +43,7 @@ contains(DEFINES, QHTTP_HAS_CLIENT) {
         qhttpclient.cpp
 
     HEADERS += \
-        qhttpclient.hpp \
-        qhttpclientresponse.hpp \
-        qhttpclientrequest.hpp
+        ../include/qhttp/qhttpclient.hpp \
+        ../include/qhttp/qhttpclientresponse.hpp \
+        ../include/qhttp/qhttpclientrequest.hpp
 }

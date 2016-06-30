@@ -41,7 +41,7 @@ public:
      * @return false if listening fails.
      */
     bool        listen(const QString& socketOrPort,
-                       const TServerHandler& handler = nullptr);
+                       const ServerHandler& handler = nullptr);
 
     /** starts a TCP server on specified address and port.
      * if you provide a server handler, the newRequest() signal won't be emitted.
@@ -52,7 +52,7 @@ public:
      * @return false if listening fails.
      */
     bool        listen(const QHostAddress& address, quint16 port,
-                       const TServerHandler& handler = nullptr);
+                       const ServerHandler& handler = nullptr);
 
     /** @overload listen() */
     bool        listen(quint16 port) {

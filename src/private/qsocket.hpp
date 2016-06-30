@@ -10,7 +10,7 @@
 #ifndef __QHTTP_SOCKET_HPP__
 #define __QHTTP_SOCKET_HPP__
 
-#include "qhttpfwd.hpp"
+#include "qhttp/qhttpheaders.hpp"
 
 #include <QTcpSocket>
 #include <QLocalSocket>

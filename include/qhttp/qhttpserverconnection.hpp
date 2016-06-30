@@ -37,7 +37,7 @@ public:
     /** optionally set a handler for connection class.
      * @note if you set this handler, the newRequest() signal won't be emitted.
      */
-    void            onHandler(const TServerHandler& handler);
+    void            onHandler(const ServerHandler& handler);
 
     /** returns the backend type of the connection. */
     TBackend        backendType() const;

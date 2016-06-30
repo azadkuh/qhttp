@@ -10,10 +10,10 @@
 #define QHTTPSERVER_CONNECTION_PRIVATE_HPP
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "qhttpserverconnection.hpp"
 #include "httpparser.hxx"
-#include "qhttpserverrequest.hpp"
-#include "qhttpserverresponse.hpp"
+#include "qhttp/qhttpserverconnection.hpp"
+#include "qhttp/qhttpserverrequest.hpp"
+#include "qhttp/qhttpserverresponse.hpp"
 
 #include "private/qhttpserverrequest_private.hpp"
 #include "private/qhttpserverresponse_private.hpp"
@@ -31,18 +31,13 @@ class QHttpConnectionPrivate  :
 
 public:
     explicit QHttpConnectionPrivate(QHttpConnection* q) : q_ptr(q) {
-
-        QObject::connect(
-            q_func(), &QHttpConnection::disconnected,
+        QObject::connect(q_func(), &QHttpConnection::disconnected,
             [this](){ release(); }
         );
 
-        QHTTP_LINE_DEEPLOG
     }
 
-    virtual ~QHttpConnectionPrivate() {
-        QHTTP_LINE_DEEPLOG
-    }
+    virtual ~QHttpConnectionPrivate() = default;
 
     void createSocket(qintptr sokDesc, TBackend bend) {
         isocket.ibackendType = bend;
@@ -164,7 +159,7 @@ protected:
     QHttpRequest*          ilastRequest  = nullptr;
     QHttpResponse*         ilastResponse = nullptr;
 
-    TServerHandler         ihandler      = nullptr;
+    ServerHandler          ihandler      = nullptr;
 
 };
 

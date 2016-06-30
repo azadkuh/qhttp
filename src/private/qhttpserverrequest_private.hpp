@@ -11,8 +11,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "httpreader.hxx"
-#include "qhttpserverrequest.hpp"
-#include "qhttpserverconnection.hpp"
+#include "qhttp/qhttpserverrequest.hpp"
+#include "qhttp/qhttpserverconnection.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
@@ -26,16 +26,13 @@ protected:
     QHttpRequest* const     q_ptr;
 
 public:
-    explicit    QHttpRequestPrivate(QHttpConnection* conn, QHttpRequest* q) : q_ptr(q), iconnection(conn) {
-        QHTTP_LINE_DEEPLOG
+    explicit    QHttpRequestPrivate(QHttpConnection* conn, QHttpRequest* q)
+        : q_ptr(q), iconnection(conn) {
     }
 
-    virtual    ~QHttpRequestPrivate() {
-        QHTTP_LINE_DEEPLOG
-    }
+    virtual    ~QHttpRequestPrivate() = default;
 
-    void        initialize() {
-    }
+    void        initialize() { }
 
 public:
     QString     iremoteAddress;

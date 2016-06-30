@@ -1,6 +1,6 @@
-#include "qhttpserver.hpp"
-#include "qhttpserverresponse.hpp"
-#include "qhttpserverrequest.hpp"
+#include "qhttp/qhttpserver.hpp"
+#include "qhttp/qhttpserverresponse.hpp"
+#include "qhttp/qhttpserverrequest.hpp"
 
 #include <QCoreApplication>
 

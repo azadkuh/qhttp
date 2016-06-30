@@ -10,7 +10,7 @@
 #define QHTTPCLIENT_PRIVATE_HPP
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "qhttpclient.hpp"
+#include "qhttp/qhttpclient.hpp"
 #include "httpparser.hxx"
 #include "qhttpclientrequest_private.hpp"
 #include "qhttpclientresponse_private.hpp"
@@ -27,17 +27,12 @@ class QHttpClientPrivate :
 
 public:
     explicit QHttpClientPrivate(QHttpClient* q) : q_ptr(q) {
-        QObject::connect(
-            q_func(), &QHttpClient::disconnected,
+        QObject::connect(q_func(), &QHttpClient::disconnected,
             [this](){ release(); }
         );
-
-        QHTTP_LINE_DEEPLOG
     }
 
-    virtual ~QHttpClientPrivate() {
-        QHTTP_LINE_DEEPLOG
-    }
+    virtual ~QHttpClientPrivate() = default;
 
     void release() {
         // if socket drops and http_parser can not call messageComplete,

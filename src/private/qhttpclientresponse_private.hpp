@@ -11,8 +11,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "httpreader.hxx"
-#include "qhttpclient.hpp"
-#include "qhttpclientresponse.hpp"
+#include "qhttp/qhttpclient.hpp"
+#include "qhttp/qhttpclientresponse.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
@@ -26,13 +26,9 @@ class QHttpResponsePrivate :
 
 public:
     explicit    QHttpResponsePrivate(QHttpClient* cli, QHttpResponse* q)
-        : q_ptr(q), iclient(cli) {
-        QHTTP_LINE_DEEPLOG
-    }
+        : q_ptr(q), iclient(cli) { }
 
-    virtual    ~QHttpResponsePrivate() {
-        QHTTP_LINE_DEEPLOG
-    }
+    virtual    ~QHttpResponsePrivate() = default;
 
     void       initialize() {
     }

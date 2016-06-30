@@ -1,5 +1,5 @@
 #include "private/qhttpclientrequest_private.hpp"
-#include "qhttpclient.hpp"
+#include "qhttp/qhttpclient.hpp"
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
 namespace client {
@@ -7,18 +7,14 @@ namespace client {
 QHttpRequest::QHttpRequest(QHttpClient* cli)
     : QHttpAbstractOutput(cli) , d_ptr(new QHttpRequestPrivate(cli, this)) {
     d_ptr->initialize();
-    QHTTP_LINE_LOG
 }
 
 QHttpRequest::QHttpRequest(QHttpRequestPrivate& dd, QHttpClient* cli)
     : QHttpAbstractOutput(cli) , d_ptr(&dd) {
     d_ptr->initialize();
-    QHTTP_LINE_LOG
 }
 
-QHttpRequest::~QHttpRequest() {
-    QHTTP_LINE_LOG
-}
+QHttpRequest::~QHttpRequest() = default;
 
 void
 QHttpRequest::setVersion(const QString &versionString) {
@@ -30,7 +26,7 @@ QHttpRequest::addHeader(const QByteArray &field, const QByteArray &value) {
     d_func()->addHeader(field, value);
 }
 
-THeaderHash&
+Headers&
 QHttpRequest::headers() {
     return d_func()->iheaders;
 }
