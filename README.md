@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
     QHttpClient client(&app);
     QUrl        weatherUrl("http://wttr.in/tehran");
 
-    client.request(qhttp::EHTTP_GET, weatherUrl, [](QHttpResponse* res) {
+    client.get(weatherUrl, [](QHttpResponse* res) {
         // response handler, called when the incoming HTTP headers are ready
 
         // gather HTTP response data (HTTP body)
@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
 
         // when all data in HTTP response have been read:
         res->onEnd([&]() {
-            writeTo("weather.html", res->collectedData());
+            writeTo("weather.html", res->body());
 
             // done! now quit the application
             qApp->quit();

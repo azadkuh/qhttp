@@ -46,28 +46,26 @@ struct Client
     }
 
     void send() {
-        iclient.request(
-                qhttp::EHTTP_POST,
-                iurl,
-                [this](QHttpRequest* req){
-                    QJsonObject root{
-                    {"name", "add"},
-                    {"stan", ++istan},
-                    {"args", QJsonArray{10, 14, -12}} // server computes sum of these values
-                    };
+        iclient.post(iurl,
+            [this](QHttpRequest* req){
+            QJsonObject root{
+                {"name", "add"},
+                {"stan", ++istan},
+                {"args", QJsonArray{10, 14, -12}} // server computes sum of these values
+                };
 
-                    auto body = QJsonDocument(root).toJson();
-                    req->addHeader("connection", "keep-alive");
-                    req->addHeaderValue("content-length", body.length());
-                    req->end(body);
-                },
-                [this](QHttpResponse* res) {
-                    res->collectData(512);
+                auto body = QJsonDocument(root).toJson();
+                req->addHeader("connection", "keep-alive");
+                req->addHeaderValue("content-length", body.length());
+                req->end(body);
+            },
+            [this](QHttpResponse* res) {
+                res->collectData(512);
 
-                    res->onEnd([this, res](){
-                            onIncomingData(res->collectedData());
-                    });
+                res->onEnd([this, res](){
+                    onIncomingData(res->body());
                 });
+            });
     }
 
     void onIncomingData(const QByteArray& data) {
@@ -136,7 +134,7 @@ struct Server : public QHttpServer
     }
 
     void process(QHttpRequest* req, QHttpResponse* res) {
-        auto root = QJsonDocument::fromJson(req->collectedData()).object();
+        auto root = QJsonDocument::fromJson(req->body()).object();
 
         if ( root.isEmpty()  ||  root.value("name").toString() != QLatin1Literal("add") ) {
             const static char KMessage[] = "Invalid json format!";

@@ -39,10 +39,10 @@ public:
                    qPrintable(req->url().toString())
                    );
 
-            if ( req->collectedData().size() > 0 )
+            if ( req->body().size() > 0 )
                 qDebug("  body (#%llu): %s",
                         iconnectionId,
-                        req->collectedData().constData()
+                        req->body().constData()
                         );
 
             QString message =

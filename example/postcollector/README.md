@@ -22,7 +22,7 @@ server.listen(port, [](QHttpRequest* req, QHttpResponse* res) {
         res->setStatusCode(qhttp::ESTATUS_OK);
         res->addHeader("connection", "close"); // optional header (added by default)
 
-        int size = req->collectedData().size();
+        int size = req->body().size();
         auto message = [size]() -> QByteArray {
             if ( size == 0 )
                 return "Hello World!\n";
@@ -37,7 +37,7 @@ server.listen(port, [](QHttpRequest* req, QHttpResponse* res) {
         if ( size > 0 ) { // dump the incoming data into a file
             QFile f("dump.bin");
             if ( f.open(QFile::WriteOnly) )
-                f.write(req->collectedData());
+                f.write(req->body());
         }
     });
 });

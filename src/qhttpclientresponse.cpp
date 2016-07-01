@@ -47,8 +47,8 @@ QHttpResponse::collectData(int atMost) {
 }
 
 const QByteArray&
-QHttpResponse::collectedData() const {
-    return d_func()->icollectedData;
+QHttpResponse::body() const {
+    return d_func()->ibody;
 }
 
 QHttpClient*

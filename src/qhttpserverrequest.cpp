@@ -21,7 +21,7 @@ QHttpRequest::method() const {
     return d_func()->imethod;
 }
 
-const QString
+QString
 QHttpRequest::methodString() const {
     return http_method_str(static_cast<http_method>(d_func()->imethod));
 }
@@ -62,8 +62,8 @@ QHttpRequest::collectData(int atMost) {
 }
 
 const QByteArray&
-QHttpRequest::collectedData() const {
-    return d_func()->icollectedData;
+QHttpRequest::body() const {
+    return d_func()->ibody;
 }
 
 QHttpConnection*
