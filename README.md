@@ -166,6 +166,19 @@ $qhttp/> qmake -r qhttp.pro
 $qhttp/> make -j 8
 ```
 
+To set install prefix pass PREFIX variable to qmake:
+
+```
+qmake PREFIX=/usr
+```
+
+By default, only the build of QHttp server is enabled, to enable the build of
+QHttp client, pass ENABLE_QHTTP_CLIENT=1 to qmake:
+
+```
+qmake ENABLE_QHTTP_CLIENT=1
+```
+
 ## Multi-threading
 [TOC](#table-of-contents)
 

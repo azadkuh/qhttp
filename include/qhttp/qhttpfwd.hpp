@@ -178,7 +178,7 @@ class QHttpResponsePrivate;
 #       error this old msvc++ does not support c++14.
 #   endif
 
-#   if defined(QHTTP_DYNAMIC_LIB) // compiled as dll
+#   if defined(_DLL) // compiled as dll
 #       if defined(QHTTP_EXPORT)
 #           define QHTTP_API __declspec(dllexport)
 #       else
