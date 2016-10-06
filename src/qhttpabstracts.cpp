@@ -1,6 +1,7 @@
 #include "qhttp/qhttpabstracts.hpp"
 #include "http-parser/http_parser.h"
 
+#include <QHostAddress>
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
 ///////////////////////////////////////////////////////////////////////////////
@@ -100,6 +101,11 @@ Stringify::toString(THttpMethod method) {
     return http_method_str(static_cast<http_method>(method));
 }
 
+QString
+Stringify::toStringV4(const QHostAddress& addr) {
+    QHostAddress v4{addr.toIPv4Address()};
+    return v4.toString();
+}
 ///////////////////////////////////////////////////////////////////////////////
 
 QHttpAbstractInput::QHttpAbstractInput(QObject* parent) : QObject(parent) {

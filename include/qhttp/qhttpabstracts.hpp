@@ -25,8 +25,11 @@ public:
     /** returns the standard message for an HTTP status code. */
     static const char* toString(TStatusCode);
 
-    /** returns the standars name of an HTTP method. */
+    /** returns the standard name of an HTTP method. */
     static const char* toString(THttpMethod);
+
+    /// returns the IPv4 format
+    static QString toStringV4(const QHostAddress&);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -38,7 +41,7 @@ class QHTTP_API QHttpAbstractInput : public QObject
     Q_OBJECT
 
 public:
-    /** Return all the headers in the incomming packet.
+    /** Return all the headers in the incoming packet.
      * This returns a reference. If you want to store headers
      *  somewhere else, where the request may be deleted,
      *  make sure you store them as a copy.
@@ -64,7 +67,7 @@ signals:
      */
     void data(QByteArray data);
 
-    /** Emitted when the incomming packet has been fully received.
+    /** Emitted when the incoming packet has been fully received.
      * @note The no more data() signals will be emitted after this.
      * @see onEnd();
      */
@@ -146,7 +149,7 @@ public:
 
     /** writes a block of data into the HTTP packet.
      * @note headers are written (flushed) before any data.
-     * @warning after calling this method add a new header, set staus code, set
+     * @warning after calling this method add a new header, set status code, set
      * Url have no effect! */
     virtual void write(const QByteArray &data)=0;
 
