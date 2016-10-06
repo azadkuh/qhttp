@@ -169,9 +169,7 @@ void runWeatherClient(const QString& cityName) {
 
 int main(int argc, char ** argv) {
     QCoreApplication app(argc, argv);
-#if defined(Q_OS_UNIX)
-    catchUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP});
-#endif
+    catchDefaultOsSignals();
 
     app.setApplicationName("helloworld");
     app.setApplicationVersion("1.0.0");

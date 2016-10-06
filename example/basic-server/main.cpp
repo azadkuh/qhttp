@@ -79,9 +79,7 @@ protected:
 
 int main(int argc, char ** argv) {
     QCoreApplication app(argc, argv);
-#if defined(Q_OS_UNIX)
-    catchUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP});
-#endif
+    catchDefaultOsSignals();
 
     // dumb (trivial) connection counter
     quint64 iconnectionCounter = 0;

@@ -16,9 +16,7 @@ int main(int argc, char ** argv) {
     }
 
     QCoreApplication app(argc, argv);
-#if defined(Q_OS_UNIX)
-    catchUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP});
-#endif
+    catchDefaultOsSignals();
 
     using namespace qhttp::server;
     QHttpServer server(&app);
