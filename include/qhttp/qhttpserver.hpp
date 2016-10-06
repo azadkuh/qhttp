@@ -16,6 +16,7 @@
 #include <QHostAddress>
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
+namespace ssl{ struct Config; }
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -30,6 +31,10 @@ public:
     explicit QHttpServer(QObject *parent = nullptr);
 
     virtual ~QHttpServer();
+
+    /// configure TLS/SSL properties of the server
+    void setSslConfig(ssl::Config);
+    auto sslConfig() const -> const ssl::Config&;
 
     /** starts a TCP or Local (unix domain socket) server.
      * if you provide a server handler, the newRequest() signal won't be
@@ -90,10 +95,10 @@ signals:
     void newConnection(QHttpConnection* connection);
 
 protected:
-    /** returns the tcp server instance if the backend() == ETcpSocket. */
+    /// returns the tcp server instance if the backend() == ETcpSocket
     QTcpServer* tcpServer() const;
 
-    /** returns the local server instance if the backend() == ELocalSocket. */
+    /// returns the local server instance if the backend() == ELocalSocket
     QLocalServer* localServer() const;
 
 

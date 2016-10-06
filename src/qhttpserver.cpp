@@ -17,6 +17,16 @@ QHttpServer::~QHttpServer() {
     stopListening();
 }
 
+void
+QHttpServer::setSslConfig(ssl::Config scnf) {
+    d_func()->isslConfig = std::move(scnf);
+}
+
+const ssl::Config&
+QHttpServer::sslConfig() const {
+    return d_func()->isslConfig;
+}
+
 bool
 QHttpServer::listen(const QString &socketOrPort, const ServerHandler &handler) {
     Q_D(QHttpServer);
@@ -83,23 +93,34 @@ QHttpServer::backendType() const {
 
 QTcpServer*
 QHttpServer::tcpServer() const {
-    return d_func()->itcpServer.data();
+    Q_D(const QHttpServer);
+
+    if (d->ibackend == ETcpSocket)
+        return d->itcpServer.data();
+
+    return nullptr;
 }
 
 QLocalServer*
 QHttpServer::localServer() const {
-    return d_func()->ilocalServer.data();
+    Q_D(const QHttpServer);
+
+    if (d->ibackend == ELocalSocket)
+        return d->ilocalServer.data();
+
+    return nullptr;
 }
 
 void
 QHttpServer::incomingConnection(qintptr handle) {
+    Q_D(QHttpServer);
+
     QHttpConnection* conn = new QHttpConnection(this);
     conn->setSocketDescriptor(handle, backendType());
     conn->setTimeOut(d_func()->itimeOut);
 
     emit newConnection(conn);
 
-    Q_D(QHttpServer);
     if ( d->ihandler )
         QObject::connect(conn, &QHttpConnection::newRequest, d->ihandler);
     else

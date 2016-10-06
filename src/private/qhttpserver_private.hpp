@@ -14,6 +14,7 @@
 #include "qhttp/qhttpserverconnection.hpp"
 #include "qhttp/qhttpserverrequest.hpp"
 #include "qhttp/qhttpserverresponse.hpp"
+#include "qhttp/qhttpsslconfig.hpp"
 
 #include <QTcpServer>
 #include <QLocalServer>
@@ -58,6 +59,8 @@ public:
     TTcpServer      itcpServer;
     TLocalServer    ilocalServer;
 
+    ssl::Config     isslConfig;
+
 public:
     explicit    QHttpServerPrivate() = default;
 
@@ -67,8 +70,8 @@ public:
         ibackend = backend;
 
         if ( ibackend == ETcpSocket ) {
-            itcpServer.reset( new BackendServer<QTcpServer>(parent) );
             ilocalServer.reset( nullptr );
+            itcpServer.reset( new BackendServer<QTcpServer>(parent) );
 
         } else if ( ibackend == ELocalSocket ) {
             itcpServer.reset( nullptr );

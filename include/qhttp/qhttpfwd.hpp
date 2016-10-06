@@ -19,6 +19,7 @@ class QTcpServer;
 class QTcpSocket;
 class QLocalServer;
 class QLocalSocket;
+class QHostAddress;
 
 // http_parser
 struct http_parser_settings;
@@ -128,11 +129,12 @@ enum TStatusCode {
      ESTATUS_HTTP_VERSION_NOT_SUPPORTED         = 505
 };
 
-/** The backend of QHttp library. */
+/// The backend of QHttp library
 enum TBackend {
-    ETcpSocket     = 0, ///< client / server work on top of TCP/IP stack. (default)
-    ESslSocket     = 1, ///< client / server work on SSL/TLS tcp stack. (not implemented yet)
-    ELocalSocket   = 2  ///< client / server work on local socket (unix socket).
+    /// client / server work on top of TCP/IP stack. (default, including ssl)
+    ETcpSocket     = 0,
+    /// client / server work on local socket (unix socket).
+    ELocalSocket   = 2
 };
 
 ///////////////////////////////////////////////////////////////////////////////

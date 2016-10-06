@@ -50,7 +50,7 @@ public:
 
     /** creates a new QHttpConnection based on arguments. */
     static QHttpConnection* create(
-            qintptr sokDescriptor, TBackend backendType, QObject* parent) {
+            qintptr sokDescriptor, TBackend backendType, QHttpServer* parent) {
         QHttpConnection* conn = new QHttpConnection(parent);
         conn->setSocketDescriptor(sokDescriptor, backendType);
         return conn;
@@ -67,8 +67,8 @@ signals:
     void disconnected();
 
 protected:
-    explicit QHttpConnection(QObject *parent);
-    explicit QHttpConnection(QHttpConnectionPrivate&, QObject *);
+    explicit QHttpConnection(QHttpServer *parent);
+    explicit QHttpConnection(QHttpConnectionPrivate&, QHttpServer*);
 
     void setSocketDescriptor(qintptr sokDescriptor, TBackend backendType);
     void timerEvent(QTimerEvent*) override;
