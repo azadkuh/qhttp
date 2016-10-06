@@ -25,7 +25,8 @@ SOURCES  += \
     qhttpserverconnection.cpp \
     qhttpserverrequest.cpp \
     qhttpserverresponse.cpp \
-    qhttpserver.cpp
+    qhttpserver.cpp \
+    qhttpsslsocket.cpp
 
 HEADERS  += \
     ../include/qhttp/qhttpfwd.hpp \
@@ -34,7 +35,9 @@ HEADERS  += \
     ../include/qhttp/qhttpserverconnection.hpp \
     ../include/qhttp/qhttpserverrequest.hpp \
     ../include/qhttp/qhttpserverresponse.hpp \
-    ../include/qhttp/qhttpserver.hpp
+    ../include/qhttp/qhttpserver.hpp \
+    ../include/qhttp/qhttpsslconfig.hpp \
+    ../include/qhttp/qhttpsslsocket.hpp
 
 contains(DEFINES, QHTTP_HAS_CLIENT) {
     SOURCES += \
