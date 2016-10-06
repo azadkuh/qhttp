@@ -87,8 +87,8 @@ struct Client
     }
 
     void finalize() {
-        qDebug("totally %d request/response pairs have been transmitted in %lld [mSec].\n",
-               istan, itick.tock()
+        qDebug("totally %d request/response pairs have been transmitted in %.0lf [µSec].\n",
+               istan, itick.tockf()
                );
 
         QCoreApplication::quit();
