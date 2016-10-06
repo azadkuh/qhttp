@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="key">simple-key.pem</file>
+        <file alias="cert">simple-cer.pem</file>
+    </qresource>
+</RCC>

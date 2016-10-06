@@ -66,6 +66,12 @@ int main(int argc, char** argv) {
 }
 ```
 
+to make a simple `https` server, simply add:
+```cpp
+    // load server private key and certificate from Qt resource
+    server.setSslConfig(qhttp::ssl::Config{":/key", ":/cert"});
+```
+
 to request weather information by **HTTP client**:
 ```cpp
 int main(int argc, char** argv) {
@@ -130,6 +136,7 @@ int main(int argc, char** argv) {
 - **Asynchronous** and **non-blocking**. You can handle thousands of concurrent
  HTTP connections efficiently by a single thread, although a multi-threaded HTTP
  server is easy to implement.
+- **TLS/SSL** support for `qhttp::server::QHttpServer`
 - **high throughput**, I have tried the `QHttp` and
 [gason++](https://github.com/azadkuh/gason--) to implement a REST/Json web
  service on an Ubuntu VPS (dual core + 512MB ram) with more than **5800**
