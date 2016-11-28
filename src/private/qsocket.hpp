@@ -28,8 +28,10 @@ class QSocket
 {
 public:
     void close() {
-        if ( itcpSocket )
+        if ( itcpSocket ) {
+            itcpSocket->disconnectFromHost();
             itcpSocket->close();
+        }
 
         if ( ilocalSocket )
             ilocalSocket->close();
