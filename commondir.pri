@@ -30,3 +30,7 @@ LIBS        += -L$$PRJDIR/xbin
 
 INCLUDEPATH +=  . $$PRJDIR/include $$PRJDIR/3rdparty
 
+equals(QT_MAJOR_VERSION, 5):lessThan(QT_MINOR_VERSION, 4) {
+  CONFIG -= c++11 c++14
+  QMAKE_CXXFLAGS += -std=c++14
+}

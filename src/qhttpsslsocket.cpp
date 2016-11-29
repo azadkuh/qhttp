@@ -16,7 +16,10 @@ appendTrusted(QSslConfiguration& sslconfig, const CertificateList& cas) {
 
     auto trusted = cas;
     trusted << sslconfig.caCertificates()
-            << QSslConfiguration::systemCaCertificates();
+#if QT_VERSION >= 0x050500
+            << QSslConfiguration::systemCaCertificates()
+#endif
+    ;
     sslconfig.setCaCertificates(trusted);
 
     return true;
