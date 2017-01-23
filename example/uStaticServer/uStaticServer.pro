@@ -23,3 +23,6 @@ LIBS        += -lqhttp
 HEADERS  += mainwindow.h
 
 FORMS    += mainwindow.ui
+
+RESOURCES += \
+    mime_list_1.qrc
