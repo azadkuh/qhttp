@@ -1,6 +1,7 @@
 TEMPLATE = subdirs
 
-SUBDIRS += helloworld
+SUBDIRS += helloworld \
+    uStaticServer
 SUBDIRS += postcollector
 SUBDIRS += basic-server
 

@@ -1,0 +1,5 @@
+<RCC>
+	<qresource>
+        <file>mime_types.txt</file>
+    </qresource>
+</RCC>
