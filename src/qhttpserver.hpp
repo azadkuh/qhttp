@@ -80,7 +80,7 @@ public:
 signals:
     /** emitted when a client makes a new request to the server if you do not override
      *  incomingConnection(QHttpConnection *connection);
-     * @sa incommingConnection(). */
+     * @sa incomingConnection(). */
     void        newRequest(QHttpRequest *request, QHttpResponse *response);
 
     /** emitted when a new connection comes to the server if you do not override

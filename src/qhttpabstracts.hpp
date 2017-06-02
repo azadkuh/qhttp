@@ -1,4 +1,4 @@
-/** interfaces of QHttp' incomming and outgoing classes.
+/** interfaces of QHttp' incoming and outgoing classes.
  * https://github.com/azadkuh/qhttp
  *
  * @author amir zamani
@@ -38,7 +38,7 @@ class QHTTP_API QHttpAbstractInput : public QObject
     Q_OBJECT
 
 public:
-    /** Return all the headers in the incomming packet.
+    /** Return all the headers in the incoming packet.
      * This returns a reference. If you want to store headers
      *  somewhere else, where the request may be deleted,
      *  make sure you store them as a copy.
@@ -63,7 +63,7 @@ signals:
      */
     void                        data(QByteArray data);
 
-    /** Emitted when the incomming packet has been fully received.
+    /** Emitted when the incoming packet has been fully received.
      * @note The no more data() signals will be emitted after this.
      * @see onEnd();
      */
