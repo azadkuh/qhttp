@@ -40,3 +40,14 @@ contains(DEFINES, QHTTP_HAS_CLIENT) {
         qhttpclientresponse.hpp \
         qhttpclientrequest.hpp
 }
+
+!contains(CONFIG, no_install) {
+    INSTALL_PREFIX = $$[QT_INSTALL_HEADERS]/qhttp
+    INSTALL_HEADERS = $$HEADERS
+    include(qmake/headerinstall.pri)
+
+    target = $$TARGET
+    target.path = $$[QT_INSTALL_LIBS]
+
+    INSTALLS += target
+}
