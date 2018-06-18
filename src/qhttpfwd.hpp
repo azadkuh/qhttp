@@ -12,6 +12,9 @@
 #include <QHash>
 #include <QString>
 #include <QtGlobal>
+#include <QException>
+#include <QObject>
+#include <iostream>
 
 #include <functional>
 ///////////////////////////////////////////////////////////////////////////////
@@ -28,6 +31,10 @@ struct http_parser;
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
 ///////////////////////////////////////////////////////////////////////////////
+namespace details {
+class QHttpAbstractSocket;
+}
+///////////////////////////////////////////////////////////////////////////////
 
 /// QHash/QMap iterators are incompatibility with range for
 template<class Iterator, class Func>
@@ -38,6 +45,7 @@ void for_each(Iterator first, Iterator last, Func&& f) {
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////
 /** A map of request or response headers. */
 class THeaderHash : public QHash<QByteArray, QByteArray>
 {
@@ -62,6 +70,63 @@ public:
     }
 };
 
+///////////////////////////////////////////////////////////////////////////////
+/** An storage for exception message */
+class exStdOverrider : public QException {
+public:
+    const char* what() const _GLIBCXX_USE_NOEXCEPT {
+        return imessage.constData();
+    }
+
+protected:
+  QByteArray imessage;
+};
+
+/**
+ * @exception exQHttpBase
+ * @brief Base Exception Class. All the classes will raise an exception inherited from this
+ */
+class exQHttpBase: public exStdOverrider
+{
+  public:
+    /**
+     * @brief Base Exception constructor.
+     *
+     * @param _message Message to be shown when calling what()
+     * @param _line Line Number where the exception occured Defaults to 0.
+     **/
+    exQHttpBase(const QString& message = "", quint32 line = 0) throw () {
+        QString Message = line ? QString::number(line) + ": " + message : message;
+        imessage = Message.toUtf8();
+    }
+
+    ~exQHttpBase() throw () {}
+
+    void raise() const { throw *this; }
+    QException* clone() const { return new exQHttpBase(*this); }
+    /**
+     * @brief A method to show Exception message
+     * @note this method must be defined as const but it will collide with std::exception
+     * @return QString Exception message
+     **/
+    QString what() { return QString::fromUtf8(imessage); }
+};
+
+/**
+ * @exception exQHttpNotImplemented
+ * @brief Exception on not implemented methods. This exception must not be subclassed
+ */
+class exQHttpNotImplemented: public exQHttpBase
+{
+  public:
+    exQHttpNotImplemented(const QString& message = "", int line = 0) : exQHttpBase(message, line) {
+        imessage.append(">;exQHttpNotImplemented");
+        //Show error on screen as this exception normally occurs before application startup
+        std::cerr<<imessage.constData()<<std::endl;
+    }
+};
+
+///////////////////////////////////////////////////////////////////////////////
 
 /** Request method enumeration.
  * @note Taken from http_parser.h */

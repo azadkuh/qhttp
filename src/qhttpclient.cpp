@@ -5,8 +5,8 @@
 namespace qhttp {
 namespace client {
 ///////////////////////////////////////////////////////////////////////////////
-QHttpClient::QHttpClient(QObject *parent)
-    : QObject(parent), d_ptr(new QHttpClientPrivate(this)) {
+QHttpClient::QHttpClient(QObject* parent, qhttp::TBackend backendType)
+    : QObject(parent), d_ptr(new QHttpClientPrivate(this, backendType)) {
     QHTTP_LINE_LOG
 }
 
@@ -31,7 +31,7 @@ QHttpClient::setTimeOut(quint32 t) {
 
 bool
 QHttpClient::isOpen() const {
-    return d_func()->isocket.isOpen();
+    return d_func()->isocket->isOpen();
 }
 
 void
@@ -40,22 +40,30 @@ QHttpClient::killConnection() {
 
     d->iconnectingTimer.stop();
     d->itimer.stop();
-    d->isocket.close();
+    d->isocket->close();
 }
 
 TBackend
 QHttpClient::backendType() const {
-    return d_func()->isocket.ibackendType;
+    return (dynamic_cast<details::QHttpTcpSocket*>(d_func()->isocket->isocket) != nullptr) ?
+        ETcpSocket :
+        ELocalSocket;
 }
 
 QTcpSocket*
 QHttpClient::tcpSocket() const {
-    return d_func()->isocket.itcpSocket;
+    return backendType() == ETcpSocket? (QTcpSocket*)d_func()->isocket->isocket : NULL;
 }
 
 QLocalSocket*
 QHttpClient::localSocket() const {
-    return d_func()->isocket.ilocalSocket;
+    return backendType() == ELocalSocket ? (QLocalSocket*)d_func()->isocket->isocket : NULL;
+}
+
+details::QHttpAbstractSocket*
+QHttpClient::abstractSocket() const
+{
+    return d_func()->isocket.data();
 }
 
 void
@@ -116,26 +124,26 @@ QHttpClient::request(THttpMethod method, QUrl url,
     // connecting to host/server must be the last thing. (after all function handlers and ...)
     // check for type
     if ( url.scheme().toLower() == QLatin1String("file") ) {
-        d->isocket.ibackendType = ELocalSocket;
+        //d->isocket->ibackendType = ELocalSocket;
         d->initializeSocket();
 
         requestCreator();
 
-        if ( d->isocket.isOpen() )
+        if ( d->isocket->isOpen() )
             d->onConnected();
         else
-            d->isocket.connectTo(url);
+            d->isocket->connectTo(url.path());
 
     } else {
-        d->isocket.ibackendType = ETcpSocket;
+        //d->isocket->ibackendType = ETcpSocket;
         d->initializeSocket();
 
         requestCreator();
 
-        if ( d->isocket.isOpen() )
+        if ( d->isocket->isOpen() )
             d->onConnected();
         else
-            d->isocket.connectTo(url.host(), url.port(80));
+            d->isocket->connectTo(url.host(), url.port(80));
     }
 
     return true;
@@ -172,8 +180,6 @@ QHttpClient::onResponseReady(QHttpResponse *res) {
 // for incoming request are not possible:
 // if ( ilastRequest == nullptr )
 //     return 0;
-
-
 
 int
 QHttpClientPrivate::messageBegin(http_parser*) {

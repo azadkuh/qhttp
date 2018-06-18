@@ -4,8 +4,8 @@
 namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
-QHttpConnection::QHttpConnection(QObject *parent)
-    : QObject(parent), d_ptr(new QHttpConnectionPrivate(this)) {
+QHttpConnection::QHttpConnection(QObject *parent, TBackend backendType)
+    : QObject(parent), d_ptr(new QHttpConnectionPrivate(this, backendType)) {
     QHTTP_LINE_LOG
 }
 
@@ -15,8 +15,8 @@ QHttpConnection::QHttpConnection(QHttpConnectionPrivate& dd, QObject* parent)
 }
 
 void
-QHttpConnection::setSocketDescriptor(qintptr sokDescriptor, TBackend backendType) {
-    d_ptr->createSocket(sokDescriptor, backendType);
+QHttpConnection::setSocketDescriptor(qintptr sokDescriptor) {
+    d_ptr->createSocket(sokDescriptor);
 }
 
 QHttpConnection::~QHttpConnection() {
@@ -33,23 +33,31 @@ QHttpConnection::setTimeOut(quint32 miliSeconds) {
 
 void
 QHttpConnection::killConnection() {
-    d_func()->isocket.close();
+    d_func()->isocket->close();
 }
 
 TBackend
 QHttpConnection::backendType() const {
-    return d_func()->isocket.ibackendType;
+    return (dynamic_cast<details::QHttpTcpSocket*>(d_func()->isocket->isocket) != nullptr) ?
+        ETcpSocket :
+        ELocalSocket;
 }
 
 QTcpSocket*
 QHttpConnection::tcpSocket() const {
-    return d_func()->isocket.itcpSocket;
+    return backendType() == ETcpSocket? (QTcpSocket*)d_func()->isocket->isocket : NULL;
 }
 
 QLocalSocket*
 QHttpConnection::localSocket() const {
-    return d_func()->isocket.ilocalSocket;
+    return backendType() == ELocalSocket ? (QLocalSocket*)d_func()->isocket->isocket : NULL;
 }
+
+details::QHttpAbstractSocket*
+QHttpConnection::abstractSocket() const {
+    return d_func()->isocket.data();
+}
+
 
 void
 QHttpConnection::onHandler(const TServerHandler &handler) {
@@ -147,14 +155,8 @@ QHttpConnectionPrivate::headersComplete(http_parser* parser) {
                 );
 
     // set client information
-    if ( isocket.ibackendType == ETcpSocket ) {
-        ilastRequest->d_func()->iremoteAddress = isocket.itcpSocket->peerAddress().toString();
-        ilastRequest->d_func()->iremotePort    = isocket.itcpSocket->peerPort();
-
-    } else if ( isocket.ibackendType == ELocalSocket ) {
-        ilastRequest->d_func()->iremoteAddress = isocket.ilocalSocket->fullServerName();
-        ilastRequest->d_func()->iremotePort    = 0; // not used in local sockets
-    }
+    ilastRequest->d_func()->iremoteAddress = isocket->remoteAddress();
+    ilastRequest->d_func()->iremotePort = isocket->remotePort();
 
     if ( ilastResponse )
         ilastResponse->deleteLater();
@@ -167,8 +169,8 @@ QHttpConnectionPrivate::headersComplete(http_parser* parser) {
     QObject::connect(ilastResponse, &QHttpResponse::done, [this](bool wasTheLastPacket){
         ikeepAlive = !wasTheLastPacket;
         if ( wasTheLastPacket ) {
-            isocket.flush();
-            isocket.close();
+            isocket->flush();
+            isocket->close();
         }
     });
 

@@ -39,7 +39,7 @@ public:
                             .append(value)
                             .append("\r\n");
 
-        isocket.writeRaw(buffer);
+        isocket->writeRaw(buffer);
         return true;
     }
 
@@ -48,7 +48,7 @@ public:
             return false;
 
         ensureWritingHeaders();
-        isocket.writeRaw(data);
+        isocket->writeRaw(data);
         return true;
     }
 
@@ -56,7 +56,7 @@ public:
         if ( !writeData(data) )
             return false;
 
-        isocket.flush();
+        isocket->flush();
         ifinished = true;
         return true;
     }
@@ -66,7 +66,7 @@ public:
             return;
 
         TImpl* me = static_cast<TImpl*>(this);
-        isocket.writeRaw(me->makeTitle());
+        isocket->writeRaw(me->makeTitle());
         writeHeaders();
 
         iheaderWritten = true;
@@ -88,13 +88,13 @@ public:
             this->writeHeader(cit.key(), cit.value());
         });
 
-        isocket.writeRaw("\r\n");
+        isocket->writeRaw("\r\n");
         if ( doFlush )
-            isocket.flush();
+            isocket->flush();
     }
 
 public:
-    QSocket isocket;
+    QScopedPointer<QHttpAbstractSocket> isocket;
 
     bool    ifinished      = false;
     bool    iheaderWritten = false;

@@ -26,7 +26,12 @@ class QHttpClientPrivate :
     Q_DECLARE_PUBLIC(QHttpClient)
 
 public:
-    explicit QHttpClientPrivate(QHttpClient* q) : q_ptr(q) {
+    explicit QHttpClientPrivate(QHttpClient* q, TBackend backendType) : q_ptr(q) {
+        if(backendType == ETcpSocket)
+            isocket.reset(new details::QHttpTcpSocket);
+        else
+            isocket.reset(new details::QHttpLocalSocket);
+
         QObject::connect(
             q_func(), &QHttpClient::disconnected,
             [this](){ release(); }
@@ -44,8 +49,8 @@ public:
         // dispatch the ilastResponse
         finalizeConnection();
 
-        isocket.disconnectAllQtConnections();
-        isocket.release();
+        isocket->disconnectAllQtConnections();
+        isocket->release();
 
         if ( ilastRequest ) {
             ilastRequest->deleteLater();
@@ -62,7 +67,7 @@ public:
     }
 
     void initializeSocket() {
-        if ( isocket.isOpen() ) {
+        if ( isocket->isOpen() ) {
             // no need to reconnect. do nothing and simply return
             if ( ikeepAlive )
                 return;
@@ -74,13 +79,12 @@ public:
 
         ikeepAlive = false;
 
-        // create a tcp connection
-        if ( isocket.ibackendType == ETcpSocket ) {
-            initTcpSocket();
-
-        } else if ( isocket.ibackendType == ELocalSocket ) {
-            initLocalSocket();
-        }
+        isocket->init (
+                    [this](){ onConnected(); },
+                    [this](){ onReadyRead(); },
+                    [this](){ onWriteReady(); },
+                    [this](){ emit q_func()->disconnected(); }
+        );
     }
 
 public:
@@ -109,12 +113,17 @@ protected:
     }
 
     void onReadyRead() {
-        while ( isocket.bytesAvailable() > 0 ) {
+        while ( isocket->bytesAvailable() > 0 ) {
             char buffer[4097] = {0};
-            size_t readLength = (size_t) isocket.readRaw(buffer, 4096);
+            size_t readLength = (size_t) isocket->readRaw(buffer, 4096);
 
             parse(buffer, readLength);
         }
+    }
+
+    void onWriteReady(){
+        if ( isocket->bytesToWrite() == 0  &&  ilastRequest )
+            emit ilastRequest->allBytesWritten();
     }
 
     void finalizeConnection() {
@@ -124,57 +133,6 @@ protected:
         ilastResponse->d_func()->finalizeSending([this]{
             emit ilastResponse->end();
         });
-    }
-
-private:
-    void initTcpSocket() {
-        QTcpSocket* sok    =  new QTcpSocket(q_func());
-        isocket.itcpSocket = sok;
-
-        QObject::connect(
-                sok,  &QTcpSocket::connected,
-                [this](){ onConnected(); }
-                );
-        QObject::connect(
-                sok,  &QTcpSocket::readyRead,
-                [this](){ onReadyRead(); }
-                );
-        QObject::connect(
-                sok,  &QTcpSocket::bytesWritten,
-                [this](qint64){
-                    const auto& ts = isocket.itcpSocket;
-                    if ( ts->bytesToWrite() == 0  &&  ilastRequest )
-                        emit ilastRequest->allBytesWritten();
-                });
-        QObject::connect(
-                sok,      &QTcpSocket::disconnected,
-                q_func(), &QHttpClient::disconnected
-                );
-    }
-
-    void initLocalSocket() {
-        QLocalSocket* sok    = new QLocalSocket(q_func());
-        isocket.ilocalSocket = sok;
-
-        QObject::connect(
-                sok,  &QLocalSocket::connected,
-                [this](){ onConnected(); }
-                );
-        QObject::connect(
-                sok,  &QLocalSocket::readyRead,
-                [this](){ onReadyRead(); }
-                );
-        QObject::connect(
-                sok,  &QLocalSocket::bytesWritten,
-                [this](qint64){
-                    const auto* ls = isocket.ilocalSocket;
-                    if ( ls->bytesToWrite() == 0  &&  ilastRequest )
-                        emit ilastRequest->allBytesWritten();
-                });
-        QObject::connect(
-                sok,       &QLocalSocket::disconnected,
-                q_func(),  &QHttpClient::disconnected
-                );
     }
 
 protected:

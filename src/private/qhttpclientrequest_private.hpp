@@ -26,6 +26,7 @@ class QHttpRequestPrivate :
 
 public:
     explicit    QHttpRequestPrivate(QHttpClient* cli, QHttpRequest* q) : q_ptr(q), iclient(cli) {
+        isocket.reset(new details::QHttpTcpSocket);
         QHTTP_LINE_DEEPLOG
     }
 
@@ -36,9 +37,7 @@ public:
     void        initialize() {
         iversion    = "1.1";
 
-        isocket.ibackendType  = iclient->backendType();
-        isocket.itcpSocket    = iclient->tcpSocket();
-        isocket.ilocalSocket  = iclient->localSocket();
+        *isocket = *iclient->abstractSocket();
     }
 
     QByteArray  makeTitle();

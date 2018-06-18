@@ -87,7 +87,7 @@ protected:
     quint32              itimeOut   = 0;
     QBasicTimer          itimer;
     // uniform socket object
-    QSocket              isocket;
+    QScopedPointer<QHttpAbstractSocket>              isocket;
     // if connection should persist
     bool                 ikeepAlive = false;
 

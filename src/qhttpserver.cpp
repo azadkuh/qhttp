@@ -94,7 +94,7 @@ QHttpServer::localServer() const {
 void
 QHttpServer::incomingConnection(qintptr handle) {
     QHttpConnection* conn = new QHttpConnection(this);
-    conn->setSocketDescriptor(handle, backendType());
+    conn->setSocketDescriptor(handle);
     conn->setTimeOut(d_func()->itimeOut);
 
     emit newConnection(conn);

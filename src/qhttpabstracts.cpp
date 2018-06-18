@@ -8,6 +8,10 @@ namespace qhttp {
 #   error "to compile QHttp classes, Qt 5.0 or later is needed."
 #endif
 
+#ifdef HTTP_STATUS_MAP
+#undef HTTP_STATUS_MAP
+#endif
+
 #define HTTP_STATUS_MAP(XX)                    \
     XX(100, "Continue")                        \
     XX(101, "Switching Protocols")             \

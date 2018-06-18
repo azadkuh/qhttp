@@ -39,7 +39,7 @@ class QHTTP_API QHttpClient : public QObject
     Q_PROPERTY(quint32 timeOut READ timeOut WRITE setTimeOut)
 
 public:
-    explicit    QHttpClient(QObject *parent = nullptr);
+    explicit    QHttpClient(QObject *parent = nullptr, TBackend backendType = ETcpSocket);
 
     virtual    ~QHttpClient();
 
@@ -125,6 +125,9 @@ public:
 
     /** returns local socket of the connection if backend() == ELocalSocket. */
     QLocalSocket* localSocket() const;
+
+    /** returns connected socket as an abstract socket (used internally) */
+    details::QHttpAbstractSocket* abstractSocket() const;
 
 signals:
     /** emitted when a new HTTP connection to the server is established.

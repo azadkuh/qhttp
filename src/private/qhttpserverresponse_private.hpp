@@ -30,6 +30,8 @@ class QHttpResponsePrivate :
 public:
     explicit    QHttpResponsePrivate(QHttpConnection* conn, QHttpResponse* q)
         : q_ptr(q), iconnection(conn) {
+        isocket.reset(new details::QHttpTcpSocket);
+
         QHTTP_LINE_DEEPLOG
     }
 
@@ -38,9 +40,7 @@ public:
     }
 
     void        initialize() {
-        isocket.ibackendType = iconnection->backendType();
-        isocket.ilocalSocket = iconnection->localSocket();
-        isocket.itcpSocket   = iconnection->tcpSocket();
+        *isocket = *iconnection->abstractSocket();
 
         QObject::connect(iconnection,  &QHttpConnection::disconnected,
                          q_func(),     &QHttpResponse::deleteLater);

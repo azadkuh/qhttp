@@ -11,7 +11,7 @@
 
 #include "qhttpfwd.hpp"
 
-#include "qsocket.hpp"
+#include "qhttpabstractsocket.hpp"
 #include <QHostAddress>
 #include <QBasicTimer>
 

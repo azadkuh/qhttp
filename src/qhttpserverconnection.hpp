@@ -48,11 +48,14 @@ public:
     /** returns connected socket if the backend() == ELocalSocket. */
     QLocalSocket*   localSocket() const;
 
+    /** returns connected socket as an abstract socket (used internally) */
+    details::QHttpAbstractSocket* abstractSocket() const;
+
     /** creates a new QHttpConnection based on arguments. */
     static
     QHttpConnection* create(qintptr sokDescriptor, TBackend backendType, QObject* parent) {
-        QHttpConnection* conn = new QHttpConnection(parent);
-        conn->setSocketDescriptor(sokDescriptor, backendType);
+        QHttpConnection* conn = new QHttpConnection(parent, backendType);
+        conn->setSocketDescriptor(sokDescriptor);
         return conn;
     }
 
@@ -67,10 +70,10 @@ signals:
     void            disconnected();
 
 protected:
-    explicit        QHttpConnection(QObject *parent);
+    explicit        QHttpConnection(QObject *parent, TBackend backendType = ETcpSocket);
     explicit        QHttpConnection(QHttpConnectionPrivate&, QObject *);
 
-    void            setSocketDescriptor(qintptr sokDescriptor, TBackend backendType);
+    void            setSocketDescriptor(qintptr sokDescriptor);
     void            timerEvent(QTimerEvent*) override;
 
     Q_DISABLE_COPY(QHttpConnection)
