@@ -13,7 +13,7 @@
 #if defined(QHTTP_HAS_CLIENT)
 
 ///////////////////////////////////////////////////////////////////////////////
-#include "qhttpfwd.hpp"
+#include "QHttp/qhttpfwd.hpp"
 
 #include <QTcpSocket>
 #include <QUrl>

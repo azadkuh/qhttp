@@ -5,14 +5,13 @@ TARGET    = qhttp
 TEMPLATE  = lib
 
 PRJDIR    = ..
-include($$PRJDIR/commondir.pri)
+include($$PRJDIR/qmake/configs.pri)
 
-DEFINES       *= QHTTP_MEMORY_LOG=0
 win32:DEFINES *= QHTTP_EXPORT
 
-# Joyent http_parser
-SOURCES  += $$PRJDIR/3rdparty/http-parser/http_parser.c
-HEADERS  += $$PRJDIR/3rdparty/http-parser/http_parser.h
+# nodejs http_parser
+SOURCES  += $$PRJDIR/3rdParty/http-parser/http_parser.c
+SUBMODULE_HEADERS  += $$PRJDIR/3rdParty/http-parser/http_parser.h
 
 SOURCES  += \
     qhttpabstracts.cpp \
@@ -21,13 +20,14 @@ SOURCES  += \
     qhttpserverresponse.cpp \
     qhttpserver.cpp
 
-HEADERS  += \
+DIST_HEADERS  += \
     qhttpfwd.hpp \
     qhttpabstracts.hpp \
     qhttpserverconnection.hpp \
     qhttpserverrequest.hpp \
     qhttpserverresponse.hpp \
-    qhttpserver.hpp
+    qhttpserver.hpp \
+    QHttpServer
 
 contains(DEFINES, QHTTP_HAS_CLIENT) {
     SOURCES += \
@@ -35,19 +35,29 @@ contains(DEFINES, QHTTP_HAS_CLIENT) {
         qhttpclientresponse.cpp \
         qhttpclient.cpp
 
-    HEADERS += \
+    DIST_HEADERS += \
         qhttpclient.hpp \
         qhttpclientresponse.hpp \
-        qhttpclientrequest.hpp
+        qhttpclientrequest.hpp \
+        QHttpClient
 }
 
-!contains(CONFIG, no_install) {
-    INSTALL_PREFIX = $$[QT_INSTALL_HEADERS]/qhttp
-    INSTALL_HEADERS = $$HEADERS
-    include(qmake/headerinstall.pri)
+PRIVATE_HEADERS += \
+    private/httpparser.hxx \
+    private/httpreader.hxx \
+    private/httpwriter.hxx \
+    private/qhttpabstractsocket.hpp \
+    private/qhttpbase.hpp \
+    private/qhttpclient_private.hpp \
+    private/qhttpclientrequest_private.hpp \
+    private/qhttpclientresponse_private.hpp \
+    private/qhttpserver_private.hpp \
+    private/qhttpserverconnection_private.hpp \
+    private/qhttpserverrequest_private.hpp \
+    private/qhttpserverresponse_private.hpp
 
-    target = $$TARGET
-    target.path = $$[QT_INSTALL_LIBS]
+HEADERS += $$DIST_HEADERS \
+           $$PRIVATE_HEADERS \
+           $$SUBMODULE_HEADERS
 
-    INSTALLS += target
-}
+include($$PRJDIR/qmake/install.pri)

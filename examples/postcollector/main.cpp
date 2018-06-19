@@ -1,12 +1,13 @@
-#include "qhttpserver.hpp"
-#include "qhttpserverresponse.hpp"
-#include "qhttpserverrequest.hpp"
-
 #include <QCoreApplication>
 
 #include <QTimer>
 #include <QFile>
+
+
+#include "QHttp/QHttpServer"
+
 #include "../include/unixcatcher.hpp"
+
 ///////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char ** argv) {

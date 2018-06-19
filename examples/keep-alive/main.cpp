@@ -1,14 +1,3 @@
-#include "qhttpclient.hpp"
-#include "qhttpclientrequest.hpp"
-#include "qhttpclientresponse.hpp"
-#include "qhttpserver.hpp"
-#include "qhttpserverconnection.hpp"
-#include "qhttpserverrequest.hpp"
-#include "qhttpserverresponse.hpp"
-
-#include "../include/ticktock.hxx"
-#include "../include/unixcatcher.hpp"
-
 #include <QCoreApplication>
 #include <QCommandLineOption>
 #include <QCommandLineParser>
@@ -17,6 +6,14 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+
+#include "QHttp/QHttpServer"
+#if defined(QHTTP_HAS_CLIENT)
+    #include "QHttp/QHttpClient"
+#endif
+
+#include "../include/ticktock.hxx"
+#include "../include/unixcatcher.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace {
@@ -89,7 +86,7 @@ struct Client
     }
 
     void finalize() {
-        qDebug("totally %d request/response pairs have been transmitted in %lld [mSec].\n",
+        qDebug("totally %d request/response pairs have been transmitted in %ld [mSec].\n",
                istan, itick.tock()
                );
 

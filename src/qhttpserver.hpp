@@ -10,7 +10,7 @@
 #define QHTTPSERVER_HPP
 
 ///////////////////////////////////////////////////////////////////////////////
-#include "qhttpfwd.hpp"
+#include "QHttp/qhttpfwd.hpp"
 
 #include <QObject>
 #include <QHostAddress>

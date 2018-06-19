@@ -37,6 +37,10 @@ This project was inspired by
 implement a Qt HTTP server. `QHttp` pushes the idea further by implementing
 client side classes, better memory management, a lot more Node.js-like API, ...
 
+Original Project developed and maintained by [azadkuh/qhttp](https://github.com/azadkuh/qhttp) 
+was no longer maintained since 2016 and no pull-requests were accepted. So we will maintain
+this project here. 
+ 
 ## Sample codes
 [TOC](#table-of-contents)
 
@@ -137,7 +141,7 @@ int main(int argc, char** argv) {
  `QHttp` easily reaches to more than **11700** connections / second. Generally
  `QHttp` is **1.5x ~ 3x** faster than `Node.js` depending on your machine / OS.
 - Easily portable where ever `Qt5 / c++14` works. Tested under:
-  - **Linux** Ubuntu 12.04 ~ 16.04 LTS, g++ 5.3+
+  - **Linux** OpenSuSE 42.3 ~ 15 and Ubuntu 12.04 ~ 16.04 LTS, g++ 5.3+
   - **OS X** 10.9+, clang 3.7+
   - **Windows** 7/8.1, msvs2015 / mingw (g++ 6.1)
 
@@ -148,15 +152,16 @@ int main(int argc, char** argv) {
 instructions:
 ```bash
 # first clone this repository:
-$> git clone https://github.com/azadkuh/qhttp.git
+$> git clone --recurse-submodules https://github.com/azadkuh/qhttp.git
 $> cd qhttp
 
-# prepare dependencies:
-$qhttp/> ./update-dependencies.sh
-
 # now build the library and the examples
-$qhttp/> qmake -r qhttp.pro
+$qhttp/> qmake-qt5 
 $qhttp/> make -j 8
+
+# installation
+$qhttp/>qmake [PREFIX=INSTALL_DIR_IF_NOT_DEFAULT]
+$qhttp/>make install
 ```
 
 ## Multi-threading
@@ -183,9 +188,9 @@ in some rare scenarios you may want to use multiple handler threads (although
 - **`src/`**: holds the source code of `QHttp`. server classes are prefixed by
 `qhttpserver*` and client classes by `qhttpclient*`.
   - **`private/`**: Private classes of the library.
-- **`3rdparty/`**: will contain `http-parser` source tree as the only
+- **`3rdParty/`**: will contain `http-parser` source tree as the only
 dependency.  this directory is created by setup. see also: [setup](#setup).
-- **`example/`**: contains some sample applications representing the `QHttp`
+- **`examples/`**: contains some sample applications representing the `QHttp`
 usage:
   - **`helloworld/`**: the HelloWorld example of `QHttp`, both server + client
   are represented.  see: [README@helloworld](./example/helloworld/README.md)
@@ -198,10 +203,8 @@ usage:
   - **`post-collector`**: another server example shows how to collect large
   data by POST requests. see:
   [README@post-collector](./example/postcollector/README.md)
-- **`tmp/`**: a temporary directory which is created while `make`ing the
-library and holds all the `.o`, `moc files`, etc.
-* **`xbin/`**: all the executable and libraries will be placed on this folder by
-build system.
+- **`xbin/`**: all the executables, libraries and object files will be placed on 
+this folder by build system.
 
 
 
@@ -227,5 +230,6 @@ use `QNetworkAccessManager` which supports proxy, redirections, authentication,
 ## License
 [TOC](#table-of-contents)
 
-Distributed under the MIT license. Copyright (c) 2014, Amir Zamani.
+Distributed under the MIT license. Copyright (c) 2014-2016, Amir Zamani.
+Distributed under the MIT license. Copyright (c) 2018, Targoman Intelligent Processing Co. Pjc.
 

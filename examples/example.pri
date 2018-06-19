@@ -3,14 +3,10 @@ QT          -= gui
 CONFIG      += console
 osx:CONFIG  -= app_bundle
 
-TARGET       = postcollector
 TEMPLATE     = app
 
 PRJDIR       = ../..
-include($$PRJDIR/commondir.pri)
-
-HEADERS   +=
-
-SOURCES   += main.cpp
+include(../qmake/configs.pri)
 
 LIBS      += -lqhttp
+

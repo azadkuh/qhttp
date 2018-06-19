@@ -1,3 +1,4 @@
+include(../qmake/configs.pri)
 TEMPLATE = subdirs
 
 SUBDIRS += helloworld

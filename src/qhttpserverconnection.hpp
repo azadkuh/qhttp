@@ -9,7 +9,7 @@
 #ifndef QHTTPSERVER_CONNECTION_HPP
 #define QHTTPSERVER_CONNECTION_HPP
 ///////////////////////////////////////////////////////////////////////////////
-#include "qhttpfwd.hpp"
+#include "QHttp/qhttpfwd.hpp"
 
 #include <QObject>
 
