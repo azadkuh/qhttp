@@ -1,11 +1,11 @@
-#include "qhttpserver.hpp"
-#include "qhttpserverconnection.hpp"
-#include "qhttpserverrequest.hpp"
-#include "qhttpserverresponse.hpp"
-
 #include <QtCore/QCoreApplication>
 #include <QDateTime>
 #include <QLocale>
+
+#include "QHttp/QHttpServer"
+#if defined(QHTTP_HAS_CLIENT)
+    #include "QHttp/QHttpClient"
+#endif
 
 #include "../include/unixcatcher.hpp"
 

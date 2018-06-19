@@ -1,0 +1,8 @@
+#ifndef QHTTP_QHTTPCLIENT
+#define QHTTP_QHTTPCLIENT
+
+#include "QHttp/qhttpclient.hpp"
+#include "QHttp/qhttpclientrequest.hpp"
+#include "QHttp/qhttpclientresponse.hpp"
+
+#endif

@@ -1,0 +1,9 @@
+#ifndef QHTTP_QHTTPSERVER
+#define QHTTP_QHTTPSERVER
+
+#include "QHttp/qhttpserver.hpp"
+#include "QHttp/qhttpserverconnection.hpp"
+#include "QHttp/qhttpserverrequest.hpp"
+#include "QHttp/qhttpserverresponse.hpp"
+
+#endif //QHTTP_QHTTPSERVER

@@ -1,13 +1,3 @@
-#include "qhttpserver.hpp"
-#include "qhttpserverresponse.hpp"
-#include "qhttpserverrequest.hpp"
-
-#include "qhttpclient.hpp"
-#include "qhttpclientrequest.hpp"
-#include "qhttpclientresponse.hpp"
-
-#include "../include/unixcatcher.hpp"
-
 #include <QCoreApplication>
 #include <QCommandLineOption>
 #include <QCommandLineParser>
@@ -16,6 +6,14 @@
 #include <QLocalServer>
 #include <QTimer>
 #include <QFile>
+
+#include "QHttp/QHttpServer"
+#if defined(QHTTP_HAS_CLIENT)
+    #include "QHttp/QHttpClient"
+#endif
+
+#include "../include/unixcatcher.hpp"
+
 ///////////////////////////////////////////////////////////////////////////////
 namespace {
 ///////////////////////////////////////////////////////////////////////////////
