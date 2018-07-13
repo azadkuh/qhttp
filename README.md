@@ -7,7 +7,6 @@
 - [Features](#features)
 - [Setup](#setup)
 - [Multi-threading](#multi-threading)
-- [Source tree](#source-tree)
 - [Disclaimer](#disclaimer)
 - [License](#license)
 
@@ -66,46 +65,6 @@ int main(int argc, char** argv) {
 }
 ```
 
-to request weather information by **HTTP client**:
-```cpp
-int main(int argc, char** argv) {
-    QCoreApplication app(argc, argv);
-
-    using namespace qhttp::client;
-    QHttpClient client(&app);
-    QUrl        weatherUrl("http://wttr.in/tehran");
-
-    client.request(qhttp::EHTTP_GET, weatherUrl, [](QHttpResponse* res) {
-        // response handler, called when the incoming HTTP headers are ready
-
-        // gather HTTP response data (HTTP body)
-        res->collectData();
-
-        // when all data in HTTP response have been read:
-        res->onEnd([&]() {
-            writeTo("weather.html", res->collectedData());
-
-            // done! now quit the application
-            qApp->quit();
-        });
-
-        // just for fun! print incoming headers:
-        qDebug("\n[Headers:]");
-        res->headers().forEach([](auto cit) {
-            qDebug("%s : %s", cit.key().constData(), cit.value().constData());
-        });
-    });
-
-    // set a timeout for the http connection
-    client.setConnectingTimeOut(10000, []{
-        qDebug("connecting to HTTP server timed out!");
-        qApp->quit();
-    });
-
-    return app.exec();
-}
-```
-
 
 ## Features
 [TOC](#table-of-contents)
@@ -148,18 +107,19 @@ int main(int argc, char** argv) {
 instructions:
 ```bash
 # first clone this repository:
-$> git clone https://github.com/azadkuh/qhttp.git
+$> git clone https://github.com/Aseman-Land/qhttp.git
 $> cd qhttp
-
-# prepare dependencies:
-$qhttp/> ./update-dependencies.sh
 
 # now build the library and the examples
 $qhttp/> qmake -r qhttp.pro
-$qhttp/> make -j 8
+$qhttp/> make
+$qhttp/> make install
 ```
 
+And add it using ```Qt += http``` to your project :)
+
 ## Multi-threading
+
 [TOC](#table-of-contents)
 
 As `QHttp` is **asynchronous** and **non-blocking**, your app can handle
@@ -174,34 +134,6 @@ in some rare scenarios you may want to use multiple handler threads (although
 * the hardware has lots of free cores and the measurement shows that the load
  on the main `QHttp` thread is close to highest limit. There you can spawn some
  other handler threads.
-
-
-## Source tree
-[TOC](#table-of-contents)
-
-
-- **`src/`**: holds the source code of `QHttp`. server classes are prefixed by
-`qhttpserver*` and client classes by `qhttpclient*`.
-  - **`private/`**: Private classes of the library.
-- **`3rdparty/`**: will contain `http-parser` source tree as the only
-dependency.  this directory is created by setup. see also: [setup](#setup).
-- **`example/`**: contains some sample applications representing the `QHttp`
-usage:
-  - **`helloworld/`**: the HelloWorld example of `QHttp`, both server + client
-  are represented.  see: [README@helloworld](./example/helloworld/README.md)
-  - **`basic-server/`**: a basic HTTP server shows how to collect the request
-  body, and respond to the clients. see:
-  [README@basic-server](./example/basic-server/README.md)
-  - **`keep-alive`**: shows how to keep an http connection open and
-  transmitting many requests/responses. see:
-  [README@keep-alive](./example/keep-alive/README.md)
-  - **`post-collector`**: another server example shows how to collect large
-  data by POST requests. see:
-  [README@post-collector](./example/postcollector/README.md)
-- **`tmp/`**: a temporary directory which is created while `make`ing the
-library and holds all the `.o`, `moc files`, etc.
-* **`xbin/`**: all the executable and libraries will be placed on this folder by
-build system.
 
 
 
