@@ -44,7 +44,6 @@ public: // QHttpAbstractInput methods:
     /** @see QHttpAbstractInput::collectedData(). */
     const QByteArray&   collectedData()const override;
 
-
 public:
     /** The method used for the request. */
     THttpMethod         method() const ;
@@ -65,6 +64,12 @@ public:
 
     /** returns the parent QHttpConnection object. */
     QHttpConnection*    connection() const;
+
+    /** an storage to add user defined values usually stored in http-body **/
+    void addUserDefinedData(const QString& key, const QString value);
+
+    /** list of user defined values if added by addUserDefinedData() **/
+    QList<QPair<QString, QString>> userDefinedValues() const;
 
 protected:
     explicit            QHttpRequest(QHttpConnection*);

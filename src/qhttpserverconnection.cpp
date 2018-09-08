@@ -38,7 +38,7 @@ QHttpConnection::killConnection() {
 
 TBackend
 QHttpConnection::backendType() const {
-    return (dynamic_cast<details::QHttpTcpSocket*>(d_func()->isocket->isocket) != nullptr) ?
+    return (dynamic_cast<QTcpSocket*>(d_func()->isocket->isocket) != nullptr) ?
         ETcpSocket :
         ELocalSocket;
 }

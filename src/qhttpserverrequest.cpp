@@ -75,6 +75,14 @@ QHttpRequest::connection() const {
     return d_ptr->iconnection;
 }
 
+void QHttpRequest::addUserDefinedData(const QString &key, const QString value) {
+    d_ptr->iuserDefinedValues.append(qMakePair(key, value));
+}
+
+QList<QPair<QString, QString> > QHttpRequest::userDefinedValues() const{
+    return d_ptr->iuserDefinedValues;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 } // namespace server
 } // namespace qhttp

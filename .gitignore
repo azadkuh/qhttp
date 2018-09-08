@@ -6,6 +6,7 @@ docs/
 res/keys
 res/
 TODO.md
+.*~
 
 # vim/neovim / YouCompleteMe
 .vimrc
