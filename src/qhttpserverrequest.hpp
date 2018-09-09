@@ -66,10 +66,10 @@ public:
     QHttpConnection*    connection() const;
 
     /** an storage to add user defined values usually stored in http-body **/
-    void addUserDefinedData(const QString& key, const QString value);
+    void addUserDefinedData(const QString& key, const QVariant value);
 
     /** list of user defined values if added by addUserDefinedData() **/
-    QList<QPair<QString, QString>> userDefinedValues() const;
+    QList<QPair<QString, QVariant>> userDefinedValues() const;
 
 protected:
     explicit            QHttpRequest(QHttpConnection*);
