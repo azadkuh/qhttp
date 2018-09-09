@@ -40,7 +40,7 @@ public:
 public:
     QString     iremoteAddress;
     quint16     iremotePort = 0;
-    QList<QPair<QString, QVariant>> iuserDefinedValues;
+    QList<QPair<QString, QString>> iuserDefinedValues;
 
     QHttpConnection* const  iconnection = nullptr;
 };

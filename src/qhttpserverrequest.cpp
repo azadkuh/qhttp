@@ -75,11 +75,11 @@ QHttpRequest::connection() const {
     return d_ptr->iconnection;
 }
 
-void QHttpRequest::addUserDefinedData(const QString &key, const QVariant value) {
+void QHttpRequest::addUserDefinedData(const QString &key, const QString value) {
     d_ptr->iuserDefinedValues.append(qMakePair(key, value));
 }
 
-QList<QPair<QString, QVariant> > QHttpRequest::userDefinedValues() const{
+QList<QPair<QString, QString> > QHttpRequest::userDefinedValues() const{
     return d_ptr->iuserDefinedValues;
 }
 
