@@ -68,6 +68,13 @@ public:
     void forEach(Func&& f) const {
         for_each(constBegin(), constEnd(), f);
     }
+
+    QVariant toVariant() const{
+        QVariantHash TempHash;
+        for(auto Iter = this->begin(); Iter != this->end(); ++Iter)
+            TempHash.insert(Iter.key(), Iter.value());
+        return TempHash;
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
