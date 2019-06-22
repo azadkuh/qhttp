@@ -14,6 +14,9 @@
 #include <QtGlobal>
 #include <QException>
 #include <QObject>
+#include <QVariant>
+#include <QVariantHash>
+#include <QVariantMap>
 #include <iostream>
 
 #include <functional>
