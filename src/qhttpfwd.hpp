@@ -34,50 +34,8 @@ namespace qhttp {
 namespace details {
 class QHttpAbstractSocket;
 }
-///////////////////////////////////////////////////////////////////////////////
 
-/// QHash/QMap iterators are incompatibility with range for
-template<class Iterator, class Func>
-void for_each(Iterator first, Iterator last, Func&& f) {
-    while ( first != last ) {
-        f( first );
-        ++first;
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-/** A map of request or response headers. */
-class THeaderHash : public QHash<QByteArray, QByteArray>
-{
-public:
-    /** checks for a header item, regardless of the case of the characters. */
-    bool has(const QByteArray& key) const {
-        return contains(key.toLower());
-    }
-
-    /** checks if a header has the specified value ignoring the case of the characters. */
-    bool keyHasValue(const QByteArray& key, const QByteArray& value) const {
-        if ( !contains(key) )
-            return false;
-
-        const QByteArray& v = QHash<QByteArray, QByteArray>::value(key);
-        return qstrnicmp(value.constData(), v.constData(), v.size()) == 0;
-    }
-
-    template<class Func>
-    void forEach(Func&& f) const {
-        for_each(constBegin(), constEnd(), f);
-    }
-
-    QVariant toVariant() const{
-        QVariantHash TempHash;
-        for(auto Iter = this->begin(); Iter != this->end(); ++Iter)
-            TempHash.insert(Iter.key(), Iter.value());
-        return TempHash;
-    }
-};
-
-///////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 /** An storage for exception message */
 class exStdOverrider : public QException {
 public:
@@ -130,6 +88,62 @@ class exQHttpNotImplemented: public exQHttpBase
         imessage.append(">;exQHttpNotImplemented");
         //Show error on screen as this exception normally occurs before application startup
         std::cerr<<imessage.constData()<<std::endl;
+    }
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+/// QHash/QMap iterators are incompatibility with range for
+template<class Iterator, class Func>
+void for_each(Iterator first, Iterator last, Func&& f) {
+    while ( first != last ) {
+        f( first );
+        ++first;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/** A map of request or response headers. */
+class THeaderHash : public QHash<QByteArray, QByteArray>
+{
+public:
+    /** checks for a header item, regardless of the case of the characters. */
+    bool has(const QByteArray& key) const {
+        return contains(key.toLower());
+    }
+
+    /** checks if a header has the specified value ignoring the case of the characters. */
+    bool keyHasValue(const QByteArray& key, const QByteArray& value) const {
+        if ( !contains(key) )
+            return false;
+
+        const QByteArray& v = QHash<QByteArray, QByteArray>::value(key);
+        return qstrnicmp(value.constData(), v.constData(), v.size()) == 0;
+    }
+
+    template<class Func>
+    void forEach(Func&& f) const {
+        for_each(constBegin(), constEnd(), f);
+    }
+
+    QVariant toVariant() const{
+        QVariantHash TempHash;
+        for(auto Iter = this->begin(); Iter != this->end(); ++Iter)
+            TempHash.insert(Iter.key(), Iter.value());
+        return TempHash;
+    }
+
+    THeaderHash fromVariant(const QVariant& _value){
+      if(_value.canConvert<QVariantHash>()){
+        QVariantHash TempHash = _value.value<QVariantHash>();
+        this->clear();
+        for(auto Iter = TempHash.begin(); Iter != TempHash.end(); ++Iter)
+            this->insert(Iter.key().toUtf8(), Iter.value().toByteArray());
+
+        return *this;
+      }else
+        throw exQHttpBase("specified value can not be converted to QVariantHash");
     }
 };
 
