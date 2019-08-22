@@ -7,6 +7,8 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
+#include <iostream>
+
 #include "QHttp/QHttpServer"
 #if defined(QHTTP_HAS_CLIENT)
     #include "QHttp/QHttpClient"
@@ -118,7 +120,10 @@ struct Server : public QHttpServer
         bool isListening = listen(
                 QString::number(port),
                 [this](QHttpRequest* req, QHttpResponse* res){
-                   req->collectData(512);
+                    req->onData([this, req, res](QByteArray _data){
+            std::cout<<_data.constData ()<<std::endl;
+
+                    });
                    req->onEnd([this, req, res](){
                         process(req, res);
                    });
@@ -134,7 +139,7 @@ struct Server : public QHttpServer
 
     void process(QHttpRequest* req, QHttpResponse* res) {
         auto root = QJsonDocument::fromJson(req->collectedData()).object();
-
+std::cout<<req->collectedData().constData ()<<std::endl;
         if ( root.isEmpty()  ||  root.value("name").toString() != QLatin1Literal("add") ) {
             const static char KMessage[] = "Invalid json format!";
             res->setStatusCode(qhttp::ESTATUS_BAD_REQUEST);
