@@ -151,7 +151,7 @@ QHttpConnectionPrivate::headersComplete(http_parser* parser) {
     // Insert last remaining header
     ilastRequest->d_func()->iheaders.insert(
                 itempHeaderField.toLower(),
-                itempHeaderValue.toLower()
+                itempHeaderValue
                 );
 
     // set client information
