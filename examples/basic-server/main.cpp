@@ -1,6 +1,8 @@
 #include <QtCore/QCoreApplication>
 #include <QDateTime>
 #include <QLocale>
+#include <QThread>
+#include <QFile>
 
 #include "QHttp/QHttpServer"
 #if defined(QHTTP_HAS_CLIENT)
@@ -51,6 +53,19 @@ public:
                 .arg(QLocale::c().toString(QDateTime::currentDateTime(),
                                            "yyyy-MM-dd hh:mm:ss")
                 );
+
+            QTime Time;
+            Time.start ();
+            qDebug()<<"ThreadId: "<<iconnectionId<<"Before sleep "<<this->thread()->currentThreadId();
+            QFile File("/home/user/Downloads/Backup/OpenSUSE-Leap15.iso");
+            File.open (QFile::ReadOnly);
+            QCoreApplication::processEvents();
+            File.read (1000 * 1024 *1024);
+            QCoreApplication::processEvents();
+            qDebug()<<"ThreadId: "<<iconnectionId<<"Middle sleep "<<this->thread()->currentThreadId()<<Time.elapsed();
+            File.read (1000 * 1024 *1024);
+            QCoreApplication::processEvents();
+            qDebug()<<"ThreadId: "<<iconnectionId<<"After sleep "<<this->thread()->currentThreadId()<<Time.elapsed();
 
             res->setStatusCode(qhttp::ESTATUS_OK);
             res->addHeaderValue("content-length", message.size());

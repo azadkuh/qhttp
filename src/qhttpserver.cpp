@@ -93,6 +93,7 @@ QHttpServer::localServer() const {
 
 void
 QHttpServer::incomingConnection(qintptr handle) {
+    qDebug()<<"incomming connection2";
     QHttpConnection* conn = new QHttpConnection(this);
     conn->setSocketDescriptor(handle);
     conn->setTimeOut(d_func()->itimeOut);
@@ -108,6 +109,7 @@ QHttpServer::incomingConnection(qintptr handle) {
 
 void
 QHttpServer::incomingConnection(QHttpConnection *connection) {
+    qDebug()<<"incomming connection";
     QObject::connect(connection,  &QHttpConnection::newRequest,
                      this,        &QHttpServer::newRequest);
 }

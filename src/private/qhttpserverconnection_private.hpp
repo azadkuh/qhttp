@@ -86,6 +86,10 @@ public:
             size_t readLength = (size_t) isocket->readRaw(buffer, 4096);
 
             parse(buffer, readLength);
+            if (iparser.http_errno != 0) {
+                release(); // release the socket if parsing failed
+                return;
+            }
         }
     }
 
