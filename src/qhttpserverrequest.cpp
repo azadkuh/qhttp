@@ -76,7 +76,7 @@ QHttpRequest::connection() const {
 }
 
 void QHttpRequest::addUserDefinedData(const QString &key, const QString value) {
-    d_ptr->iuserDefinedValues.append(qMakePair(key, value));
+    if(d_ptr) d_ptr->iuserDefinedValues.append(qMakePair(key, value));
 }
 
 QList<QPair<QString, QString> > QHttpRequest::userDefinedValues() const{
