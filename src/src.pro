@@ -60,4 +60,6 @@ HEADERS += $$DIST_HEADERS \
            $$PRIVATE_HEADERS \
            $$SUBMODULE_HEADERS
 
+QMAKE_CXXFLAGS += -Wno-unknown-pragmas -Wno-padded
+
 include($$PRJDIR/qmake/install.pri)

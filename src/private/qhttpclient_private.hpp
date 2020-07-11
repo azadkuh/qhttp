@@ -40,9 +40,7 @@ public:
         QHTTP_LINE_DEEPLOG
     }
 
-    virtual ~QHttpClientPrivate() {
-        QHTTP_LINE_DEEPLOG
-    }
+    virtual ~QHttpClientPrivate();
 
     void release() {
         // if socket drops and http_parser can not call messageComplete,
@@ -92,11 +90,11 @@ public:
     int  url(http_parser*, const char*, size_t) {
         return 0; // not used in parsing incoming respone.
     }
-    int  status(http_parser* parser, const char* at, size_t length) ;
-    int  headerField(http_parser* parser, const char* at, size_t length);
-    int  headerValue(http_parser* parser, const char* at, size_t length);
+    int  status(http_parser* parser, const char* at, int length) ;
+    int  headerField(http_parser* parser, const char* at, int length);
+    int  headerValue(http_parser* parser, const char* at, int length);
     int  headersComplete(http_parser* parser);
-    int  body(http_parser* parser, const char* at, size_t length);
+    int  body(http_parser* parser, const char* at, int length);
     int  messageComplete(http_parser* parser);
 
 protected:
@@ -115,7 +113,7 @@ protected:
     void onReadyRead() {
         while ( isocket->bytesAvailable() > 0 ) {
             char buffer[4097] = {0};
-            size_t readLength = (size_t) isocket->readRaw(buffer, 4096);
+            size_t readLength = static_cast<size_t>(isocket->readRaw(buffer, 4096));
 
             parse(buffer, readLength);
             if (iparser.http_errno != 0) {
@@ -134,7 +132,7 @@ protected:
         if ( ilastResponse == nullptr )
             return;
 
-        ilastResponse->d_func()->finalizeSending([this]{
+        ilastResponse->pPrivate->finalizeSending([this]{
             emit ilastResponse->end();
         });
     }

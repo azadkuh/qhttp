@@ -121,7 +121,7 @@ private:
 
     Q_DECLARE_PRIVATE(QHttpServer)
     Q_DISABLE_COPY(QHttpServer)
-    QScopedPointer<QHttpServerPrivate>  d_ptr;
+    QScopedPointer<QHttpServerPrivate>  pPrivate;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

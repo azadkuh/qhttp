@@ -30,9 +30,7 @@ public:
         QHTTP_LINE_DEEPLOG
     }
 
-    virtual    ~QHttpRequestPrivate() {
-        QHTTP_LINE_DEEPLOG
-    }
+    virtual    ~QHttpRequestPrivate();
 
     void        initialize() {
         iversion    = "1.1";

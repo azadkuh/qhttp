@@ -7,8 +7,8 @@
  *
  */
 
-#ifndef __QHTTP_HTTPREADER_HXX__
-#define __QHTTP_HTTPREADER_HXX__
+#ifndef QHTTP_HTTPREADER_HXX
+#define QHTTP_HTTPREADER_HXX
 
 #include "qhttpbase.hpp"
 ///////////////////////////////////////////////////////////////////////////////
@@ -37,11 +37,11 @@ public:
             icollectedData.reserve(atMost);
     }
 
-    bool append(const char* data, size_t length) {
+    bool append(const char* data, int length) {
         if ( !icollectRequired ) // not allowed to collect data
             return false;
 
-        int newLength = icollectedData.length() + (int) length;
+        int newLength = icollectedData.length() + length;
 
         if ( icollectCapacity > 0    &&    newLength > icollectCapacity )
             return false; // the capacity is full
@@ -75,4 +75,4 @@ public:
 } // namespace details
 } // namespace qhttp
 ///////////////////////////////////////////////////////////////////////////////
-#endif // __QHTTP_HTTPREADER_HXX__
+#endif // QHTTP_HTTPREADER_HXX

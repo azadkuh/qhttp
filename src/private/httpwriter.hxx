@@ -7,8 +7,8 @@
  *
  */
 
-#ifndef __QHTTP_HTTPWRITER_HXX__
-#define __QHTTP_HTTPWRITER_HXX__
+#ifndef QHTTP_HTTPWRITER_HXX
+#define QHTTP_HTTPWRITER_HXX
 
 #include "qhttpbase.hpp"
 
@@ -106,4 +106,4 @@ public:
 } // namespace details
 } // namespace qhttp
 ///////////////////////////////////////////////////////////////////////////////
-#endif // __QHTTP_HTTPWRITER_HXX__
+#endif // QHTTP_HTTPWRITER_HXX

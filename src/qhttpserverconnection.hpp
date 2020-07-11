@@ -26,7 +26,7 @@ class QHTTP_API QHttpConnection : public QObject
     Q_OBJECT
 
 public:
-    virtual        ~QHttpConnection();
+    virtual        ~QHttpConnection() override;
 
     /** set an optional timer event to close the connection. */
     void            setTimeOut(quint32 miliSeconds);
@@ -78,7 +78,7 @@ protected:
 
     Q_DISABLE_COPY(QHttpConnection)
     Q_DECLARE_PRIVATE(QHttpConnection)
-    QScopedPointer<QHttpConnectionPrivate>    d_ptr;
+    QScopedPointer<QHttpConnectionPrivate>    pPrivate;
 
     friend class    QHttpServer;
 };

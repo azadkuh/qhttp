@@ -30,7 +30,7 @@ class QHTTP_API QHttpResponse : public QHttpAbstractInput
     Q_OBJECT
 
 public:
-    virtual            ~QHttpResponse();
+    virtual            ~QHttpResponse() override;
 
 public: // QHttpAbstractInput methods:
     /** @see QHttpAbstractInput::headers(). */
@@ -67,7 +67,7 @@ protected:
     friend class        QHttpClientPrivate;
 
     Q_DECLARE_PRIVATE(QHttpResponse)
-    QScopedPointer<QHttpResponsePrivate> d_ptr;
+    QScopedPointer<QHttpResponsePrivate> pPrivate;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

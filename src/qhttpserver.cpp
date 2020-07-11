@@ -6,11 +6,11 @@ namespace server {
 ///////////////////////////////////////////////////////////////////////////////
 
 QHttpServer::QHttpServer(QObject *parent)
-    : QObject(parent), d_ptr(new QHttpServerPrivate) {
+    : QObject(parent), pPrivate(new QHttpServerPrivate) {
 }
 
 QHttpServer::QHttpServer(QHttpServerPrivate &dd, QObject *parent)
-    : QObject(parent), d_ptr(&dd) {
+    : QObject(parent), pPrivate(&dd) {
 }
 
 QHttpServer::~QHttpServer() {
@@ -19,76 +19,68 @@ QHttpServer::~QHttpServer() {
 
 bool
 QHttpServer::listen(const QString &socketOrPort, const TServerHandler &handler) {
-    Q_D(QHttpServer);
-
     bool isNumber   = false;
     quint16 tcpPort = socketOrPort.toUShort(&isNumber);
     if ( isNumber    &&    tcpPort > 0 )
         return listen(QHostAddress::Any, tcpPort, handler);
 
-    d->initialize(ELocalSocket, this);
-    d->ihandler = handler;
-    return d->ilocalServer->listen(socketOrPort);
+    this->pPrivate->initialize(ELocalSocket, this);
+    this->pPrivate->ihandler = handler;
+    return this->pPrivate->ilocalServer->listen(socketOrPort);
 }
 
 bool
 QHttpServer::listen(const QHostAddress& address, quint16 port, const qhttp::server::TServerHandler& handler) {
-    Q_D(QHttpServer);
-
-    d->initialize(ETcpSocket, this);
-    d->ihandler = handler;
-    return d->itcpServer->listen(address, port);
+    this->pPrivate->initialize(ETcpSocket, this);
+    this->pPrivate->ihandler = handler;
+    return this->pPrivate->itcpServer->listen(address, port);
 }
 
 bool
 QHttpServer::isListening() const {
-    const Q_D(QHttpServer);
+    if ( this->pPrivate->ibackend == ETcpSocket    &&    this->pPrivate->itcpServer )
+        return this->pPrivate->itcpServer->isListening();
 
-    if ( d->ibackend == ETcpSocket    &&    d->itcpServer )
-        return d->itcpServer->isListening();
-
-    else if ( d->ibackend == ELocalSocket    &&    d->ilocalServer )
-        return d->ilocalServer->isListening();
+    else if ( this->pPrivate->ibackend == ELocalSocket    &&    this->pPrivate->ilocalServer )
+        return this->pPrivate->ilocalServer->isListening();
 
     return false;
 }
 
 void
 QHttpServer::stopListening() {
-    Q_D(QHttpServer);
+    if ( this->pPrivate->itcpServer )
+        this->pPrivate->itcpServer->close();
 
-    if ( d->itcpServer )
-        d->itcpServer->close();
-
-    if ( d->ilocalServer ) {
-        d->ilocalServer->close();
-        QLocalServer::removeServer( d->ilocalServer->fullServerName() );
+    if ( this->pPrivate->ilocalServer ) {
+        this->pPrivate->ilocalServer->close();
+        QLocalServer::removeServer( this->pPrivate->ilocalServer->fullServerName() );
     }
 }
 
 quint32
 QHttpServer::timeOut() const {
-    return d_func()->itimeOut;
+    return this->pPrivate->itimeOut;
 }
 
 void
 QHttpServer::setTimeOut(quint32 newValue) {
-    d_func()->itimeOut = newValue;
+    this->pPrivate->itimeOut = newValue;
 }
 
 TBackend
 QHttpServer::backendType() const {
-    return d_func()->ibackend;
+    return this->pPrivate->ibackend;
 }
 
 QTcpServer*
 QHttpServer::tcpServer() const {
-    return d_func()->itcpServer.data();
+    return this->pPrivate->itcpServer.data();
 }
 
 QLocalServer*
 QHttpServer::localServer() const {
-    return d_func()->ilocalServer.data();
+    return this->pPrivate->ilocalServer.data();
 }
 
 void
@@ -96,13 +88,12 @@ QHttpServer::incomingConnection(qintptr handle) {
     qDebug()<<"incomming connection2";
     QHttpConnection* conn = new QHttpConnection(this);
     conn->setSocketDescriptor(handle);
-    conn->setTimeOut(d_func()->itimeOut);
+    conn->setTimeOut(this->pPrivate->itimeOut);
 
     emit newConnection(conn);
 
-    Q_D(QHttpServer);
-    if ( d->ihandler )
-        QObject::connect(conn, &QHttpConnection::newRequest, d->ihandler);
+    if ( this->pPrivate->ihandler )
+        QObject::connect(conn, &QHttpConnection::newRequest, this->pPrivate->ihandler);
     else
         incomingConnection(conn);
 }

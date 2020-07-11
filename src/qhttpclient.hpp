@@ -41,7 +41,7 @@ class QHTTP_API QHttpClient : public QObject
 public:
     explicit    QHttpClient(QObject *parent = nullptr, TBackend backendType = ETcpSocket);
 
-    virtual    ~QHttpClient();
+    virtual    ~QHttpClient() override;
 
     /** tries to connect to a HTTP server.
      *  when the connection is made, the reqHandler will be called
@@ -174,7 +174,7 @@ protected:
 
     Q_DECLARE_PRIVATE(QHttpClient)
     Q_DISABLE_COPY(QHttpClient)
-    QScopedPointer<QHttpClientPrivate>  d_ptr;
+    QScopedPointer<QHttpClientPrivate>  pPrivate;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

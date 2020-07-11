@@ -5,14 +5,14 @@ namespace qhttp {
 namespace client {
 ///////////////////////////////////////////////////////////////////////////////
 QHttpRequest::QHttpRequest(QHttpClient* cli)
-    : QHttpAbstractOutput(cli) , d_ptr(new QHttpRequestPrivate(cli, this)) {
-    d_ptr->initialize();
+    : QHttpAbstractOutput(cli) , pPrivate(new QHttpRequestPrivate(cli, this)) {
+    this->pPrivate->initialize();
     QHTTP_LINE_LOG
 }
 
 QHttpRequest::QHttpRequest(QHttpRequestPrivate& dd, QHttpClient* cli)
-    : QHttpAbstractOutput(cli) , d_ptr(&dd) {
-    d_ptr->initialize();
+    : QHttpAbstractOutput(cli) , pPrivate(&dd) {
+    this->pPrivate->initialize();
     QHTTP_LINE_LOG
 }
 
@@ -22,35 +22,33 @@ QHttpRequest::~QHttpRequest() {
 
 void
 QHttpRequest::setVersion(const QString &versionString) {
-    d_func()->iversion  = versionString;
+   this->pPrivate->iversion  = versionString;
 }
 
 void
 QHttpRequest::addHeader(const QByteArray &field, const QByteArray &value) {
-    d_func()->addHeader(field, value);
+    this->pPrivate->addHeader(field, value);
 }
 
 THeaderHash&
 QHttpRequest::headers() {
-    return d_func()->iheaders;
+    return this->pPrivate->iheaders;
 }
 
 void
 QHttpRequest::write(const QByteArray &data) {
-    d_func()->writeData(data);
+    this->pPrivate->writeData(data);
 }
 
 void
 QHttpRequest::end(const QByteArray &data) {
-    Q_D(QHttpRequest);
-
-    if ( d->endPacket(data) )
-        emit done(!d->ikeepAlive);
+    if ( this->pPrivate->endPacket(data) )
+        emit done(!this->pPrivate->ikeepAlive);
 }
 
 QHttpClient*
 QHttpRequest::connection() const {
-    return d_func()->iclient;
+    return this->pPrivate->iclient;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -82,7 +80,7 @@ void
 QHttpRequestPrivate::prepareHeadersToWrite() {
 
     if ( !iheaders.contains("host") ) {
-        quint16 port = iurl.port();
+        int port = iurl.port();
         if ( port == 0 )
             port = 80;
 

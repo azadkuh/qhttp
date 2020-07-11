@@ -25,7 +25,7 @@ class QHTTP_API QHttpResponse : public QHttpAbstractOutput
     Q_OBJECT
 
 public:
-    virtual        ~QHttpResponse();
+    virtual        ~QHttpResponse() override;
 
 public:
     /** set the response HTTP status code. @sa TStatusCode.
@@ -60,7 +60,7 @@ protected:
     friend class    QHttpConnectionPrivate;
 
     Q_DECLARE_PRIVATE(QHttpResponse)
-    QScopedPointer<QHttpResponsePrivate> d_ptr;
+    QScopedPointer<QHttpResponsePrivate> pPrivate;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

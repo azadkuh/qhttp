@@ -44,9 +44,7 @@ public:
         QHTTP_LINE_DEEPLOG
     }
 
-    virtual ~QHttpConnectionPrivate() {
-        QHTTP_LINE_DEEPLOG
-    }
+    virtual ~QHttpConnectionPrivate();
 
     void createSocket(qintptr sokDesc) {
         isocket->init (
@@ -83,7 +81,7 @@ public:
     void onReadyRead() {
         while ( isocket->bytesAvailable() > 0 ) {
             char buffer[4097] = {0};
-            size_t readLength = (size_t) isocket->readRaw(buffer, 4096);
+            size_t readLength = static_cast<size_t>(isocket->readRaw(buffer, 4096));
 
             parse(buffer, readLength);
             if (iparser.http_errno != 0) {
@@ -103,21 +101,21 @@ public:
         if ( ilastRequest == nullptr )
             return;
 
-        ilastRequest->d_func()->finalizeSending([this]{
+        ilastRequest->pPrivate->finalizeSending([this]{
             emit ilastRequest->end();
         });
     }
 
 public:
     int  messageBegin(http_parser* parser);
-    int  url(http_parser* parser, const char* at, size_t length);
+    int  url(http_parser* parser, const char* at, int length);
     int  status(http_parser*, const char*, size_t) {
         return 0;   // not used in parsing incoming request.
     }
-    int  headerField(http_parser* parser, const char* at, size_t length);
-    int  headerValue(http_parser* parser, const char* at, size_t length);
+    int  headerField(http_parser* parser, const char* at, int length);
+    int  headerValue(http_parser* parser, const char* at, int length);
     int  headersComplete(http_parser* parser);
-    int  body(http_parser* parser, const char* at, size_t length);
+    int  body(http_parser* parser, const char* at, int length);
     int  messageComplete(http_parser* parser);
 
 protected:

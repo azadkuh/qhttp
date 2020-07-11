@@ -35,9 +35,7 @@ public:
         QHTTP_LINE_DEEPLOG
     }
 
-    virtual    ~QHttpResponsePrivate() {
-        QHTTP_LINE_DEEPLOG
-    }
+    virtual    ~QHttpResponsePrivate();
 
     void        initialize() {
         *isocket = *iconnection->abstractSocket();

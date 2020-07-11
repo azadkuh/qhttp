@@ -1,5 +1,13 @@
 #include "qhttpabstracts.hpp"
 #include "http-parser/http_parser.h"
+#include "private/qhttpabstractsocket.hpp"
+#include "private/qhttpclient_private.hpp"
+#include "private/qhttpclientrequest_private.hpp"
+#include "private/qhttpclientresponse_private.hpp"
+#include "private/qhttpserver_private.hpp"
+#include "private/qhttpserverrequest_private.hpp"
+#include "private/qhttpserverresponse_private.hpp"
+#include "private/qhttpserverconnection_private.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
@@ -87,6 +95,18 @@ static struct {
 #undef PATCH_STATUS_CODES
 
 ///////////////////////////////////////////////////////////////////////////////
+qhttp::details::QHttpAbstractSocket::~QHttpAbstractSocket(){;}
+qhttp::details::QHttpTcpSocket::~QHttpTcpSocket(){;}
+qhttp::details::QHttpLocalSocket::~QHttpLocalSocket(){;}
+qhttp::client::QHttpClientPrivate::~QHttpClientPrivate() { QHTTP_LINE_DEEPLOG }
+qhttp::client::QHttpRequestPrivate::~QHttpRequestPrivate() { QHTTP_LINE_DEEPLOG }
+qhttp::client::QHttpResponsePrivate::~QHttpResponsePrivate() { QHTTP_LINE_DEEPLOG }
+qhttp::server::QHttpServerPrivate::~QHttpServerPrivate() { QHTTP_LINE_DEEPLOG }
+qhttp::server::QHttpRequestPrivate::~QHttpRequestPrivate() { QHTTP_LINE_DEEPLOG }
+qhttp::server::QHttpResponsePrivate::~QHttpResponsePrivate() { QHTTP_LINE_DEEPLOG }
+qhttp::server::QHttpConnectionPrivate::~QHttpConnectionPrivate() { QHTTP_LINE_DEEPLOG }
+///////////////////////////////////////////////////////////////////////////////
+
 
 const char*
 Stringify::toString(TStatusCode code) {

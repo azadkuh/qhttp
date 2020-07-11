@@ -5,14 +5,14 @@ namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
 QHttpResponse::QHttpResponse(QHttpConnection* conn)
-    : QHttpAbstractOutput(conn) , d_ptr(new QHttpResponsePrivate(conn, this)) {
-    d_ptr->initialize();
+    : QHttpAbstractOutput(conn) , pPrivate(new QHttpResponsePrivate(conn, this)) {
+    this->pPrivate->initialize();
     QHTTP_LINE_LOG
 }
 
 QHttpResponse::QHttpResponse(QHttpResponsePrivate& dd, QHttpConnection* conn)
-    : QHttpAbstractOutput(conn) , d_ptr(&dd) {
-    d_ptr->initialize();
+    : QHttpAbstractOutput(conn) , pPrivate(&dd) {
+    this->pPrivate->initialize();
     QHTTP_LINE_LOG
 }
 
@@ -22,40 +22,38 @@ QHttpResponse::~QHttpResponse() {
 
 void
 QHttpResponse::setStatusCode(TStatusCode code) {
-    d_func()->istatus   = code;
+    this->pPrivate->istatus   = code;
 }
 
 void
 QHttpResponse::setVersion(const QString &versionString) {
-    d_func()->iversion  = versionString;
+    this->pPrivate->iversion  = versionString;
 }
 
 void
 QHttpResponse::addHeader(const QByteArray &field, const QByteArray &value) {
-    d_func()->addHeader(field, value);
+    this->pPrivate->addHeader(field, value);
 }
 
 THeaderHash&
 QHttpResponse::headers() {
-    return d_func()->iheaders;
+    return this->pPrivate->iheaders;
 }
 
 void
 QHttpResponse::write(const QByteArray &data) {
-    d_func()->writeData(data);
+    this->pPrivate->writeData(data);
 }
 
 void
 QHttpResponse::end(const QByteArray &data) {
-    Q_D(QHttpResponse);
-
-    if ( d->endPacket(data) )
-        emit done(!d->ikeepAlive);
+    if ( this->pPrivate->endPacket(data) )
+        emit done(!this->pPrivate->ikeepAlive);
 }
 
 QHttpConnection*
 QHttpResponse::connection() const {
-    return d_func()->iconnection;
+    return this->pPrivate->iconnection;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

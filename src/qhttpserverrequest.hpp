@@ -26,7 +26,7 @@ class QHTTP_API QHttpRequest : public QHttpAbstractInput
     Q_OBJECT
 
 public:
-    virtual            ~QHttpRequest();
+    virtual            ~QHttpRequest() override;
 
 public: // QHttpAbstractInput methods:
     /** @see QHttpAbstractInput::headers(). */
@@ -77,7 +77,7 @@ protected:
     friend class        QHttpConnectionPrivate;
 
     Q_DECLARE_PRIVATE(QHttpRequest)
-    QScopedPointer<QHttpRequestPrivate> d_ptr;
+    QScopedPointer<QHttpRequestPrivate> pPrivate;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

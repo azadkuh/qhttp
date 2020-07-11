@@ -42,7 +42,7 @@ public:
 
         // if it's a QLocalServer
         virtual void    incomingConnection(quintptr socketDescriptor) {
-            iserver->incomingConnection((qintptr) socketDescriptor);
+            iserver->incomingConnection(static_cast<qintptr>(socketDescriptor));
         }
     };
 
@@ -63,9 +63,7 @@ public:
         QHTTP_LINE_DEEPLOG
     }
 
-    virtual    ~QHttpServerPrivate() {
-        QHTTP_LINE_DEEPLOG
-    }
+    virtual    ~QHttpServerPrivate();
 
     void        initialize(TBackend backend, QHttpServer* parent) {
         ibackend = backend;

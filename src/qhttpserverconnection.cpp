@@ -5,18 +5,18 @@ namespace qhttp {
 namespace server {
 ///////////////////////////////////////////////////////////////////////////////
 QHttpConnection::QHttpConnection(QObject *parent, TBackend backendType)
-    : QObject(parent), d_ptr(new QHttpConnectionPrivate(this, backendType)) {
+    : QObject(parent), pPrivate(new QHttpConnectionPrivate(this, backendType)) {
     QHTTP_LINE_LOG
 }
 
 QHttpConnection::QHttpConnection(QHttpConnectionPrivate& dd, QObject* parent)
-    : QObject(parent), d_ptr(&dd) {
+    : QObject(parent), pPrivate(&dd) {
     QHTTP_LINE_LOG
 }
 
 void
 QHttpConnection::setSocketDescriptor(qintptr sokDescriptor) {
-    d_ptr->createSocket(sokDescriptor);
+    this->pPrivate->createSocket(sokDescriptor);
 }
 
 QHttpConnection::~QHttpConnection() {
@@ -26,42 +26,42 @@ QHttpConnection::~QHttpConnection() {
 void
 QHttpConnection::setTimeOut(quint32 miliSeconds) {
     if ( miliSeconds != 0 ) {
-        d_func()->itimeOut = miliSeconds;
-        d_func()->itimer.start(miliSeconds, Qt::CoarseTimer, this);
+        this->pPrivate->itimeOut = miliSeconds;
+        this->pPrivate->itimer.start(static_cast<int>(miliSeconds), Qt::CoarseTimer, this);
     }
 }
 
 void
 QHttpConnection::killConnection() {
-    d_func()->isocket->close();
+    this->pPrivate->isocket->close();
 }
 
 TBackend
 QHttpConnection::backendType() const {
-    return (dynamic_cast<QTcpSocket*>(d_func()->isocket->isocket) != nullptr) ?
+    return (dynamic_cast<QTcpSocket*>(this->pPrivate->isocket->isocket) != nullptr) ?
         ETcpSocket :
         ELocalSocket;
 }
 
 QTcpSocket*
 QHttpConnection::tcpSocket() const {
-    return backendType() == ETcpSocket? (QTcpSocket*)d_func()->isocket->isocket : NULL;
+    return backendType() == ETcpSocket? dynamic_cast<QTcpSocket*>(this->pPrivate->isocket->isocket) : nullptr;
 }
 
 QLocalSocket*
 QHttpConnection::localSocket() const {
-    return backendType() == ELocalSocket ? (QLocalSocket*)d_func()->isocket->isocket : NULL;
+    return backendType() == ELocalSocket ? dynamic_cast<QLocalSocket*>(this->pPrivate->isocket->isocket) : nullptr;
 }
 
 details::QHttpAbstractSocket*
 QHttpConnection::abstractSocket() const {
-    return d_func()->isocket.data();
+    return this->pPrivate->isocket.data();
 }
 
 
 void
 QHttpConnection::onHandler(const TServerHandler &handler) {
-    d_func()->ihandler = handler;
+    this->pPrivate->ihandler = handler;
 }
 
 void
@@ -92,7 +92,7 @@ QHttpConnectionPrivate::messageBegin(http_parser*) {
 }
 
 int
-QHttpConnectionPrivate::url(http_parser*, const char* at, size_t length) {
+QHttpConnectionPrivate::url(http_parser*, const char* at, int length) {
     Q_ASSERT(ilastRequest);
 
     itempUrl.append(at, length);
@@ -100,7 +100,7 @@ QHttpConnectionPrivate::url(http_parser*, const char* at, size_t length) {
 }
 
 int
-QHttpConnectionPrivate::headerField(http_parser*, const char* at, size_t length) {
+QHttpConnectionPrivate::headerField(http_parser*, const char* at, int length) {
     if ( ilastRequest == nullptr )
         return 0;
 
@@ -108,7 +108,7 @@ QHttpConnectionPrivate::headerField(http_parser*, const char* at, size_t length)
     // into the header map
     if ( !itempHeaderField.isEmpty() && !itempHeaderValue.isEmpty() ) {
         // header names are always lower-cased
-        ilastRequest->d_func()->iheaders.insert(
+        ilastRequest->pPrivate->iheaders.insert(
                     itempHeaderField.toLower(),
                     itempHeaderValue
                     );
@@ -124,7 +124,7 @@ QHttpConnectionPrivate::headerField(http_parser*, const char* at, size_t length)
 }
 
 int
-QHttpConnectionPrivate::headerValue(http_parser*, const char* at, size_t length) {
+QHttpConnectionPrivate::headerValue(http_parser*, const char* at, int length) {
     if ( ilastRequest == nullptr )
         return 0;
 
@@ -137,33 +137,33 @@ QHttpConnectionPrivate::headersComplete(http_parser* parser) {
     if ( ilastRequest == nullptr )
         return 0;
 
-    ilastRequest->d_func()->iurl = QUrl(itempUrl);
+    ilastRequest->pPrivate->iurl = QUrl(itempUrl);
 
     // set method
-    ilastRequest->d_func()->imethod =
+    ilastRequest->pPrivate->imethod =
             static_cast<THttpMethod>(parser->method);
 
     // set version
-    ilastRequest->d_func()->iversion = QString("%1.%2")
+    ilastRequest->pPrivate->iversion = QString("%1.%2")
                                        .arg(parser->http_major)
                                        .arg(parser->http_minor);
 
     // Insert last remaining header
-    ilastRequest->d_func()->iheaders.insert(
+    ilastRequest->pPrivate->iheaders.insert(
                 itempHeaderField.toLower(),
                 itempHeaderValue
                 );
 
     // set client information
-    ilastRequest->d_func()->iremoteAddress = isocket->remoteAddress();
-    ilastRequest->d_func()->iremotePort = isocket->remotePort();
+    ilastRequest->pPrivate->iremoteAddress = isocket->remoteAddress();
+    ilastRequest->pPrivate->iremotePort = isocket->remotePort();
 
     if ( ilastResponse )
         ilastResponse->deleteLater();
     ilastResponse  = new QHttpResponse(q_func());
 
     if ( parser->http_major < 1 || parser->http_minor < 1  )
-        ilastResponse->d_func()->ikeepAlive = false;
+        ilastResponse->pPrivate->ikeepAlive = false;
 
     // close the connection if response was the last packet
     QObject::connect(ilastResponse, &QHttpResponse::done, [this](bool wasTheLastPacket){
@@ -184,14 +184,14 @@ QHttpConnectionPrivate::headersComplete(http_parser* parser) {
 }
 
 int
-QHttpConnectionPrivate::body(http_parser*, const char* at, size_t length) {
+QHttpConnectionPrivate::body(http_parser*, const char* at, int length) {
     if ( ilastRequest == nullptr )
         return 0;
 
-    ilastRequest->d_func()->ireadState = QHttpRequestPrivate::EPartial;
+    ilastRequest->pPrivate->ireadState = QHttpRequestPrivate::EPartial;
 
-    if ( ilastRequest->d_func()->icollectRequired ) {
-        if ( !ilastRequest->d_func()->append(at, length) ) {
+    if ( ilastRequest->pPrivate->icollectRequired ) {
+        if ( !ilastRequest->pPrivate->append(at, length) ) {
             // forcefully dispatch the ilastRequest
             finalizeConnection();
         }

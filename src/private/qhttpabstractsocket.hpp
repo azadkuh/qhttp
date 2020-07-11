@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef __QHTTP_ABSTRACTSOCKET_HPP__
-#define __QHTTP_ABSTRACTSOCKET_HPP__
+#ifndef QHTTP_ABSTRACTSOCKET_HPP
+#define QHTTP_ABSTRACTSOCKET_HPP
 
 #include "qhttpfwd.hpp"
 
@@ -39,6 +39,8 @@ public:
         return *this;
     }
 
+    virtual ~QHttpAbstractSocket();
+
     void close() {
         if(Q_LIKELY(isocket))
             isocket->close();
@@ -63,7 +65,7 @@ public:
 
     void disconnectAllQtConnections() {
         if ( isocket )
-            QObject::disconnect(isocket, 0, 0, 0);
+            QObject::disconnect(isocket, nullptr, nullptr, nullptr);
     }
 
     inline qint64 bytesAvailable() {
@@ -106,6 +108,8 @@ public:
     QHttpTcpSocket(QObject *parent = Q_NULLPTR) :
         QHttpAbstractSocket(new QTcpSocket(parent))
     {}
+
+    virtual ~QHttpTcpSocket() override;
 
     void init(QObject* parent,
               qintptr sockDesc,
@@ -181,6 +185,7 @@ public:
     QHttpLocalSocket(QObject *parent = Q_NULLPTR) :
         QHttpAbstractSocket(new QLocalSocket(parent))
     {}
+    virtual ~QHttpLocalSocket() override;
 
     void init(QObject* parent,
               qintptr sockDesc,
@@ -254,4 +259,4 @@ public:
 } // namespace details
 } // namespace qhttp
 ///////////////////////////////////////////////////////////////////////////////
-#endif // __QHTTP_SOCKET_HPP__
+#endif // QHTTP_SOCKET_HPP

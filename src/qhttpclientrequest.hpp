@@ -28,7 +28,7 @@ class QHTTP_API QHttpRequest : public QHttpAbstractOutput
     Q_OBJECT
 
 public:
-    virtual        ~QHttpRequest();
+    virtual        ~QHttpRequest() override;
 
 public: // QHttpAbstractOutput methods:
     /** @see QHttpAbstractOutput::setVersion(). */
@@ -56,7 +56,7 @@ protected:
     friend class    QHttpClient;
 
     Q_DECLARE_PRIVATE(QHttpRequest)
-    QScopedPointer<QHttpRequestPrivate> d_ptr;
+    QScopedPointer<QHttpRequestPrivate> pPrivate;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

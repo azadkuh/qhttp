@@ -40,6 +40,8 @@ class QHttpAbstractSocket;
 
 //////////////////////////////////////////////////////////////////////////////
 /** An storage for exception message */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wweak-vtables"
 class exStdOverrider : public QException {
 public:
     const char* what() const _GLIBCXX_USE_NOEXCEPT {
@@ -63,12 +65,10 @@ class exQHttpBase: public exStdOverrider
      * @param _message Message to be shown when calling what()
      * @param _line Line Number where the exception occured Defaults to 0.
      **/
-    exQHttpBase(const QString& message = "", quint32 line = 0) throw () {
+    exQHttpBase(const QString& message = "", quint32 line = 0) {
         QString Message = line ? QString::number(line) + ": " + message : message;
         imessage = Message.toUtf8();
     }
-
-    ~exQHttpBase() throw () {}
 
     void raise() const { throw *this; }
     QException* clone() const { return new exQHttpBase(*this); }
@@ -77,7 +77,10 @@ class exQHttpBase: public exStdOverrider
      * @note this method must be defined as const but it will collide with std::exception
      * @return QString Exception message
      **/
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Woverloaded-virtual"
     QString what() { return QString::fromUtf8(imessage); }
+#pragma clang diagnostic pop
 };
 
 /**
@@ -87,12 +90,13 @@ class exQHttpBase: public exStdOverrider
 class exQHttpNotImplemented: public exQHttpBase
 {
   public:
-    exQHttpNotImplemented(const QString& message = "", int line = 0) : exQHttpBase(message, line) {
+    exQHttpNotImplemented(const QString& message = "", quint32 line = 0) : exQHttpBase(message, line) {
         imessage.append(">;exQHttpNotImplemented");
         //Show error on screen as this exception normally occurs before application startup
         std::cerr<<imessage.constData()<<std::endl;
     }
 };
+#pragma clang diagnostic pop
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -122,7 +126,7 @@ public:
             return false;
 
         const QByteArray& v = QHash<QByteArray, QByteArray>::value(key);
-        return qstrnicmp(value.constData(), v.constData(), v.size()) == 0;
+        return qstrnicmp(value.constData(), v.constData(), static_cast<uint>(v.size())) == 0;
     }
 
     template<class Func>
