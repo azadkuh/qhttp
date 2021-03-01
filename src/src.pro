@@ -1,17 +1,17 @@
-QT       += core network
-QT       -= gui
-
-TARGET    = qhttp
-TEMPLATE  = lib
-
-PRJDIR    = ..
-include($$PRJDIR/qmake/configs.pri)
-
-win32:DEFINES *= QHTTP_EXPORT
+################################################################################
+#   QBuildSystem
+#
+#   Copyright(c) 2021 by Targoman Intelligent Processing <http://tip.co.ir>
+#
+#   Redistribution and use in source and binary forms are allowed under the
+#   terms of BSD License 2.0.
+################################################################################
+include(../version.pri)
 
 # nodejs http_parser
-SOURCES  += $$PRJDIR/3rdParty/http-parser/http_parser.c
-SUBMODULE_HEADERS  += $$PRJDIR/3rdParty/http-parser/http_parser.h
+SOURCES  += ../3rdParty/http-parser/http_parser.c
+SUBMODULE_HEADERS  += ../3rdParty/http-parser/http_parser.h
+INCLUDEPATH += ../3rdParty/
 
 SOURCES  += \
     qhttpabstracts.cpp \
@@ -56,10 +56,5 @@ PRIVATE_HEADERS += \
     private/qhttpserverrequest_private.hpp \
     private/qhttpserverresponse_private.hpp
 
-HEADERS += $$DIST_HEADERS \
-           $$PRIVATE_HEADERS \
-           $$SUBMODULE_HEADERS
-
-QMAKE_CXXFLAGS += -Wno-unknown-pragmas -Wno-padded
-
-include($$PRJDIR/qmake/install.pri)
+################################################################################
+include(../qmake/libConfigs.pri)

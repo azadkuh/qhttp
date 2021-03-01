@@ -98,9 +98,11 @@ static struct {
 qhttp::details::QHttpAbstractSocket::~QHttpAbstractSocket(){;}
 qhttp::details::QHttpTcpSocket::~QHttpTcpSocket(){;}
 qhttp::details::QHttpLocalSocket::~QHttpLocalSocket(){;}
+#ifdef QHTTP_HAS_CLIENT
 qhttp::client::QHttpClientPrivate::~QHttpClientPrivate() { QHTTP_LINE_DEEPLOG }
 qhttp::client::QHttpRequestPrivate::~QHttpRequestPrivate() { QHTTP_LINE_DEEPLOG }
 qhttp::client::QHttpResponsePrivate::~QHttpResponsePrivate() { QHTTP_LINE_DEEPLOG }
+#endif //QHTTP_HAS_CLIENT
 qhttp::server::QHttpServerPrivate::~QHttpServerPrivate() { QHTTP_LINE_DEEPLOG }
 qhttp::server::QHttpRequestPrivate::~QHttpRequestPrivate() { QHTTP_LINE_DEEPLOG }
 qhttp::server::QHttpResponsePrivate::~QHttpResponsePrivate() { QHTTP_LINE_DEEPLOG }

@@ -10,13 +10,12 @@
 #include <iostream>
 
 #include "QHttp/QHttpServer"
-#if defined(QHTTP_HAS_CLIENT)
-    #include "QHttp/QHttpClient"
-#endif
+#include "QHttp/QHttpClient"
 
 #include "../include/ticktock.hxx"
 #include "../include/unixcatcher.hpp"
 
+#ifdef QHTTP_HAS_CLIENT
 ///////////////////////////////////////////////////////////////////////////////
 namespace {
 ///////////////////////////////////////////////////////////////////////////////
@@ -169,8 +168,12 @@ std::cout<<req->collectedData().constData ()<<std::endl;
 } // namespace anon
 ///////////////////////////////////////////////////////////////////////////////
 
+#endif //QHTTP_HAS_CLIENT
+
 int
 main(int argc, char ** argv) {
+#ifdef QHTTP_HAS_CLIENT
+
     QCoreApplication app(argc, argv);
 #if defined(Q_OS_UNIX)
     catchUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP});
@@ -219,4 +222,8 @@ main(int argc, char ** argv) {
 
     parser.showHelp(0);
     return 0;
+#else
+    return -1;
+#endif //QHTTP_HAS_CLIENT
+
 }

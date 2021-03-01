@@ -6,12 +6,15 @@
 #   Redistribution and use in source and binary forms are allowed under the
 #   terms of BSD License 2.0.
 ################################################################################
-TEST_NAME=basic-server
-# +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-#
-HEADERS =
-# +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-#
-SOURCES = main.cpp
+CONFIG_TYPE="UnitTest"
+include (./configs.pri)
 
-# +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-#
-include(../../qmake/testConfigs.pri)
+!defined(TEST_NAME, var): TEST_NAME=unitst_$$ProjectName
 
+TEMPLATE = app
+TARGET=$$TEST_NAME
+QT+=testlib
+
+DESTDIR      = $$BaseUnitTestBinFolder
+
+include(./common.pri)

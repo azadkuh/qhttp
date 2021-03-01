@@ -1,0 +1,35 @@
+################################################################################
+#   QBuildSystem"
+#
+#   Copyright(c) 2021 by Targom"an Intelligent Processing <http://tip.co.ir>
+#
+#   Redistribution and use in source and binary form"s are allowed under the
+#   term"s of BSD License 2.0.
+################################################################################
+
+NORMAL="\e[0m"
+RED="\e[31m"
+GREEN="\e[32m"
+YELLOW="\e[33m"
+BLUE="\e[34m"
+MAGENTA="\e[35m"
+CYAN="\e[36m"
+LGRAY="\e[37m"
+DEFAULT="\e[39m"
+DGRAY="\e[90m"
+LRED="\e[91m"
+LGREEN="\e[92m"
+LYELLOW="\e[93m"
+LBLUE="\e[94m"
+LMAGENTA="\e[95m"
+LCYAN="\e[96m"
+WHITE="\e[97m"
+
+show(){  echo -e "$1$NORMAL"; }
+warn(){  echo -e "$YELLOW$1$NORMAL" 1>&2; }
+happy(){  echo -e "$GREEN$1$NORMAL"; }
+ignore(){ echo -e "$LCYAN$1$NORMAL"; }
+info(){ echo -e "$BLUE$1$NORMAL"; }
+error(){ echo -e "$RED$1$NORMAL" 1>&2; }
+
+

@@ -1,5 +1,7 @@
 #include "private/qhttpclientresponse_private.hpp"
 #include "qhttpclient.hpp"
+
+#ifdef QHTTP_HAS_CLIENT
 ///////////////////////////////////////////////////////////////////////////////
 namespace qhttp {
 namespace client {
@@ -64,3 +66,4 @@ QHttpResponse::connection() const {
 } // namespace client
 } // namespace qhttp
 ///////////////////////////////////////////////////////////////////////////////
+#endif //QHTTP_HAS_CLIENT

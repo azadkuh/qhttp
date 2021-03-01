@@ -6,12 +6,14 @@
 #   Redistribution and use in source and binary forms are allowed under the
 #   terms of BSD License 2.0.
 ################################################################################
-TEST_NAME=basic-server
-# +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-#
-HEADERS =
-# +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-#
-SOURCES = main.cpp
+include (./configs.pri)
+CONFIG_TYPE="App"
 
-# +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-#
-include(../../qmake/testConfigs.pri)
+!defined(APP_NAME, var): APP_NAME=$$ProjectName
 
+TEMPLATE = app
+TARGET=$$APP_NAME
+
+DESTDIR      = $$BaseBinFolder
+
+include(./common.pri)
