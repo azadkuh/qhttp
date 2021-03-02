@@ -12,7 +12,7 @@
     EXAMPLES_PREFIX  = $$[QT_INSTALL_EXAMPLES]
 
     unix:!isEmpty(PREFIX){
-            INCLUDE_PREFIX = $$PREFIX/include/
+            INCLUDE_PREFIX = $$PREFIX/include/$$LIB_PREFIX
             contains(QT_ARCH, x86_64){
                 TARGET_PREFIX     = $$PREFIX/lib64
             } else {
