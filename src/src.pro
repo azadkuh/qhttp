@@ -6,8 +6,7 @@
 #   Redistribution and use in source and binary forms are allowed under the
 #   terms of BSD License 2.0.
 ################################################################################
-include(../version.pri)
-
+include($$BASE_PROJECT_PATH/version.pri)
 # nodejs http_parser
 SOURCES  += ../3rdParty/http-parser/http_parser.c
 SUBMODULE_HEADERS  += ../3rdParty/http-parser/http_parser.h
@@ -29,7 +28,7 @@ DIST_HEADERS  += \
     qhttpserver.hpp \
     QHttpServer
 
-contains(DEFINES, QHTTP_HAS_CLIENT) {
+contains(DEFINES, "QHTTP_HAS_CLIENT") {
     SOURCES += \
         qhttpclientrequest.cpp \
         qhttpclientresponse.cpp \
@@ -57,4 +56,4 @@ PRIVATE_HEADERS += \
     private/qhttpserverresponse_private.hpp
 
 ################################################################################
-include(../qmake/libConfigs.pri)
+include($$QBUILD_PATH/templates/libConfigs.pri)

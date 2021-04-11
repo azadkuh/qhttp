@@ -1,3 +1,6 @@
 [submodule "3rdParty/http-parser"]
 	path = 3rdParty/http-parser
 	url = https://github.com/nodejs/http-parser.git
+[submodule "3rdParty/QBuildSystem"]
+	path = 3rdParty/QBuildSystem
+	url = https://github.com/Targoman/QBuildSystem.git
